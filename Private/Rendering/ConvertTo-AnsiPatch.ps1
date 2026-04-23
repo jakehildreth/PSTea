@@ -45,10 +45,18 @@ function ConvertTo-AnsiPatch {
             'Replace' {
                 $row        = $patch.Y + 1
                 $col        = $patch.X + 1
-                $patchWidth = if ($patch.PSObject.Properties['Width'] -and $null -ne $patch.Width) { $patch.Width } else { $patch.Content.Length }
-                $content    = Apply-ElmStyle -Content $patch.Content -Style $patch.Style -Width $patchWidth
-                # ESC[K erases from cursor to end of line, clearing any leftover chars from a wider previous value
-                [void]$sb.Append("$esc[$row;${col}H$esc[K$content")
+                $patchWidth  = if ($patch.PSObject.Properties['Width']    -and $null -ne $patch.Width)    { $patch.Width }    else { $patch.Content.Length }
+                $oldWidth    = if ($patch.PSObject.Properties['OldWidth'] -and $null -ne $patch.OldWidth) { $patch.OldWidth } else { $patchWidth }
+                $clearWidth  = [Math]::Max($patchWidth, $oldWidth)
+                $content     = Apply-ElmStyle -Content $patch.Content -Style $patch.Style -Width $patchWidth
+                # Compute visual width of styled output (SGR codes are zero-width).
+                # Append trailing spaces to fill clearWidth, overwriting stale chars from shorter-to-longer transitions.
+                $visualLen = $patch.Content.Length
+                if ($null -ne $patch.Style) {
+                    $visualLen += [int]$patch.Style.PaddingLeft + [int]$patch.Style.PaddingRight
+                }
+                $trailer = ' ' * [Math]::Max(0, $clearWidth - $visualLen)
+                [void]$sb.Append($esc + "[$row;${col}H" + $content + $trailer)
             }
             'Clear' {
                 $row    = $patch.Y + 1

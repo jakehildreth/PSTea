@@ -75,12 +75,13 @@ function Compare-ElmViewTree {
 
         if ($oldLeaf.Content -ne $newLeaf.Content -or $oldStyleJson -ne $newStyleJson) {
             $patches.Add([PSCustomObject]@{
-                Type    = 'Replace'
-                X       = $newLeaf.X
-                Y       = $newLeaf.Y
-                Content = $newLeaf.Content
-                Style   = $newLeaf.Style
-                Width   = $newLeaf.Width
+                Type     = 'Replace'
+                X        = $newLeaf.X
+                Y        = $newLeaf.Y
+                Content  = $newLeaf.Content
+                Style    = $newLeaf.Style
+                Width    = $newLeaf.Width
+                OldWidth = $oldLeaf.Width
             })
         }
     }

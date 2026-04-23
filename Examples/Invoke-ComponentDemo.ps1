@@ -129,7 +129,7 @@ $view = {
     New-ElmBox -Children @(
         New-ElmText -Content 'Component Demo' -Style (New-ElmStyle -Bold -Foreground 'BrightWhite')
         New-ElmText -Content ''
-        New-ElmRow -Children @($leftComponent, $rightComponent)
+        New-ElmRow -Children @($leftComponent, (New-ElmText -Content '  '), $rightComponent)
         New-ElmText -Content ''
         New-ElmText -Content $focusText -Style $focusLabelStyle
         New-ElmText -Content '[Up] inc  [Down] dec  [Tab] switch  [Q] quit' -Style $hintStyle

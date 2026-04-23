@@ -104,6 +104,20 @@ Describe 'Compare-ElmViewTree' {
             $patches = Compare-ElmViewTree -OldTree $oldTree -NewTree $newTree
             $patches[0].Content | Should -Be 'new content'
         }
+
+        It 'Should carry OldWidth from the old node in the Replace patch' {
+            $oldTree = New-MeasuredText -Content 'Focus: Right' -X 0 -Y 0 -Width 12
+            $newTree = New-MeasuredText -Content 'Focus: Left'  -X 0 -Y 0 -Width 11
+            $patches = Compare-ElmViewTree -OldTree $oldTree -NewTree $newTree
+            $patches[0].OldWidth | Should -Be 12
+        }
+
+        It 'Should carry new Width from the new node in the Replace patch' {
+            $oldTree = New-MeasuredText -Content 'Focus: Right' -X 0 -Y 0 -Width 12
+            $newTree = New-MeasuredText -Content 'Focus: Left'  -X 0 -Y 0 -Width 11
+            $patches = Compare-ElmViewTree -OldTree $oldTree -NewTree $newTree
+            $patches[0].Width | Should -Be 11
+        }
     }
 
     Context 'Style changed' {
