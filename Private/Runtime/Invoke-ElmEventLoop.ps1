@@ -32,7 +32,7 @@ function Invoke-ElmEventLoop {
         # Initial render before any messages arrive
         $viewTree     = Invoke-ElmView -ViewFn $ViewFn -Model $model
         $measuredTree = Measure-ElmViewTree -Root $viewTree -TermWidth $TerminalWidth -TermHeight $TerminalHeight
-        $patches      = Compare-ElmViewTree -OldTree $null -NewTree $measuredTree
+        $patches      = @(Compare-ElmViewTree -OldTree $null -NewTree $measuredTree)
         $prevTree     = $measuredTree
         if ($patches.Count -gt 0) {
             [Console]::Write((ConvertTo-AnsiOutput -Root $measuredTree))
@@ -51,7 +51,7 @@ function Invoke-ElmEventLoop {
 
                 $viewTree     = Invoke-ElmView -ViewFn $ViewFn -Model $model
                 $measuredTree = Measure-ElmViewTree -Root $viewTree -TermWidth $TerminalWidth -TermHeight $TerminalHeight
-                $patches      = Compare-ElmViewTree -OldTree $prevTree -NewTree $measuredTree
+                $patches      = @(Compare-ElmViewTree -OldTree $prevTree -NewTree $measuredTree)
                 $prevTree     = $measuredTree
 
                 if ($patches.Count -gt 0) {
