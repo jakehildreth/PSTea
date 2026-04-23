@@ -45,6 +45,14 @@ function Invoke-ElmPass1 {
         }
     }
 
+    if ($Node.Type -eq 'Component') {
+        # Expand the component by calling its ViewFn with its SubModel.
+        # The resulting subtree is measured transparently — no Component nodes
+        # appear in the measured output.
+        $expanded = & $Node.ViewFn $Node.SubModel
+        return Invoke-ElmPass1 -Node $expanded
+    }
+
     # Box node — recurse into all children first
     $measuredChildren = [System.Collections.ArrayList]::new()
     foreach ($child in $Node.Children) {

@@ -2,6 +2,7 @@ BeforeAll {
     . $PSScriptRoot/../Public/View/New-ElmText.ps1
     . $PSScriptRoot/../Public/View/New-ElmBox.ps1
     . $PSScriptRoot/../Public/View/New-ElmRow.ps1
+    . $PSScriptRoot/../Public/View/New-ElmComponent.ps1
     . $PSScriptRoot/../Public/Style/New-ElmStyle.ps1
     . $PSScriptRoot/../Private/Rendering/Measure-ElmViewTree.ps1
 }
@@ -127,6 +128,61 @@ Describe 'Measure-ElmViewTree' {
             $root   = New-ElmBox -Children @($inner)
             $m = Measure-ElmViewTree -Root $root -TermWidth 80 -TermHeight 24
             $m.Children[0].Children[1].Y | Should -Be 1
+        }
+    }
+
+    Context 'Component node' {
+        It 'Should expand a Component node into its ViewFn output' {
+            $model  = [PSCustomObject]@{ Label = 'hi' }
+            $viewFn = { param($m) New-ElmText -Content $m.Label }
+            $comp   = New-ElmComponent -ComponentId 'label' -SubModel $model -ViewFn $viewFn
+            $result = Measure-ElmViewTree -Root $comp -TermWidth 80 -TermHeight 24
+            $result.Type    | Should -Be 'Text'
+            $result.Content | Should -Be 'hi'
+        }
+
+        It 'Should measure the expanded subtree correctly' {
+            $model  = [PSCustomObject]@{ Label = 'hello' }
+            $viewFn = { param($m) New-ElmText -Content $m.Label }
+            $comp   = New-ElmComponent -ComponentId 'x' -SubModel $model -ViewFn $viewFn
+            $result = Measure-ElmViewTree -Root $comp -TermWidth 80 -TermHeight 24
+            $result.Width | Should -Be 5
+            $result.X     | Should -Be 0
+            $result.Y     | Should -Be 0
+        }
+
+        It 'Should place a Component inside a Box at the correct Y position' {
+            $model  = [PSCustomObject]@{ Label = 'world' }
+            $viewFn = { param($m) New-ElmText -Content $m.Label }
+            $comp   = New-ElmComponent -ComponentId 'comp' -SubModel $model -ViewFn $viewFn
+            $first  = New-ElmText -Content 'first'
+            $box    = New-ElmBox -Children @($first, $comp)
+            $result = Measure-ElmViewTree -Root $box -TermWidth 80 -TermHeight 24
+            $result.Children[1].Y | Should -Be 1
+        }
+
+        It 'Should expand a nested Component (component inside component ViewFn)' {
+            $innerModel  = [PSCustomObject]@{ Value = 'inner' }
+            $innerViewFn = { param($m) New-ElmText -Content $m.Value }
+            $outerModel  = [PSCustomObject]@{ Sub = $innerModel; InnerViewFn = $innerViewFn }
+            $outerViewFn = {
+                param($m)
+                New-ElmComponent -ComponentId 'inner' -SubModel $m.Sub -ViewFn $m.InnerViewFn
+            }
+            $comp   = New-ElmComponent -ComponentId 'outer' -SubModel $outerModel -ViewFn $outerViewFn
+            $result = Measure-ElmViewTree -Root $comp -TermWidth 80 -TermHeight 24
+            $result.Type    | Should -Be 'Text'
+            $result.Content | Should -Be 'inner'
+        }
+
+        It 'Should not produce any Component-type nodes in the measured output' {
+            $model  = [PSCustomObject]@{ Label = 'test' }
+            $viewFn = { param($m) New-ElmText -Content $m.Label }
+            $comp   = New-ElmComponent -ComponentId 'x' -SubModel $model -ViewFn $viewFn
+            $box    = New-ElmBox -Children @($comp)
+            $result = Measure-ElmViewTree -Root $box -TermWidth 80 -TermHeight 24
+            $result.Type                 | Should -Be 'Box'
+            $result.Children[0].Type     | Should -Be 'Text'
         }
     }
 }
