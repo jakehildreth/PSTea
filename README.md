@@ -11,13 +11,16 @@ Heavily influenced by [BubbleTea](https://github.com/charmbracelet/bubbletea), [
 ```powershell
 Install-Module -Name Elm
 
-$Init = { [PSCustomObject]@{ Count = 0 } }
+$Init = {
+    [PSCustomObject]@{ Model = [PSCustomObject]@{ Count = 0 }; Cmd = $null }
+}
 
 $Update = {
     param($Msg, $Model)
-    switch ($Msg.Type) {
-        'Increment' { [PSCustomObject]@{ Count = $Model.Count + 1 } }
-        default     { $Model }
+    switch ($Msg.Key) {
+        'UpArrow' { [PSCustomObject]@{ Model = [PSCustomObject]@{ Count = $Model.Count + 1 }; Cmd = $null } }
+        'Q'       { [PSCustomObject]@{ Model = $Model; Cmd = [PSCustomObject]@{ Type = 'Quit' } } }
+        default   { [PSCustomObject]@{ Model = $Model; Cmd = $null } }
     }
 }
 
@@ -25,24 +28,11 @@ $View = {
     param($Model)
     New-ElmBox -Children @(
         New-ElmText -Content " Count: $($Model.Count) "
-        New-ElmText -Content ' [+] increment  [q] quit'
+        New-ElmText -Content ' [Up] inc  [Q] quit' -Style (New-ElmStyle -Foreground 'BrightBlack')
     )
 }
 
-$Subs = {
-    param($Model)
-    @(
-        New-ElmKeySub -OnKey {
-            param($Key)
-            switch ($Key) {
-                '+'  { [PSCustomObject]@{ Type = 'Increment' } }
-                'q'  { [PSCustomObject]@{ Type = 'Quit' } }
-            }
-        }
-    )
-}
-
-Start-ElmProgram -Init $Init -Update $Update -View $View -Subscriptions $Subs
+Start-ElmProgram -InitFn $Init -UpdateFn $Update -ViewFn $View
 ```
 
 Swap `Start-ElmProgram` for `Start-ElmWebServer -Port 8080` and the exact same app runs in a browser — no code changes required.
@@ -128,6 +118,44 @@ New-ElmTimerSub -Interval ([TimeSpan]::FromMilliseconds(500)) -OnTick {
 
 ---
 
+## Components
+
+Components are reusable sub-programs with their own model, update, and view — nested TEA embedded in a parent app.
+
+```powershell
+# Define a component as a plain PSCustomObject with Init/Update/View
+$Counter = [PSCustomObject]@{
+    Init   = { [PSCustomObject]@{ Count = 0 } }
+    Update = {
+        param($Msg, $Model)
+        switch ($Msg.Type) {
+            'Increment' { [PSCustomObject]@{ Count = $Model.Count + 1 } }
+            default     { $Model }
+        }
+    }
+    View   = {
+        param($Model)
+        New-ElmText -Content "Count: $($Model.Count)"
+    }
+}
+
+# Parent View embeds it via New-ElmComponent
+$View = {
+    param($Model)
+    New-ElmRow -Children @(
+        New-ElmComponent -ComponentId 'left'  -SubModel $Model.LeftModel  -ViewFn $Counter.View
+        New-ElmComponent -ComponentId 'right' -SubModel $Model.RightModel -ViewFn $Counter.View
+    )
+}
+
+# Wrap messages for routing in parent Update
+$WrappedMsg = New-ElmComponentMsg -ComponentId 'left' -Msg ([PSCustomObject]@{ Type = 'Increment' })
+```
+
+Component nodes are expanded transparently at layout time. `ConvertTo-AnsiOutput` and `Compare-ElmViewTree` never see raw `Component` nodes.
+
+---
+
 ## Built-in Widgets
 
 | Cmdlet | Description |
@@ -164,6 +192,7 @@ All examples are in the `Examples/` folder. Run from the repo root:
 ./Examples/Invoke-TodoList.ps1
 ./Examples/Invoke-StyleShowcase.ps1
 ./Examples/Invoke-LayoutDemo.ps1
+./Examples/Invoke-ComponentDemo.ps1
 ```
 
 | Example | What it shows |
@@ -172,6 +201,7 @@ All examples are in the `Examples/` folder. Run from the repo root:
 | `Invoke-TodoList` | keyboard selection, space-to-toggle, strikethrough for done items |
 | `Invoke-StyleShowcase` | every border style, text decoration, named/hex/256-index color |
 | `Invoke-LayoutDemo` | two-pane row layout with nav menu and dynamic content panel |
+| `Invoke-ComponentDemo` | two independent counters as components, Tab to switch focus |
 
 ---
 
