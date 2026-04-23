@@ -6,17 +6,18 @@ function ConvertTo-AnsiOutput {
     .DESCRIPTION
         Walks the measured view tree produced by Measure-ElmViewTree. For each leaf
         Text node, emits a cursor-position sequence (ESC[{Y+1};{X+1}H) followed by
-        the styled content from Apply-ElmStyle. The output is wrapped with hide-cursor
-        (ESC[?25l), clear-screen (ESC[2J), and show-cursor (ESC[?25h) sequences.
+        the styled content from Apply-ElmStyle. The output is prefixed with a
+        clear-screen (ESC[2J) sequence.
 
-        Use this for the initial render or after a FullRedraw patch. For incremental
-        updates, use ConvertTo-AnsiPatch instead.
+        Does not emit hide/show cursor sequences - cursor visibility is managed by
+        the event loop's try/finally block. Use this for the initial render or after
+        a FullRedraw patch. For incremental updates, use ConvertTo-AnsiPatch instead.
 
     .PARAMETER Root
         The root of a measured view tree (output of Measure-ElmViewTree).
 
     .OUTPUTS
-        [string] — A single ANSI escape sequence string ready for Console output.
+        [string] - A single ANSI escape sequence string ready for Console output.
 
     .EXAMPLE
         $tree     = New-ElmBox -Children @(New-ElmText -Content 'Hello') -Width 'Fill'
@@ -37,7 +38,6 @@ function ConvertTo-AnsiOutput {
     $esc = [char]27
     $sb  = [System.Text.StringBuilder]::new()
 
-    [void]$sb.Append("$esc[?25l")
     [void]$sb.Append("$esc[2J")
 
     $stack = [System.Collections.Stack]::new()
@@ -57,8 +57,6 @@ function ConvertTo-AnsiOutput {
             }
         }
     }
-
-    [void]$sb.Append("$esc[?25h")
 
     return $sb.ToString()
 }
