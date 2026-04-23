@@ -4,8 +4,8 @@ function Apply-ElmStyle {
         [Parameter(Mandatory)]
         [string]$Content,
 
-        [Parameter(Mandatory)]
-        [int]$Width,
+        [Parameter()]
+        [int]$Width = -1,
 
         [Parameter()]
         [object]$Style
@@ -14,6 +14,9 @@ function Apply-ElmStyle {
     if ($null -eq $Style) {
         return $Content
     }
+
+    # Use provided Width when >= 0; otherwise fall back to content display length
+    $effectiveWidth = if ($Width -ge 0) { $Width } else { $Content.Length }
 
     $esc   = [char]27
     $reset = "$esc[0m"
@@ -49,7 +52,7 @@ function Apply-ElmStyle {
     $paddingLeft   = [int]$Style.PaddingLeft
 
     # Visual width of the padded block (escape sequences don't consume columns)
-    $paddedWidth = $Width + $paddingLeft + $paddingRight
+    $paddedWidth = $effectiveWidth + $paddingLeft + $paddingRight
 
     $lines = @()
     for ($i = 0; $i -lt $paddingTop; $i++) {
