@@ -87,4 +87,17 @@ Describe 'Apply-ElmStyle' -Tag 'Unit', 'P2' {
             $lines[1] | Should -Be 'hi'
         }
     }
+
+    Context 'When -Content is empty string' {
+        It 'Should return empty string when no style' {
+            $result = Apply-ElmStyle -Content '' -Style $null
+            $result | Should -Be ''
+        }
+
+        It 'Should return padded spaces when padding is set' {
+            $style = New-ElmStyle -Padding @(0, 1)
+            $result = Apply-ElmStyle -Content '' -Width 0 -Style $style
+            $result | Should -Be '  '
+        }
+    }
 }

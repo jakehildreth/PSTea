@@ -49,14 +49,16 @@ Describe 'New-ElmText' {
     }
 
     Context 'When -Content is null' {
-        It 'Should throw a terminating error' {
-            { New-ElmText -Content $null } | Should -Throw
+        It 'Should coerce null to empty string and return a Text node' {
+            $result = New-ElmText -Content $null
+            $result.Content | Should -Be ''
         }
     }
 
     Context 'When -Content is empty string' {
-        It 'Should throw a terminating error' {
-            { New-ElmText -Content '' } | Should -Throw
+        It 'Should return a Text node with empty Content for blank lines' {
+            $result = New-ElmText -Content ''
+            $result.Content | Should -Be ''
         }
     }
 }

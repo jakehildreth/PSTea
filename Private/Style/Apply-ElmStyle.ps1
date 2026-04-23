@@ -2,6 +2,7 @@ function Apply-ElmStyle {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
+        [AllowEmptyString()]
         [string]$Content,
 
         [Parameter()]

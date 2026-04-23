@@ -32,7 +32,7 @@ function New-ElmText {
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
+        [AllowEmptyString()]
         [string]$Content,
 
         [Parameter()]

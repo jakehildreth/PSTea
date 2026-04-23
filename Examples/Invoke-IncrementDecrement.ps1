@@ -16,9 +16,10 @@ $update = {
 
 $view = {
     param($model)
+    $hintStyle = New-ElmStyle -Foreground 'BrightBlack'
     New-ElmBox -Style (New-ElmStyle -Width 30 -Padding @(0, 1)) -Children @(
         New-ElmText -Content "Count: $($model.Count)"
-        New-ElmText -Content '[Up] inc  [Down] dec  [Q] quit'
+        New-ElmText -Content '[Up] inc  [Down] dec  [Q] quit' -Style $hintStyle
     )
 }
 

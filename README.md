@@ -155,6 +155,26 @@ Serves a self-contained HTML page (no CDN, bundled xterm.js) at `http://localhos
 
 ---
 
+## Examples
+
+All examples are in the `Examples/` folder. Run from the repo root:
+
+```powershell
+./Examples/Invoke-IncrementDecrement.ps1
+./Examples/Invoke-TodoList.ps1
+./Examples/Invoke-StyleShowcase.ps1
+./Examples/Invoke-LayoutDemo.ps1
+```
+
+| Example | What it shows |
+|---|---|
+| `Invoke-IncrementDecrement` | minimal counter app - the hello world of TEA |
+| `Invoke-TodoList` | keyboard selection, space-to-toggle, strikethrough for done items |
+| `Invoke-StyleShowcase` | every border style, text decoration, named/hex/256-index color |
+| `Invoke-LayoutDemo` | two-pane row layout with nav menu and dynamic content panel |
+
+---
+
 ## Requirements
 
 - PowerShell 5.1+ (Windows) or PowerShell 7+ (cross-platform)
