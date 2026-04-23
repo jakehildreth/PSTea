@@ -1,6 +1,12 @@
 function New-ElmTerminalDriver {
     [CmdletBinding()]
-    param()
+    param(
+        [switch]$AltScreen
+    )
+
+    $esc      = [char]27
+    $altEnter = $esc + '[?1049h'
+    $altExit  = $esc + '[?1049l'
 
     $inputQueue = [System.Collections.Concurrent.ConcurrentQueue[PSCustomObject]]::new()
     $cts = [System.Threading.CancellationTokenSource]::new()
@@ -29,10 +35,20 @@ function New-ElmTerminalDriver {
 
     $loop = Invoke-ElmDriverLoop -ScriptBlock $readerScript -Arguments @($inputQueue, $cts.Token)
 
+    if ($AltScreen.IsPresent) {
+        # Enter alternate screen buffer - hides previous terminal content for a clean TUI canvas
+        [Console]::Write($altEnter)
+    }
+
+    $useAltScreen = $AltScreen.IsPresent
     $stopFn = {
         $cts.Cancel()
         try { $loop.PowerShell.Stop() } catch {}
         try { $loop.Runspace.Close() } catch {}
+        if ($useAltScreen) {
+            # Restore terminal - exit alt screen so the shell prompt returns to the main buffer
+            [Console]::Write($altExit)
+        }
     }.GetNewClosure()
 
     return [PSCustomObject]@{

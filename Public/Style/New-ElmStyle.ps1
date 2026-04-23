@@ -35,8 +35,32 @@ function New-ElmStyle {
         CSS shorthand: 1 value = all sides; 2 values = top/bottom, left/right;
         4 values = top, right, bottom, left.
 
+    .PARAMETER PaddingTop
+        Inner spacing on the top side only. Overrides the top value set by -Padding.
+
+    .PARAMETER PaddingRight
+        Inner spacing on the right side only. Overrides the right value set by -Padding.
+
+    .PARAMETER PaddingBottom
+        Inner spacing on the bottom side only. Overrides the bottom value set by -Padding.
+
+    .PARAMETER PaddingLeft
+        Inner spacing on the left side only. Overrides the left value set by -Padding.
+
     .PARAMETER Margin
         Outer spacing around the border. Same shorthand as -Padding.
+
+    .PARAMETER MarginTop
+        Outer spacing on the top side only. Overrides the top value set by -Margin.
+
+    .PARAMETER MarginRight
+        Outer spacing on the right side only. Overrides the right value set by -Margin.
+
+    .PARAMETER MarginBottom
+        Outer spacing on the bottom side only. Overrides the bottom value set by -Margin.
+
+    .PARAMETER MarginLeft
+        Outer spacing on the left side only. Overrides the left value set by -Margin.
 
     .PARAMETER Align
         Horizontal text alignment within the allocated width. One of: Left, Center, Right.
@@ -93,7 +117,31 @@ function New-ElmStyle {
         [int[]]$Padding,
 
         [Parameter()]
+        [int]$PaddingTop,
+
+        [Parameter()]
+        [int]$PaddingRight,
+
+        [Parameter()]
+        [int]$PaddingBottom,
+
+        [Parameter()]
+        [int]$PaddingLeft,
+
+        [Parameter()]
         [int[]]$Margin,
+
+        [Parameter()]
+        [int]$MarginTop,
+
+        [Parameter()]
+        [int]$MarginRight,
+
+        [Parameter()]
+        [int]$MarginBottom,
+
+        [Parameter()]
+        [int]$MarginLeft,
 
         [Parameter()]
         [ValidateSet('Left', 'Center', 'Right')]
@@ -210,6 +258,16 @@ function New-ElmStyle {
             }
         }
     }
+
+    # Individual direction overrides (applied after shorthand so they win)
+    if ($PSBoundParameters.ContainsKey('PaddingTop'))    { $style.PaddingTop    = $PaddingTop }
+    if ($PSBoundParameters.ContainsKey('PaddingRight'))  { $style.PaddingRight  = $PaddingRight }
+    if ($PSBoundParameters.ContainsKey('PaddingBottom')) { $style.PaddingBottom = $PaddingBottom }
+    if ($PSBoundParameters.ContainsKey('PaddingLeft'))   { $style.PaddingLeft   = $PaddingLeft }
+    if ($PSBoundParameters.ContainsKey('MarginTop'))     { $style.MarginTop     = $MarginTop }
+    if ($PSBoundParameters.ContainsKey('MarginRight'))   { $style.MarginRight   = $MarginRight }
+    if ($PSBoundParameters.ContainsKey('MarginBottom'))  { $style.MarginBottom  = $MarginBottom }
+    if ($PSBoundParameters.ContainsKey('MarginLeft'))    { $style.MarginLeft    = $MarginLeft }
 
     return $style
 }

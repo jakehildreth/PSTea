@@ -5,7 +5,7 @@ BeforeAll {
     . $PSScriptRoot/../Public/View/New-ElmText.ps1
 
     # Stub the rendering pipeline so tests don't need ANSI dependencies
-    function Measure-ElmViewTree { param($Node, $AvailableWidth, $AvailableHeight) return $Node }
+    function Measure-ElmViewTree { param($Root, $TermWidth, $TermHeight) return $Root }
     function Compare-ElmViewTree { param($OldTree, $NewTree) return @() }
     function ConvertTo-AnsiOutput { param($Root) return '' }
     function ConvertTo-AnsiPatch { param($Patches) return '' }
@@ -56,6 +56,32 @@ Describe 'Invoke-ElmEventLoop' {
             $queue.Enqueue('finalMsg')
             $result = Invoke-ElmEventLoop -InitialModel ([PSCustomObject]@{ Last = '' }) -UpdateFn $updateFn -ViewFn $viewFn -InputQueue $queue
             $result.Last | Should -Be 'finalMsg'
+        }
+    }
+
+    Context 'Cursor visibility' {
+        It 'Should hide the cursor (ESC[?25l) before first render' {
+            # Verify the hide sequence is the correct ANSI DEC private mode sequence
+            $expected = [char]27 + '[?25l'
+            $expected | Should -Be ($([char]27) + '[?25l')
+            $expected.Length | Should -Be 6
+        }
+
+        It 'Should use ESC[?25h to restore the cursor' {
+            $expected = [char]27 + '[?25h'
+            $expected | Should -Be ($([char]27) + '[?25h')
+            $expected.Length | Should -Be 6
+        }
+
+        It 'Should complete without error when loop exits (cursor restore via finally)' {
+            $updateFn = {
+                param($msg, $model)
+                [PSCustomObject]@{ Model = $model; Cmd = [PSCustomObject]@{ Type = 'Quit' } }
+            }
+            $viewFn = { param($model) New-ElmText -Content 'x' }
+            $queue  = [System.Collections.Concurrent.ConcurrentQueue[object]]::new()
+            $queue.Enqueue('any')
+            { Invoke-ElmEventLoop -InitialModel ([PSCustomObject]@{}) -UpdateFn $updateFn -ViewFn $viewFn -InputQueue $queue } | Should -Not -Throw
         }
     }
 

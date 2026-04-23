@@ -47,7 +47,8 @@ function ConvertTo-AnsiPatch {
                 $col        = $patch.X + 1
                 $patchWidth = if ($patch.PSObject.Properties['Width'] -and $null -ne $patch.Width) { $patch.Width } else { $patch.Content.Length }
                 $content    = Apply-ElmStyle -Content $patch.Content -Style $patch.Style -Width $patchWidth
-                [void]$sb.Append("$esc[$row;${col}H$content")
+                # ESC[K erases from cursor to end of line, clearing any leftover chars from a wider previous value
+                [void]$sb.Append("$esc[$row;${col}H$esc[K$content")
             }
             'Clear' {
                 $row    = $patch.Y + 1

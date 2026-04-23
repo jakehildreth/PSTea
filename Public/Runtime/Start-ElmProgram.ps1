@@ -26,13 +26,18 @@ function Start-ElmProgram {
         'Box') produced by New-ElmText, New-ElmBox, or New-ElmRow.
 
     .PARAMETER Width
-        Terminal width in columns used for layout. Defaults to 80.
+        Terminal width in columns used for layout. Defaults to the current terminal width
+        ([Console]::WindowWidth). If the terminal reports no width (e.g. no TTY), falls
+        back to 80. Must not exceed the actual terminal width - if it does, a terminating
+        error is thrown with instructions to resize or omit the parameter.
 
     .PARAMETER Height
-        Terminal height in rows used for layout. Defaults to 24.
+        Terminal height in rows used for layout. Defaults to the current terminal height
+        ([Console]::WindowHeight). If the terminal reports no height, falls back to 24.
+        Must not exceed the actual terminal height.
 
     .OUTPUTS
-        PSCustomObject — the final model at the time the event loop exited.
+        PSCustomObject - the final model at the time the event loop exited.
 
     .EXAMPLE
         $init   = { [PSCustomObject]@{ Model = [PSCustomObject]@{ Count = 0 }; Cmd = $null } }
@@ -59,13 +64,48 @@ function Start-ElmProgram {
         [scriptblock]$ViewFn,
 
         [Parameter()]
-        [int]$Width = 80,
+        [int]$Width = 0,
 
         [Parameter()]
-        [int]$Height = 24
+        [int]$Height = 0
     )
 
-    $driver = New-ElmTerminalDriver
+    # Resolve actual terminal dimensions, falling back if running without a TTY
+    $termWidth  = if ([Console]::WindowWidth  -gt 0) { [Console]::WindowWidth  } else { 80 }
+    $termHeight = if ([Console]::WindowHeight -gt 0) { [Console]::WindowHeight } else { 24 }
+
+    # Validate explicit sizes - must fit in the real terminal
+    if ($PSBoundParameters.ContainsKey('Width') -and $Width -gt $termWidth) {
+        $ex  = [System.ArgumentOutOfRangeException]::new(
+            'Width',
+            "Requested width ($Width) exceeds terminal width ($termWidth). " +
+            'Resize the terminal or omit -Width to fill the terminal automatically.'
+        )
+        $err = [System.Management.Automation.ErrorRecord]::new(
+            $ex, 'TerminalTooSmall',
+            [System.Management.Automation.ErrorCategory]::InvalidArgument,
+            $Width
+        )
+        $PSCmdlet.ThrowTerminatingError($err)
+    }
+    if ($PSBoundParameters.ContainsKey('Height') -and $Height -gt $termHeight) {
+        $ex  = [System.ArgumentOutOfRangeException]::new(
+            'Height',
+            "Requested height ($Height) exceeds terminal height ($termHeight). " +
+            'Resize the terminal or omit -Height to fill the terminal automatically.'
+        )
+        $err = [System.Management.Automation.ErrorRecord]::new(
+            $ex, 'TerminalTooSmall',
+            [System.Management.Automation.ErrorCategory]::InvalidArgument,
+            $Height
+        )
+        $PSCmdlet.ThrowTerminatingError($err)
+    }
+
+    $resolvedWidth  = if ($PSBoundParameters.ContainsKey('Width'))  { $Width  } else { $termWidth  }
+    $resolvedHeight = if ($PSBoundParameters.ContainsKey('Height')) { $Height } else { $termHeight }
+
+    $driver = New-ElmTerminalDriver -AltScreen
 
     $initResult    = & $InitFn
     $initialModel  = $initResult.Model
@@ -76,8 +116,8 @@ function Start-ElmProgram {
             -UpdateFn       $UpdateFn `
             -ViewFn         $ViewFn `
             -InputQueue     $driver.InputQueue `
-            -TerminalWidth  $Width `
-            -TerminalHeight $Height
+            -TerminalWidth  $resolvedWidth `
+            -TerminalHeight $resolvedHeight
     } finally {
         & $driver.Stop
     }
