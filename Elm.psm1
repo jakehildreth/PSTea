@@ -1,5 +1,5 @@
 # Dot source private functions
-$privateFunctions = @(Get-ChildItem -Path "$PSScriptRoot/Private/*.ps1" -ErrorAction SilentlyContinue)
+$privateFunctions = @(Get-ChildItem -Path "$PSScriptRoot/Private" -Filter '*.ps1' -Recurse -ErrorAction SilentlyContinue)
 foreach ($function in $privateFunctions) {
     try {
         . $function.FullName
@@ -9,7 +9,7 @@ foreach ($function in $privateFunctions) {
 }
 
 # Dot source public functions
-$publicFunctions = @(Get-ChildItem -Path "$PSScriptRoot/Public/*.ps1" -ErrorAction SilentlyContinue)
+$publicFunctions = @(Get-ChildItem -Path "$PSScriptRoot/Public" -Filter '*.ps1' -Recurse -ErrorAction SilentlyContinue)
 foreach ($function in $publicFunctions) {
     try {
         . $function.FullName

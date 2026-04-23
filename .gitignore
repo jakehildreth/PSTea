@@ -3,3 +3,12 @@
 .dolt/
 *.db
 .beads-credential-key
+
+# Visual Studio
+.vs/
+*.user
+
+# Test output
+TestResults/
+*.pester.xml
+Ignore/
