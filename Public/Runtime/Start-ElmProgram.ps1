@@ -70,6 +70,9 @@ function Start-ElmProgram {
         [int]$Height = 0
     )
 
+    # Ensure ANSI/VT processing is active (required on Windows PS5.1/conhost; no-op elsewhere)
+    $null = Enable-VirtualTerminal
+
     # Resolve actual terminal dimensions, falling back if running without a TTY
     $termWidth  = if ([Console]::WindowWidth  -gt 0) { [Console]::WindowWidth  } else { 80 }
     $termHeight = if ([Console]::WindowHeight -gt 0) { [Console]::WindowHeight } else { 24 }

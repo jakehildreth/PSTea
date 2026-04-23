@@ -1,4 +1,6 @@
 BeforeAll {
+    function Enable-VirtualTerminal { return $true }
+
     function New-ElmTerminalDriver {
         param([switch]$AltScreen)
         return [PSCustomObject]@{
