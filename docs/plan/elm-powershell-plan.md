@@ -923,44 +923,53 @@ $View = {
 
 ---
 
-### Phase 9 — Built-in Widget Library
+### Phase 9 — Built-in Widget Library ✓ COMPLETE
 
-**Goal:** Bubbles-equivalent pre-built components. Each widget is a complete component
-(Init/Update/View triple) exposed via a factory function.
+**Goal:** Pure view-function widgets (stateless renderers). Caller owns all state in their model;
+widgets just render. Each widget returns a view-tree node. `New-ElmCharSub` added to the
+subscription system to support printable-char input in text fields.
 
-#### `New-ElmTextInput`
-- **Model**: `[PSCustomObject]@{ Value = ''; CursorPos = 0; MaxLength = $null; Placeholder = ''; Focused = $true }`
-- **Handles**: printable char → insert at cursor; Backspace → delete left; Delete → delete right; Left/Right → move cursor; Home/End → jump; Ctrl+A → select all (clear); Ctrl+U → clear line
-- **View**: content + block cursor `▋` at CursorPos; placeholder when empty; optional border via Style
+**Design note:** Implemented as pure view functions rather than full Init/Update/View component
+triples. This is simpler, composable with any model shape, and consistent with the existing
+`New-ElmText` / `New-ElmBox` API surface. Full component-model widgets remain a future option.
 
-#### `New-ElmList`
-- **Model**: `[PSCustomObject]@{ Items = @(); Selected = 0; Offset = 0; ViewHeight = 10; FilterText = ''; Filtering = $false }`
-- **Handles**: Up/Down → move selection; Page Up/Down → scroll; '/' → enter filter mode; Escape → exit filter; Enter → emit `ItemSelected` msg; filtered view recalculates on FilterText change
-- **View**: renders visible window (`Offset` to `Offset + ViewHeight`); highlights `Selected`; shows `│` scrollbar indicator; shows filter prompt when `Filtering`
+#### `New-ElmTextInput` ✓
+- **Params**: `-Value`, `-CursorPos` (clamped), `-Focused` [switch], `-Placeholder`,
+  `-CursorChar` (default `|`), `-Style`, `-FocusedStyle`
+- **Returns**: `Text` node; renders `$before + $CursorChar + $after` when focused;
+  placeholder when empty and unfocused
 
-#### `New-ElmSpinner`
-- **Model**: `[PSCustomObject]@{ Frame = 0; Frames = @('⠋','⠙','⠹','⠸','⠼','⠴','⠦','⠧','⠇','⠏'); Label = ''; Active = $true }`
-- **Handles**: `Tick` → advance `Frame` (mod `Frames.Count`); `SetLabel` → update label; `SetActive` → pause/resume
-- **Requires**: parent Subscriptions includes `New-ElmTimerSub -IntervalMs 80`
-- **View**: `$Frames[$Model.Frame]  $Model.Label`
+#### `New-ElmList` ✓
+- **Params**: `-Items [string[]]`, `-SelectedIndex`, `-MaxVisible` (default 10),
+  `-Prefix` (default `> `), `-UnselectedPrefix` (default `  `), `-Style`, `-SelectedStyle`
+- **Returns**: `Box` node with auto-scrolling window of `Text` children
 
-#### `New-ElmProgressBar`
-- **Model**: `[PSCustomObject]@{ Percent = 0; Width = 20; FilledChar = '█'; EmptyChar = '░'; ShowLabel = $true }`
-- **Handles**: `SetProgress -Percent [int]` → clamps to 0–100
-- **View**: filled/empty chars proportional to `Percent`; optional `42%` label suffix
+#### `New-ElmSpinner` ✓
+- **Params**: `-Frame`, `-Variant` (`Dots`|`Braille`|`Bounce`|`Arrow`), `-Frames` (custom override), `-Style`
+- **Returns**: `Text` node; `$char = $frameSet[$Frame % $frameSet.Count]`
+- **Requires**: caller drives frame counter (e.g. from `New-ElmTimerSub` Tick messages)
 
-#### `New-ElmViewport`
-- **Model**: `[PSCustomObject]@{ Lines = @(); ScrollTop = 0; ViewHeight = 20; ViewWidth = 80 }`
-- **Handles**: Up/Down → scroll 1 line; Page Up/Down → scroll by `ViewHeight`; Home/End → jump to top/bottom
-- **View**: renders `Lines[ScrollTop..ScrollTop+ViewHeight-1]`; truncates lines at `ViewWidth`
+#### `New-ElmProgressBar` ✓
+- **Params**: `-Value` (0.0–1.0) or `-Percent` (0–100); `-Width` (default 20, min 4);
+  `-FilledChar` (default `#`), `-EmptyChar` (default `-`), `-Style`
+- **Returns**: `Text` node with `[####----]` format; ratio clamped to `[0, 1]`
 
-**Tests to write first (per widget):**
-- Init returns valid model with correct defaults
-- Update handles every documented message type
-- Update returns model unchanged for unknown messages
-- View returns valid view tree node
-- View renders expected content for a given model state
-- Edge cases: empty list; 0% and 100% progress; cursor at boundaries; scroll at top and bottom
+#### `New-ElmViewport` ✓
+- **Params**: `-Lines [string[]]` (`[AllowEmptyString()]`), `-ScrollOffset`, `-MaxVisible`, `-Style`
+- **Returns**: `Box` node showing fixed-height window into `Lines`; `ScrollOffset` clamped
+
+#### `New-ElmCharSub` ✓ (new subscription type)
+- **Params**: `-Handler [scriptblock]`
+- **Returns**: subscription object `@{ Type='Char'; Handler=... }`
+- Fires for any printable ASCII char (0x20–0x7E) **not** already consumed by a `New-ElmKeySub`
+  in the same subscription list; handler receives raw `KeyDown` event with `.Char` property
+
+**`Invoke-ElmSubscriptions` updated** to collect `Char` subs and dispatch after key-sub matching;
+pass-through mode suppressed when char subs are present.
+
+**Deliverables:** 88 Pester tests across 5 test files (21 TextInput, 20 ProgressBar, 18 Spinner,
+15 List, 13 Viewport). `Invoke-WidgetShowcaseDemo.ps1` demonstrates all five widgets with
+live-adjustable config options and modal text input.
 
 ---
 

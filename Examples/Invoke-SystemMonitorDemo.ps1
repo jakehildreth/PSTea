@@ -14,7 +14,7 @@ Import-Module "$PSScriptRoot/../Elm.psd1" -Force
 #   Q             — quit
 # ---------------------------------------------------------------------------
 
-$script:PAGE_SIZE = 20   # visible process rows
+$script:PAGE_SIZE = 10   # visible process rows
 
 function Get-ProcessSnapshot {
     @(Get-Process -ErrorAction SilentlyContinue |

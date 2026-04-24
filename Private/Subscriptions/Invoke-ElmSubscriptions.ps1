@@ -64,12 +64,14 @@ function Invoke-ElmSubscriptions {
     $msgs      = [System.Collections.Generic.List[object]]::new()
     $keySubs   = [System.Collections.Generic.List[object]]::new()
     $timerSubs = [System.Collections.Generic.List[object]]::new()
+    $charSubs  = [System.Collections.Generic.List[object]]::new()
 
     if ($null -ne $Subscriptions) {
         foreach ($sub in $Subscriptions) {
             if ($null -eq $sub) { continue }
             if ($sub.Type -eq 'Key')   { $keySubs.Add($sub) }
             if ($sub.Type -eq 'Timer') { $timerSubs.Add($sub) }
+            if ($sub.Type -eq 'Char')  { $charSubs.Add($sub) }
         }
     }
 
@@ -94,42 +96,56 @@ function Invoke-ElmSubscriptions {
         }
     }
 
-    # --- Key subscriptions ---
+    # --- Key + Char subscriptions ---
     $hasKeySubs  = $keySubs.Count -gt 0
+    $hasCharSubs = $charSubs.Count -gt 0
     $shiftBit    = [int][System.ConsoleModifiers]::Shift
 
     $item = $null
     while ($InputQueue.TryDequeue([ref]$item)) {
         if ($item.Type -eq 'KeyDown') {
-            if ($hasKeySubs) {
+            if ($hasKeySubs -or $hasCharSubs) {
                 $matched         = $false
                 $itemKeyInt      = [int]$item.Key
                 $itemModsInt     = [int]$item.Modifiers
                 $isLetterKey     = ($itemKeyInt -ge 65 -and $itemKeyInt -le 90)
 
-                foreach ($keySub in $keySubs) {
-                    $subModsInt = [int]$keySub.Modifiers
-                    $compareModsInt = $itemModsInt
+                if ($hasKeySubs) {
+                    foreach ($keySub in $keySubs) {
+                        $subModsInt = [int]$keySub.Modifiers
+                        $compareModsInt = $itemModsInt
 
-                    # Case-insensitive letter matching: strip Shift from the item's
-                    # modifiers when the sub requests no modifiers and the key is A-Z.
-                    if ($isLetterKey -and $subModsInt -eq 0) {
-                        $compareModsInt = $itemModsInt -band (-bnot $shiftBit)
-                    }
-
-                    if ($item.Key -eq $keySub.ConsoleKey -and $compareModsInt -eq $subModsInt) {
-                        $msg = & $keySub.Handler $item
-                        if ($null -ne $msg) {
-                            $msgs.Add($msg)
+                        # Case-insensitive letter matching: strip Shift from the item's
+                        # modifiers when the sub requests no modifiers and the key is A-Z.
+                        if ($isLetterKey -and $subModsInt -eq 0) {
+                            $compareModsInt = $itemModsInt -band (-bnot $shiftBit)
                         }
-                        $matched = $true
+
+                        if ($item.Key -eq $keySub.ConsoleKey -and $compareModsInt -eq $subModsInt) {
+                            $msg = & $keySub.Handler $item
+                            if ($null -ne $msg) {
+                                $msgs.Add($msg)
+                            }
+                            $matched = $true
+                        }
                     }
                 }
 
-                # Unmatched key events are silently dropped when key subs are active.
-                # To handle arbitrary keys, add a catch-all sub or use pass-through mode.
+                # If no key sub matched, try char subs for printable characters.
+                # Char subs fire only for Unicode 0x0020-0x007E (printable ASCII).
+                if (-not $matched -and $hasCharSubs) {
+                    $charCode = [int]$item.Char
+                    if ($charCode -ge 0x20 -and $charCode -le 0x7E) {
+                        foreach ($charSub in $charSubs) {
+                            $msg = & $charSub.Handler $item
+                            if ($null -ne $msg) {
+                                $msgs.Add($msg)
+                            }
+                        }
+                    }
+                }
             } else {
-                # Pass-through: no key subs defined — forward raw event to UpdateFn
+                # Pass-through: no key subs or char subs — forward raw event to UpdateFn
                 $msgs.Add($item)
             }
         } elseif ($item.Type -eq 'Tick') {
