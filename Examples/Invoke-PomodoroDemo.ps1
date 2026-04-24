@@ -113,8 +113,8 @@ function Invoke-PomodoroDemo {
         $titleStyle  = New-ElmStyle -Foreground 'Cyan'    -Bold
         $clockStyle  = New-ElmStyle -Foreground 'White'   -Bold
         $phaseStyle  = New-ElmStyle -Foreground $(if ($model.Phase -eq 'Work') { 'Red' } else { 'Green' })
-        $barStyle    = New-ElmStyle -Foreground 'DarkGray'
-        $hintStyle   = New-ElmStyle -Foreground 'DarkGray'
+        $barStyle    = New-ElmStyle -Foreground 'BrightBlack'
+        $hintStyle   = New-ElmStyle -Foreground 'BrightBlack'
         $stateStyle  = New-ElmStyle -Foreground $(if ($model.Running) { 'Green' } else { 'Yellow' })
 
         New-ElmBox -Children @(
