@@ -117,7 +117,7 @@ function Invoke-PomodoroDemo {
         $hintStyle   = New-ElmStyle -Foreground 'DarkGray'
         $stateStyle  = New-ElmStyle -Foreground $(if ($model.Running) { 'Green' } else { 'Yellow' })
 
-        New-ElmBox -Direction Column -Children @(
+        New-ElmBox -Children @(
             New-ElmText -Content '  Pomodoro Timer  ' -Style $titleStyle
             New-ElmText -Content ''
             New-ElmText -Content "  $phaseLabel  " -Style $phaseStyle
