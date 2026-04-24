@@ -23,10 +23,10 @@ Describe 'ConvertTo-AnsiOutput' {
             $result | Should -Match 'hello'
         }
 
-        It 'Should include hide-cursor sequence' {
+        It 'Should NOT include hide-cursor sequence (managed by event loop)' {
             $node = [PSCustomObject]@{ Type = 'Text'; Content = 'hello'; Style = $null; Width = 5; Height = 1; X = 0; Y = 0 }
             $result = ConvertTo-AnsiOutput -Root $node
-            $result | Should -Match ([regex]::Escape("$esc[?25l"))
+            $result | Should -Not -Match ([regex]::Escape("$esc[?25l"))
         }
 
         It 'Should include clear-screen sequence' {
@@ -35,10 +35,10 @@ Describe 'ConvertTo-AnsiOutput' {
             $result | Should -Match ([regex]::Escape("$esc[2J"))
         }
 
-        It 'Should include show-cursor sequence at end' {
+        It 'Should NOT include show-cursor sequence (managed by event loop)' {
             $node = [PSCustomObject]@{ Type = 'Text'; Content = 'hello'; Style = $null; Width = 5; Height = 1; X = 0; Y = 0 }
             $result = ConvertTo-AnsiOutput -Root $node
-            $result | Should -Match ([regex]::Escape("$esc[?25h"))
+            $result | Should -Not -Match ([regex]::Escape("$esc[?25h"))
         }
     }
 

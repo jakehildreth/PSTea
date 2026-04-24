@@ -67,8 +67,8 @@ function Apply-ElmStyle {
     # Step 3: Apply border (box-drawing chars around padded block)
     if ($Style.Border -ne 'None') {
         $chars      = ConvertTo-BorderChars -Style $Style.Border
-        $topLine    = $chars.TL + ($chars.T * $paddedWidth) + $chars.TR
-        $bottomLine = $chars.BL + ($chars.B * $paddedWidth) + $chars.BR
+        $topLine    = $chars.TL + ([string]$chars.T * $paddedWidth) + $chars.TR
+        $bottomLine = $chars.BL + ([string]$chars.B * $paddedWidth) + $chars.BR
         $bordered   = @($topLine)
         foreach ($line in $lines) {
             $bordered += $chars.L + $line + $chars.R

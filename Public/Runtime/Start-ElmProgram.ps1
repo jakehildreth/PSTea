@@ -36,6 +36,13 @@ function Start-ElmProgram {
         ([Console]::WindowHeight). If the terminal reports no height, falls back to 24.
         Must not exceed the actual terminal height.
 
+    .PARAMETER TickMs
+        When set to a positive integer, creates a background timer runspace that enqueues
+        a Tick message ({ Type = 'Tick'; Key = 'Tick' }) to the input queue at the given
+        interval in milliseconds. Use in UpdateFn by handling $msg.Key -eq 'Tick' to
+        drive time-based state changes (animations, countdowns, game loops).
+        Defaults to 0 (no ticking).
+
     .OUTPUTS
         PSCustomObject - the final model at the time the event loop exited.
 
@@ -67,7 +74,10 @@ function Start-ElmProgram {
         [int]$Width = 0,
 
         [Parameter()]
-        [int]$Height = 0
+        [int]$Height = 0,
+
+        [Parameter()]
+        [int]$TickMs = 0
     )
 
     # Ensure ANSI/VT processing is active (required on Windows PS5.1/conhost; no-op elsewhere)
@@ -110,6 +120,19 @@ function Start-ElmProgram {
 
     $driver = New-ElmTerminalDriver -AltScreen
 
+    $tickLoop = $null
+    if ($TickMs -gt 0) {
+        $tickQueue    = $driver.InputQueue
+        $tickInterval = $TickMs
+        $tickLoop = Invoke-ElmDriverLoop -ScriptBlock {
+            param($queue, $intervalMs)
+            while ($true) {
+                [System.Threading.Thread]::Sleep($intervalMs)
+                $queue.Enqueue([PSCustomObject]@{ Type = 'Tick'; Key = 'Tick' })
+            }
+        } -Arguments @($tickQueue, $tickInterval)
+    }
+
     $initResult    = & $InitFn
     $initialModel  = $initResult.Model
 
@@ -122,6 +145,10 @@ function Start-ElmProgram {
             -TerminalWidth  $resolvedWidth `
             -TerminalHeight $resolvedHeight
     } finally {
+        if ($null -ne $tickLoop) {
+            try { $tickLoop.PowerShell.Stop() } catch {}
+            try { $tickLoop.Runspace.Close()  } catch {}
+        }
         & $driver.Stop
     }
 

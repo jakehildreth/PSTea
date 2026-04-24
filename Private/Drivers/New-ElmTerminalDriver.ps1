@@ -25,7 +25,7 @@ function New-ElmTerminalDriver {
                     }
                     $queue.Enqueue($keyEvent)
                 } else {
-                    [System.Threading.Thread]::Sleep(10)
+                    [System.Threading.Thread]::Sleep(1)
                 }
             } catch {
                 [System.Threading.Thread]::Sleep(50)
