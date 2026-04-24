@@ -14,6 +14,10 @@ function Invoke-ElmEventLoop {
         [object]$InputQueue,
 
         [Parameter()]
+        [AllowNull()]
+        [scriptblock]$SubscriptionFn = $null,
+
+        [Parameter()]
         [int]$TerminalWidth = 80,
 
         [Parameter()]
@@ -38,15 +42,28 @@ function Invoke-ElmEventLoop {
             [Console]::Write((ConvertTo-AnsiOutput -Root $measuredTree))
         }
 
-        while ($true) {
-            $msg = $null
-            if ($InputQueue.TryDequeue([ref]$msg)) {
-                $updateResult = Invoke-ElmUpdate -UpdateFn $UpdateFn -Message $msg -Model $model
-                $model = $updateResult.Model
-                $cmd   = $updateResult.Cmd
+        if ($null -ne $SubscriptionFn) {
+            # Subscription-based path: Invoke-ElmSubscriptions is the sole queue consumer.
+            # Messages are batched; a single render happens after each batch.
+            $timerState = @{}
+            while ($true) {
+                $subs = @(& $SubscriptionFn $model)
+                $msgs = @(Invoke-ElmSubscriptions -Subscriptions $subs -InputQueue $InputQueue -TimerState $timerState)
 
-                if ($null -ne $cmd -and $cmd.Type -eq 'Quit') {
-                    break
+                if ($msgs.Count -eq 0) {
+                    [System.Threading.Thread]::Sleep(1)
+                    continue
+                }
+
+                $shouldQuit = $false
+                foreach ($msg in $msgs) {
+                    $updateResult = Invoke-ElmUpdate -UpdateFn $UpdateFn -Message $msg -Model $model
+                    $model = $updateResult.Model
+                    $cmd   = $updateResult.Cmd
+                    if ($null -ne $cmd -and $cmd.Type -eq 'Quit') {
+                        $shouldQuit = $true
+                        break
+                    }
                 }
 
                 $viewTree     = Invoke-ElmView -ViewFn $ViewFn -Model $model
@@ -56,14 +73,43 @@ function Invoke-ElmEventLoop {
 
                 if ($patches.Count -gt 0) {
                     if ($patches[0].Type -eq 'FullRedraw') {
-                        $ansiOutput = ConvertTo-AnsiOutput -Root $measuredTree
+                        [Console]::Write((ConvertTo-AnsiOutput -Root $measuredTree))
                     } else {
-                        $ansiOutput = ConvertTo-AnsiPatch -Patches $patches
+                        [Console]::Write((ConvertTo-AnsiPatch -Patches $patches))
                     }
-                    [Console]::Write($ansiOutput)
                 }
-            } else {
-                [System.Threading.Thread]::Sleep(1)
+
+                if ($shouldQuit) { break }
+            }
+        } else {
+            # Legacy path: direct queue dequeue, raw messages forwarded to UpdateFn.
+            while ($true) {
+                $msg = $null
+                if ($InputQueue.TryDequeue([ref]$msg)) {
+                    $updateResult = Invoke-ElmUpdate -UpdateFn $UpdateFn -Message $msg -Model $model
+                    $model = $updateResult.Model
+                    $cmd   = $updateResult.Cmd
+
+                    if ($null -ne $cmd -and $cmd.Type -eq 'Quit') {
+                        break
+                    }
+
+                    $viewTree     = Invoke-ElmView -ViewFn $ViewFn -Model $model
+                    $measuredTree = Measure-ElmViewTree -Root $viewTree -TermWidth $TerminalWidth -TermHeight $TerminalHeight
+                    $patches      = @(Compare-ElmViewTree -OldTree $prevTree -NewTree $measuredTree)
+                    $prevTree     = $measuredTree
+
+                    if ($patches.Count -gt 0) {
+                        if ($patches[0].Type -eq 'FullRedraw') {
+                            $ansiOutput = ConvertTo-AnsiOutput -Root $measuredTree
+                        } else {
+                            $ansiOutput = ConvertTo-AnsiPatch -Patches $patches
+                        }
+                        [Console]::Write($ansiOutput)
+                    }
+                } else {
+                    [System.Threading.Thread]::Sleep(1)
+                }
             }
         }
     } finally {

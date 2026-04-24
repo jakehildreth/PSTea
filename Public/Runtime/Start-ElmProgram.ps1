@@ -36,6 +36,27 @@ function Start-ElmProgram {
         ([Console]::WindowHeight). If the terminal reports no height, falls back to 24.
         Must not exceed the actual terminal height.
 
+    .PARAMETER SubscriptionFn
+        Optional scriptblock that accepts the current model and returns an array of
+        subscription objects created by New-ElmKeySub and New-ElmTimerSub.
+
+        When provided, Invoke-ElmSubscriptions becomes the sole InputQueue consumer
+        and messages are dispatched via handler scriptblocks before reaching UpdateFn.
+        This enables declarative, model-dependent event routing.
+
+        When omitted, the event loop falls back to the legacy direct-dequeue path
+        where raw KeyDown events are forwarded to UpdateFn unchanged.
+
+        Example:
+            $subFn = {
+                param($model)
+                $subs = @(New-ElmKeySub -Key 'Q' -Handler { 'Quit' })
+                if ($model.Running) {
+                    $subs += New-ElmTimerSub -IntervalMs 1000 -Handler { 'Tick' }
+                }
+                $subs
+            }
+
     .PARAMETER TickMs
         When set to a positive integer, creates a background timer runspace that enqueues
         a Tick message ({ Type = 'Tick'; Key = 'Tick' }) to the input queue at the given
@@ -75,6 +96,10 @@ function Start-ElmProgram {
 
         [Parameter()]
         [int]$Height = 0,
+
+        [Parameter()]
+        [AllowNull()]
+        [scriptblock]$SubscriptionFn = $null,
 
         [Parameter()]
         [int]$TickMs = 0
@@ -142,6 +167,7 @@ function Start-ElmProgram {
             -UpdateFn       $UpdateFn `
             -ViewFn         $ViewFn `
             -InputQueue     $driver.InputQueue `
+            -SubscriptionFn $SubscriptionFn `
             -TerminalWidth  $resolvedWidth `
             -TerminalHeight $resolvedHeight
     } finally {
