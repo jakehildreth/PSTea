@@ -1,6 +1,6 @@
 # Elm
 
-An implementation of the [Elm Architecture](https://guide.elm-lang.org/architecture/) (Model-View-Update / TEA) as a PowerShell module. Build interactive terminal UIs — and serve those same apps in a browser via WebSocket + xterm.js — without changing a line of application code.
+An implementation of the [Elm Architecture](https://guide.elm-lang.org/architecture/) (Model-View-Update / TEA) as a PowerShell module. Build interactive terminal UIs and serve those same apps in a browser via WebSocket + xterm.js without changing a line of application code.
 
 Heavily influenced by:
 * [BubbleTea](https://github.com/charmbracelet/bubbletea)
