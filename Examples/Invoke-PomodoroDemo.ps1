@@ -21,10 +21,7 @@ function Invoke-PomodoroDemo {
     [CmdletBinding()]
     param()
 
-    $modulePath = "$PSScriptRoot/../Elm.psd1"
-    if (-not (Get-Module -Name Elm)) {
-        Import-Module $modulePath -Force
-    }
+    Import-Module "$PSScriptRoot/../Elm.psd1" -Force
 
     # ------------------------------------------------------------------ Model
     # SecondsLeft : [int]  remaining seconds (0..1500)
