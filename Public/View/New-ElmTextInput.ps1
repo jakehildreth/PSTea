@@ -43,6 +43,16 @@ function New-ElmTextInput {
         Elm style applied when the field is focused. When omitted and -Focused
         is set, falls back to Style.
 
+    .PARAMETER FocusedBoxStyle
+        When provided and -Focused is set, the Text node is wrapped in a
+        Box (Vertical) whose Style is this value. Use to add a visible border
+        around the focused field, e.g.:
+
+            New-ElmStyle -Border 'Rounded' -Foreground 'BrightWhite'
+
+        When null (default) or when unfocused, no wrapper Box is added and the
+        node returned is a plain Text node.
+
     .OUTPUTS
         PSCustomObject — Text view node.
 
@@ -85,7 +95,10 @@ function New-ElmTextInput {
         [PSCustomObject]$Style = $null,
 
         [Parameter()]
-        [PSCustomObject]$FocusedStyle = $null
+        [PSCustomObject]$FocusedStyle = $null,
+
+        [Parameter()]
+        [PSCustomObject]$FocusedBoxStyle = $null
     )
 
     # Clamp cursor
@@ -108,11 +121,25 @@ function New-ElmTextInput {
         $Value
     }
 
-    return [PSCustomObject]@{
+    $textNode = [PSCustomObject]@{
         Type    = 'Text'
         Content = $content
         Style   = $activeStyle
         Width   = 'Auto'
         Height  = 'Auto'
     }
+
+    # When focused and a FocusedBoxStyle is provided, wrap in a border Box
+    if ($Focused.IsPresent -and $null -ne $FocusedBoxStyle) {
+        return [PSCustomObject]@{
+            Type      = 'Box'
+            Direction = 'Vertical'
+            Children  = @($textNode)
+            Style     = $FocusedBoxStyle
+            Width     = 'Auto'
+            Height    = 'Auto'
+        }
+    }
+
+    return $textNode
 }

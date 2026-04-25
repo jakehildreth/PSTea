@@ -107,4 +107,55 @@ Describe 'New-ElmTextInput' -Tag 'Unit', 'P9' {
             $ti.Style | Should -BeNullOrEmpty
         }
     }
+
+    Context 'FocusedBoxStyle — wrapper Box when focused' {
+        It 'Should return a Box node when focused and FocusedBoxStyle is provided' {
+            $fbs = [PSCustomObject]@{ Border = 'Rounded' }
+            $ti  = New-ElmTextInput -Value 'hi' -CursorPos 2 -Focused -FocusedBoxStyle $fbs
+            $ti.Type | Should -Be 'Box'
+        }
+
+        It 'Should have Direction Vertical on the wrapper Box' {
+            $fbs = [PSCustomObject]@{ Border = 'Rounded' }
+            $ti  = New-ElmTextInput -Value 'hi' -CursorPos 2 -Focused -FocusedBoxStyle $fbs
+            $ti.Direction | Should -Be 'Vertical'
+        }
+
+        It 'Should apply FocusedBoxStyle as the wrapper Box Style' {
+            $fbs = [PSCustomObject]@{ Border = 'Rounded' }
+            $ti  = New-ElmTextInput -Value 'hi' -CursorPos 2 -Focused -FocusedBoxStyle $fbs
+            $ti.Style | Should -Be $fbs
+        }
+
+        It 'Should wrap a single Text child inside the Box' {
+            $fbs = [PSCustomObject]@{ Border = 'Rounded' }
+            $ti  = New-ElmTextInput -Value 'hi' -CursorPos 2 -Focused -FocusedBoxStyle $fbs
+            $ti.Children.Count | Should -Be 1
+            $ti.Children[0].Type | Should -Be 'Text'
+        }
+
+        It 'Should place the rendered content inside the child Text node' {
+            $fbs = [PSCustomObject]@{ Border = 'Rounded' }
+            $ti  = New-ElmTextInput -Value 'hi' -CursorPos 2 -Focused -FocusedBoxStyle $fbs
+            $ti.Children[0].Content | Should -Be 'hi|'
+        }
+
+        It 'Should apply FocusedStyle to the inner Text node when both are provided' {
+            $fbs = [PSCustomObject]@{ Border = 'Rounded' }
+            $fs  = [PSCustomObject]@{ Foreground = 'BrightWhite' }
+            $ti  = New-ElmTextInput -Value 'hi' -CursorPos 0 -Focused -FocusedBoxStyle $fbs -FocusedStyle $fs
+            $ti.Children[0].Style | Should -Be $fs
+        }
+
+        It 'Should NOT return a Box when focused but FocusedBoxStyle is null' {
+            $ti = New-ElmTextInput -Value 'hi' -CursorPos 2 -Focused
+            $ti.Type | Should -Be 'Text'
+        }
+
+        It 'Should NOT return a Box when unfocused even if FocusedBoxStyle is provided' {
+            $fbs = [PSCustomObject]@{ Border = 'Rounded' }
+            $ti  = New-ElmTextInput -Value 'hi' -FocusedBoxStyle $fbs
+            $ti.Type | Should -Be 'Text'
+        }
+    }
 }

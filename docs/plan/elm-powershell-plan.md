@@ -973,6 +973,50 @@ live-adjustable config options and modal text input.
 
 ---
 
+### Phase 10 — Extended Widget Library ✓ COMPLETE
+
+**Goal:** Add the three widgets shared by both Bubbles and Textual that were missing from Phase 9:
+a multi-line text editor, a data table, and a page/tab navigator.
+
+**Design:** Same pure view-function pattern as Phase 9. Caller owns all state.
+
+**Caveat (PowerShell array flattening):** `New-ElmTable` takes `-Rows [object[]]`. Because
+PowerShell's `@()` operator enumerates its argument, a single multi-column row **must** be wrapped
+with the unary comma to prevent flattening: `@(,@('Alice','30'))` not `@(@('Alice','30'))`.
+For multiple rows the comma between items prevents flattening: `@(@('A','1'), @('B','2'))`. This
+is a PowerShell language constraint, not a widget bug. See ADR-019.
+
+#### `New-ElmTextarea` ✓
+- **Params**: `-Lines [string[]]` (`[AllowEmptyString()]`), `-CursorRow`, `-CursorCol`,
+  `-Focused` [switch], `-MaxVisible` (default 10), `-ScrollOffset`,
+  `-Placeholder`, `-CursorChar` (default `|`), `-Style`, `-FocusedStyle`
+- **Returns**: `Box/Vertical` of `Text` nodes; cursor inserted at (CursorRow, CursorCol)
+  when focused; auto-scrolls window to keep cursor visible via ScrollOffset
+- **Note**: PS single-element `[string[]]` unboxing requires `@()` wrap for `$lineList`
+  assignment (see comment in source)
+
+#### `New-ElmTable` ✓
+- **Params**: `-Headers [string[]]`, `-Rows [object[]]`, `-SelectedRow` (default `-1`),
+  `-ColumnWidths [int[]]` (auto-calc if omitted), `-Style`, `-HeaderStyle`, `-SelectedStyle`
+- **Returns**: `Box/Vertical` of `Text` nodes; header row + `-+-` separator when `-Headers`
+  is provided; cells padded to uniform column widths; selected row gets bold default or
+  explicit `-SelectedStyle`
+
+#### `New-ElmPaginator` ✓
+- **Params (Numeric)**: `-CurrentPage`, `-PageCount`; renders `< N / Total >`; `<`/`>` replaced
+  with space at boundaries; clamped to `[1, PageCount]`
+- **Params (Tabs)**: `-Tabs [string[]]`, `-ActiveTab`; renders `Tab1 | [Active] | Tab3`;
+  active tab wrapped in `[]`; clamped to `[0, Tabs.Count-1]`
+- **Shared**: `-Style`, `-ActiveStyle`
+- **Returns**: `Text` node (Numeric) or `Box/Horizontal` of `Text` nodes (Tabs)
+
+**Deliverables:** 78 Pester tests across 3 test files (24 Textarea, 21 Table, 21 Paginator).
+`Invoke-WidgetShowcaseDemo.ps1` extended to 7 panels (+Textarea panel 5, +Table panel 6,
++Paginator panel 7). Textarea panel supports full modal editing (Enter splits line,
+Backspace joins, char sub for printable input).
+
+---
+
 ## Key Technical Notes
 
 ### P/Invoke for Virtual Terminal (Windows)

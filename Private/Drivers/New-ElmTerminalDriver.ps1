@@ -8,6 +8,13 @@ function New-ElmTerminalDriver {
     $altEnter = $esc + '[?1049h'
     $altExit  = $esc + '[?1049l'
 
+    # Require UTF-8 so Unicode characters (●, ○, box-drawing, etc.) render correctly.
+    # Save previous encodings so the stop function can restore them cleanly.
+    $prevOutputEncoding = [Console]::OutputEncoding
+    $prevInputEncoding  = [Console]::InputEncoding
+    [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+    [Console]::InputEncoding  = [System.Text.Encoding]::UTF8
+
     $inputQueue = [System.Collections.Concurrent.ConcurrentQueue[PSCustomObject]]::new()
     $cts = [System.Threading.CancellationTokenSource]::new()
 
@@ -40,7 +47,7 @@ function New-ElmTerminalDriver {
         [Console]::Write($altEnter)
     }
 
-    $useAltScreen = $AltScreen.IsPresent
+    $useAltScreen       = $AltScreen.IsPresent
     $stopFn = {
         $cts.Cancel()
         try { $loop.PowerShell.Stop() } catch {}
@@ -49,6 +56,9 @@ function New-ElmTerminalDriver {
             # Restore terminal - exit alt screen so the shell prompt returns to the main buffer
             [Console]::Write($altExit)
         }
+        # Restore encodings to whatever the caller had before
+        [Console]::OutputEncoding = $prevOutputEncoding
+        [Console]::InputEncoding  = $prevInputEncoding
     }.GetNewClosure()
 
     return [PSCustomObject]@{
