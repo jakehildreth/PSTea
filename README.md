@@ -105,7 +105,7 @@ Colors: hex `'#RRGGBB'`, 256-index int, or named (`Black`, `White`, `Red`, `Gree
 ## Subscriptions
 
 ```powershell
-# Keyboard
+# Special keys (arrows, Enter, Backspace, F-keys, ctrl/shift combos)
 New-ElmKeySub -OnKey {
     param($Key)
     switch ($Key) {
@@ -114,11 +114,20 @@ New-ElmKeySub -OnKey {
     }
 }
 
+# Printable characters (letters, digits, symbols) — for text input
+New-ElmCharSub -Handler {
+    param($Key)
+    [PSCustomObject]@{ Type = 'CharInput'; Char = $Key.KeyChar }
+}
+
 # Timer
-New-ElmTimerSub -Interval ([TimeSpan]::FromMilliseconds(500)) -OnTick {
+New-ElmTimerSub -IntervalMs 500 -OnTick {
     [PSCustomObject]@{ Type = 'Tick'; Timestamp = (Get-Date) }
 }
 ```
+
+`New-ElmCharSub` fires for printable ASCII (0x20–0x7E) only after all `New-ElmKeySub` handlers
+have been checked. Use it alongside `New-ElmTextInput` or `New-ElmTextarea` to handle typed text.
 
 ---
 
@@ -162,13 +171,20 @@ Component nodes are expanded transparently at layout time. `ConvertTo-AnsiOutput
 
 ## Built-in Widgets
 
-| Cmdlet | Description |
-|---|---|
-| `New-ElmTextInput` | Single-line text input |
-| `New-ElmList` | Scrollable, selectable list |
-| `New-ElmSpinner` | Animated spinner (tick-driven) |
-| `New-ElmProgressBar` | Percent-fill progress bar |
-| `New-ElmViewport` | Scrollable text viewport |
+| Cmdlet | Returns | Key params |
+|---|---|---|
+| `New-ElmTextInput` | `Text`/`Box` | `-Value`, `-CursorPos`, `-Focused`, `-Placeholder`, `-FocusedStyle`, `-FocusedBoxStyle` |
+| `New-ElmTextarea` | `Box/Vertical` | `-Lines`, `-CursorRow/-Col`, `-Focused`, `-MaxVisible`, `-ScrollOffset`, `-FocusedStyle`, `-FocusedBoxStyle` |
+| `New-ElmList` | `Box/Vertical` | `-Items`, `-SelectedIndex`, `-MaxVisible`, `-Style`, `-SelectedStyle` |
+| `New-ElmTable` | `Box/Vertical` | `-Headers`, `-Rows`, `-SelectedRow`, `-ColumnWidths`, `-HeaderStyle`, `-SelectedStyle` |
+| `New-ElmPaginator` | `Text`/`Box` | `-CurrentPage`/`-PageCount` (numeric); `-Tabs`/`-ActiveTab` (tabs); `-Dots` (dot indicators) |
+| `New-ElmSpinner` | `Text` | `-Frame`, `-Variant` (`Dots`\|`Braille`\|`Bounce`\|`Arrow`), `-Frames` |
+| `New-ElmProgressBar` | `Text` | `-Value`/`-Percent`, `-Width`, `-FilledChar`, `-EmptyChar` |
+| `New-ElmViewport` | `Box/Vertical` | `-Lines`, `-ScrollOffset`, `-MaxVisible` |
+
+`-FocusedStyle` swaps foreground/background when the widget is focused. `-FocusedBoxStyle` wraps
+the focused widget in a `Box` with the given style (e.g. `New-ElmStyle -Border 'Rounded'`).
+Both are optional; the caller passes whatever `New-ElmStyle` produces.
 
 ---
 
@@ -189,23 +205,23 @@ Serves a self-contained HTML page (no CDN, bundled xterm.js) at `http://localhos
 
 ## Examples
 
-All examples are in the `Examples/` folder. Run from the repo root:
-
-```powershell
-./Examples/Invoke-IncrementDecrement.ps1
-./Examples/Invoke-TodoList.ps1
-./Examples/Invoke-StyleShowcase.ps1
-./Examples/Invoke-LayoutDemo.ps1
-./Examples/Invoke-ComponentDemo.ps1
-```
+All examples are in the `Examples/` folder.
 
 | Example | What it shows |
 |---|---|
-| `Invoke-IncrementDecrement` | minimal counter app - the hello world of TEA |
+| `Invoke-IncrementDecrement` | minimal counter — the hello world of TEA |
 | `Invoke-TodoList` | keyboard selection, space-to-toggle, strikethrough for done items |
 | `Invoke-StyleShowcase` | every border style, text decoration, named/hex/256-index color |
 | `Invoke-LayoutDemo` | two-pane row layout with nav menu and dynamic content panel |
 | `Invoke-ComponentDemo` | two independent counters as components, Tab to switch focus |
+| `Invoke-WidgetShowcaseDemo` | all Phase 9+10 widgets with live-adjustable config options |
+| `Invoke-ColorPickerDemo` | 256-color palette browser, arrow-key navigation |
+| `Invoke-PomodoroDemo` | Pomodoro timer with spinner, progress bar, and timer subscription |
+| `Invoke-StopwatchDemo` | stopwatch with lap tracking and tick-driven animation |
+| `Invoke-QuizDemo` | multiple-choice quiz with list widget and score tracking |
+| `Invoke-FileExplorerDemo` | scrollable directory tree with viewport and keyboard navigation |
+| `Invoke-SnakeDemo` | Snake game — real-time tick-driven movement and collision detection |
+| `Invoke-SystemMonitorDemo` | live CPU/memory stats via timer subscription |
 
 ---
 

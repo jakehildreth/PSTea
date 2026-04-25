@@ -1,5 +1,36 @@
 # Plan: PowerShell Elm Architecture (TEA/MVU TUI + Web Framework)
 
+## Table of Contents
+
+- [Problem Statement](#problem-statement)
+- [Design Influences](#design-influences)
+- [Decisions](#decisions)
+- [How It Works: End-to-End Walk-Through](#how-it-works-end-to-end-walk-through)
+- [Architecture: Layers](#architecture-layers)
+- [View Tree Schema](#view-tree-schema)
+- [Style Object Schema](#style-object-schema)
+- [Message Shape](#message-shape)
+- [Driver Abstraction Detail](#driver-abstraction-detail)
+- [Canonical Input Format](#canonical-input-format)
+- [Module Structure](#module-structure)
+- [Implementation Phases](#implementation-phases)
+  - [Phase 1 — Foundation & Module Scaffold ✓](#phase-1--foundation--module-scaffold)
+  - [Phase 2 — Style System ✓](#phase-2--style-system-lipgloss-inspired)
+  - [Phase 3 — View DSL & Flexbox Layout ✓](#phase-3--view-dsl--flexbox-layout)
+  - [Phase 4 — Diff Engine ✓](#phase-4--diff-engine)
+  - [Phase 5 — Core Runtime & Driver Abstraction ✓](#phase-5--core-runtime--driver-abstraction)
+  - [Phase 6 — Subscriptions ✓](#phase-6--subscriptions)
+  - [Phase 7 — Web App Support ○ PENDING](#phase-7--web-app-support)
+  - [Phase 8 — Component Model ✓](#phase-8--component-model-bubbles-inspired)
+  - [Phase 9 — Built-in Widget Library ✓](#phase-9--built-in-widget-library)
+  - [Phase 10 — Extended Widget Library ✓](#phase-10--extended-widget-library)
+- [Key Technical Notes](#key-technical-notes)
+- [Out of Scope](#out-of-scope-initial-release)
+- [Future: Async Commands](#future-async-commands)
+- [Future: Cloud Hosting](#future-cloud-hosting)
+
+---
+
 ## Problem Statement
 
 Implement the Elm Architecture (The Elm Architecture / Model-View-Update) as a PowerShell module
@@ -421,7 +452,7 @@ Elm/
 
 ## Implementation Phases
 
-### Phase 1 — Foundation & Module Scaffold
+### Phase 1 — Foundation & Module Scaffold ✓ COMPLETE
 
 **Goal:** Buildable, importable module skeleton with core utility functions all later phases depend on.
 
@@ -465,7 +496,7 @@ Elm/
 
 ---
 
-### Phase 2 — Style System (LipGloss-inspired)
+### Phase 2 — Style System (LipGloss-inspired) ✓ COMPLETE
 
 **Goal:** A composable style object and the ANSI color/border rendering functions that apply it.
 
@@ -531,7 +562,7 @@ Elm/
 
 ---
 
-### Phase 3 — View DSL & Flexbox Layout
+### Phase 3 — View DSL & Flexbox Layout ✓ COMPLETE
 
 **Goal:** Factory functions for view tree nodes and a two-pass layout engine that assigns
 screen coordinates to every node.
@@ -602,7 +633,7 @@ screen coordinates to every node.
 
 ---
 
-### Phase 4 — Diff Engine
+### Phase 4 — Diff Engine ✓ COMPLETE
 
 **Goal:** Compare two measured view trees and produce the minimal ANSI patch set to transform
 the previous frame into the new one — avoiding full clear+redraw every cycle.
@@ -635,7 +666,7 @@ the previous frame into the new one — avoiding full clear+redraw every cycle.
 
 ---
 
-### Phase 5 — Core Runtime & Driver Abstraction
+### Phase 5 — Core Runtime & Driver Abstraction ✓ COMPLETE
 
 **Goal:** The event loop and the two concrete drivers (terminal, WebSocket) that feed it.
 
@@ -741,7 +772,7 @@ the previous frame into the new one — avoiding full clear+redraw every cycle.
 
 ---
 
-### Phase 6 — Subscriptions
+### Phase 6 — Subscriptions ✓ COMPLETE
 
 **Goal:** A declarative subscription system letting the developer declare event sources as a
 pure function of the model.
@@ -782,7 +813,7 @@ pure function of the model.
 
 ---
 
-### Phase 7 — Web App Support
+### Phase 7 — Web App Support ○ PENDING
 
 **Goal:** Serve any PS Elm app in a browser via WebSocket + xterm.js with no changes to
 application code. Mirrors Textual's `textual-serve` approach.
@@ -847,7 +878,7 @@ application code. Mirrors Textual's `textual-serve` approach.
 
 ---
 
-### Phase 8 — Component Model (Bubbles-inspired)
+### Phase 8 — Component Model (Bubbles-inspired) ✓ COMPLETE
 
 **Goal:** Reusable, composable UI components with their own internal state, update logic, and
 view — nested TEA programs embedded in a parent program.
@@ -986,12 +1017,22 @@ with the unary comma to prevent flattening: `@(,@('Alice','30'))` not `@(@('Alic
 For multiple rows the comma between items prevents flattening: `@(@('A','1'), @('B','2'))`. This
 is a PowerShell language constraint, not a widget bug. See ADR-019.
 
+#### `New-ElmTextInput` (updated) ✓
+- **Params**: `-Value`, `-CursorPos` (clamped), `-Focused` [switch], `-Placeholder`,
+  `-CursorChar` (default `|`), `-Style`, `-FocusedStyle`, `-FocusedBoxStyle`
+- **Returns**: plain `Text` node when unfocused or no `-FocusedBoxStyle`; `Box/Vertical`
+  wrapping a `Text` node when focused **and** `-FocusedBoxStyle` is provided
+- `-FocusedStyle`: applied to the text content when focused (e.g. `Black` fg + `White` bg)
+- `-FocusedBoxStyle`: style of the outer Box (e.g. `New-ElmStyle -Border 'Rounded'`)
+
 #### `New-ElmTextarea` ✓
 - **Params**: `-Lines [string[]]` (`[AllowEmptyString()]`), `-CursorRow`, `-CursorCol`,
   `-Focused` [switch], `-MaxVisible` (default 10), `-ScrollOffset`,
-  `-Placeholder`, `-CursorChar` (default `|`), `-Style`, `-FocusedStyle`
+  `-Placeholder`, `-CursorChar` (default `|`), `-Style`, `-FocusedStyle`, `-FocusedBoxStyle`
 - **Returns**: `Box/Vertical` of `Text` nodes; cursor inserted at (CursorRow, CursorCol)
   when focused; auto-scrolls window to keep cursor visible via ScrollOffset
+- `-FocusedStyle`: applied to each text line when focused
+- `-FocusedBoxStyle`: applied to the outer Box node when focused (border, color, etc.)
 - **Note**: PS single-element `[string[]]` unboxing requires `@()` wrap for `$lineList`
   assignment (see comment in source)
 
@@ -1005,15 +1046,24 @@ is a PowerShell language constraint, not a widget bug. See ADR-019.
 #### `New-ElmPaginator` ✓
 - **Params (Numeric)**: `-CurrentPage`, `-PageCount`; renders `< N / Total >`; `<`/`>` replaced
   with space at boundaries; clamped to `[1, PageCount]`
+- **Params (Dots)**: `-Dots` [switch] (required to select mode), `-CurrentPage`, `-PageCount`,
+  `-FilledDot` (default `●`), `-EmptyDot` (default `○`), `-Separator` (default `' '`);
+  renders `○ ● ○ ○` with one filled dot at the current page position; requires UTF-8 console
+  encoding (enforced automatically by `New-ElmTerminalDriver`)
 - **Params (Tabs)**: `-Tabs [string[]]`, `-ActiveTab`; renders `Tab1 | [Active] | Tab3`;
   active tab wrapped in `[]`; clamped to `[0, Tabs.Count-1]`
 - **Shared**: `-Style`, `-ActiveStyle`
-- **Returns**: `Text` node (Numeric) or `Box/Horizontal` of `Text` nodes (Tabs)
+- **Returns**: `Text` node (Numeric); `Box/Horizontal` of `Text` nodes (Dots or Tabs)
+- **Note**: `-Dots` switch is required to disambiguate from Numeric when `-CurrentPage`/
+  `-PageCount` are the only positional params. See ADR-020.
 
-**Deliverables:** 78 Pester tests across 3 test files (24 Textarea, 21 Table, 21 Paginator).
-`Invoke-WidgetShowcaseDemo.ps1` extended to 7 panels (+Textarea panel 5, +Table panel 6,
-+Paginator panel 7). Textarea panel supports full modal editing (Enter splits line,
-Backspace joins, char sub for printable input).
+**Deliverables:** 103 Pester tests across 5 test files (24 Textarea, 21 Table, 38 Paginator
+incl. Dots mode, 8 TextInput FocusedBoxStyle, 6 Textarea FocusedBoxStyle); 483 tests total.
+`Invoke-WidgetShowcaseDemo.ps1` extended to 7 panels (Animate, List, Viewport, TextInput,
+Textarea, Table, Paginator). Paginator panel shows all three modes; TextInput/Textarea
+panels show `Black`/`White` background focus indicator and `Rounded` border via
+`-FocusedBoxStyle`. `New-ElmTerminalDriver` now enforces UTF-8 output/input encoding
+(save + restore) so dot paginator characters render correctly on all platforms.
 
 ---
 
