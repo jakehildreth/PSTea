@@ -753,22 +753,22 @@ $viewFn = {
             # Numeric mode row
             $numNode = New-ElmPaginator -CurrentPage $model.PagerPage -PageCount $script:PAGER_PAGES -Style $numericStyle
             $label   = New-ElmText -Content '  Numeric:  ' -Style $hintStyle
-            $arrow   = if ($pagerMode -eq 'Numeric') { New-ElmText -Content '  << active' -Style $accentStyle } else { New-ElmText -Content '' }
-            $children.Add((New-ElmRow -Children @($label, $numNode, $arrow)))
+            $arrow   = if ($pagerMode -eq 'Numeric') { New-ElmText -Content '>> ' -Style $accentStyle } else { New-ElmText -Content '   ' }
+            $children.Add((New-ElmRow -Children @($arrow, $label, $numNode)))
 
             # Dots mode row
             $dotsNode = New-ElmPaginator -Dots -CurrentPage $model.PagerPage -PageCount $script:PAGER_PAGES `
                                          -Style $dotStyle -ActiveStyle $activeDotStyle
             $label3   = New-ElmText -Content '  Dots:     ' -Style $hintStyle
-            $arrow3   = if ($pagerMode -eq 'Dots') { New-ElmText -Content '  << active' -Style $accentStyle } else { New-ElmText -Content '' }
-            $children.Add((New-ElmRow -Children @($label3, $dotsNode, $arrow3)))
+            $arrow3   = if ($pagerMode -eq 'Dots') { New-ElmText -Content '>> ' -Style $accentStyle } else { New-ElmText -Content '   ' }
+            $children.Add((New-ElmRow -Children @($arrow3, $label3, $dotsNode)))
 
             # Tabs mode row
             $tabNode = New-ElmPaginator -Tabs $script:PAGER_TAB_LABELS -ActiveTab $model.PagerTabIdx `
                                         -Style $tabStyle -ActiveStyle $activeTabStyle
             $label2  = New-ElmText -Content '  Tabs:     ' -Style $hintStyle
-            $arrow2  = if ($pagerMode -eq 'Tabs') { New-ElmText -Content '  << active' -Style $accentStyle } else { New-ElmText -Content '' }
-            $children.Add((New-ElmRow -Children @($label2, $tabNode, $arrow2)))
+            $arrow2  = if ($pagerMode -eq 'Tabs') { New-ElmText -Content '>> ' -Style $accentStyle } else { New-ElmText -Content '   ' }
+            $children.Add((New-ElmRow -Children @($arrow2, $label2, $tabNode)))
 
             $modeOpts = $script:PAGER_MODES -join '/'
             $children.Add((New-ElmText -Content '' ))
