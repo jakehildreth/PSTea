@@ -31,7 +31,7 @@ $script:PANEL_COUNT = 7
 
 # Config option arrays - indices stored in the model
 $script:BAR_WIDTHS    = @(20, 30, 40)
-$script:FILLED_CHARS  = @('#', '=', '*', '+')
+$script:FILLED_CHARS  = @([char]0x2588, '#', '=', '*', '+')
 $script:EMPTY_CHARS   = @('-', '.', ' ')
 $script:LIST_MAX_VIS  = @(5, 8, 10)
 $script:LIST_PREFIXES = @(
@@ -196,7 +196,7 @@ $initFn = {
             InputCursor   = 0
             InputFocused  = $false    # TextInput -Focused state
             BarWidthIdx   = 1        # index into BAR_WIDTHS (default: 30)
-            FilledCharIdx = 0        # index into FILLED_CHARS (default: #)
+            FilledCharIdx = 0        # index into FILLED_CHARS (default: solid block)
             EmptyCharIdx  = 0        # index into EMPTY_CHARS (default: -)
             ListMaxVisIdx = 2        # index into LIST_MAX_VIS (default: 10)
             ListPrefixIdx = 0        # index into LIST_PREFIXES (default: '> ')
