@@ -176,6 +176,7 @@ function New-ShowcaseModel {
         TextareaMaxVisIdx = $Model.TextareaMaxVisIdx
         TableCursor       = $Model.TableCursor
         PagerPage         = $Model.PagerPage
+        PagerDotsPage     = $Model.PagerDotsPage
         PagerTabIdx       = $Model.PagerTabIdx
         PagerModeIdx      = $Model.PagerModeIdx
     }
@@ -211,6 +212,7 @@ $initFn = {
             TextareaMaxVisIdx = 1    # index into TA_MAX_VIS (default: 8)
             TableCursor       = 0    # selected row in table panel
             PagerPage         = 1    # current page (1-based, max = PAGER_PAGES)
+            PagerDotsPage     = 1    # current page for Dots paginator (independent)
             PagerTabIdx       = 0    # active tab in tab-mode paginator
             PagerModeIdx      = 0    # 0 = Numeric, 1 = Tabs
         }
@@ -239,6 +241,13 @@ $updateFn = {
         'TabPrev' {
             return [PSCustomObject]@{
                 Model = New-ShowcaseModel $model @{ Tab = [math]::Max($model.Tab - 1, 0) }
+                Cmd   = $null
+            }
+        }
+        'TabJump:*' {
+            $idx = [int]$msg.Substring(8)
+            return [PSCustomObject]@{
+                Model = New-ShowcaseModel $model @{ Tab = [math]::Max(0, [math]::Min($idx, $script:PANEL_COUNT - 1)) }
                 Cmd   = $null
             }
         }
@@ -485,8 +494,12 @@ $updateFn = {
                     Model = New-ShowcaseModel $model @{ PagerTabIdx = [math]::Max($model.PagerTabIdx - 1, 0) }
                     Cmd   = $null
                 }
+            } elseif ($model.PagerModeIdx -eq 2) {
+                return [PSCustomObject]@{
+                    Model = New-ShowcaseModel $model @{ PagerDotsPage = [math]::Max($model.PagerDotsPage - 1, 1) }
+                    Cmd   = $null
+                }
             } else {
-                # Numeric (0) and Dots (2) both navigate page
                 return [PSCustomObject]@{
                     Model = New-ShowcaseModel $model @{ PagerPage = [math]::Max($model.PagerPage - 1, 1) }
                     Cmd   = $null
@@ -499,8 +512,12 @@ $updateFn = {
                     Model = New-ShowcaseModel $model @{ PagerTabIdx = [math]::Min($model.PagerTabIdx + 1, $script:PAGER_TAB_LABELS.Count - 1) }
                     Cmd   = $null
                 }
+            } elseif ($model.PagerModeIdx -eq 2) {
+                return [PSCustomObject]@{
+                    Model = New-ShowcaseModel $model @{ PagerDotsPage = [math]::Min($model.PagerDotsPage + 1, $script:PAGER_PAGES) }
+                    Cmd   = $null
+                }
             } else {
-                # Numeric (0) and Dots (2) both navigate page
                 return [PSCustomObject]@{
                     Model = New-ShowcaseModel $model @{ PagerPage = [math]::Min($model.PagerPage + 1, $script:PAGER_PAGES) }
                     Cmd   = $null
@@ -757,7 +774,7 @@ $viewFn = {
             $children.Add((New-ElmRow -Children @($arrow, $label, $numNode)))
 
             # Dots mode row
-            $dotsNode = New-ElmPaginator -Dots -CurrentPage $model.PagerPage -PageCount $script:PAGER_PAGES `
+            $dotsNode = New-ElmPaginator -Dots -CurrentPage $model.PagerDotsPage -PageCount $script:PAGER_PAGES `
                                          -Style $dotStyle -ActiveStyle $activeDotStyle
             $label3   = New-ElmText -Content '  Dots:     ' -Style $hintStyle
             $arrow3   = if ($pagerMode -eq 'Dots') { New-ElmText -Content '>> ' -Style $accentStyle } else { New-ElmText -Content '   ' }
@@ -791,6 +808,13 @@ $subFn = {
         $subs.Add((New-ElmKeySub -Key 'Q' -Handler { 'Quit'    }))
         $subs.Add((New-ElmKeySub -Key 'N' -Handler { 'TabNext' }))
         $subs.Add((New-ElmKeySub -Key 'P' -Handler { 'TabPrev' }))
+        $subs.Add((New-ElmKeySub -Key 'D1' -Handler { 'TabJump:0' }))
+        $subs.Add((New-ElmKeySub -Key 'D2' -Handler { 'TabJump:1' }))
+        $subs.Add((New-ElmKeySub -Key 'D3' -Handler { 'TabJump:2' }))
+        $subs.Add((New-ElmKeySub -Key 'D4' -Handler { 'TabJump:3' }))
+        $subs.Add((New-ElmKeySub -Key 'D5' -Handler { 'TabJump:4' }))
+        $subs.Add((New-ElmKeySub -Key 'D6' -Handler { 'TabJump:5' }))
+        $subs.Add((New-ElmKeySub -Key 'D7' -Handler { 'TabJump:6' }))
     }
 
     # Timer - always runs (spinner animation + progress auto-advance)
