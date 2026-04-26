@@ -6,7 +6,7 @@ Heavily influenced by:
 * [BubbleTea](https://github.com/charmbracelet/bubbletea)
 * [LipGloss](https://github.com/charmbracelet/lipgloss)
 * [Textual](https://github.com/Textualize/textual)
-* DOS
+* The Commodore 64 and DOS.
 
 ---
 
