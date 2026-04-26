@@ -881,8 +881,8 @@ $subFn = {
         6 {
             $subs.Add((New-ElmKeySub -Key 'LeftArrow'  -Handler { 'PagerLeft'     }))
             $subs.Add((New-ElmKeySub -Key 'RightArrow' -Handler { 'PagerRight'    }))
-            $subs.Add((New-ElmKeySub -Key 'UpArrow'    -Handler { 'PagerModePrev' }))
-            $subs.Add((New-ElmKeySub -Key 'DownArrow'  -Handler { 'PagerModeNext' }))
+            $subs.Add((New-ElmKeySub -Key 'UpArrow'    -Handler { 'PagerModeNext' }))
+            $subs.Add((New-ElmKeySub -Key 'DownArrow'  -Handler { 'PagerModePrev' }))
         }
     }
 
