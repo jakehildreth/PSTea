@@ -127,7 +127,7 @@ $view = {
         New-ElmText -Content $label -Style $style
     }
     $navItems += New-ElmText -Content ''
-    $navItems += New-ElmText -Content '[Up/Down] move' -Style $hintStyle
+    $navItems += New-ElmText -Content '[up/down] move' -Style $hintStyle
     $navItems += New-ElmText -Content '[q] quit'       -Style $hintStyle
 
     $navPanel = New-ElmBox -Style $navPanelStyle -Children $navItems

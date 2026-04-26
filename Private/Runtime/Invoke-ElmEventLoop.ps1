@@ -21,17 +21,24 @@ function Invoke-ElmEventLoop {
         [int]$TerminalWidth = 80,
 
         [Parameter()]
-        [int]$TerminalHeight = 24
+        [int]$TerminalHeight = 24,
+
+        [Parameter()]
+        [AllowNull()]
+        [scriptblock]$OutputSink = $null
     )
 
     $esc        = [char]27
     $hideCursor = $esc + '[?25l'
     $showCursor = $esc + '[?25h'
 
+    # Route all ANSI output through OutputSink when set; fall back to Console::Write otherwise.
+    $writeFn = if ($null -ne $OutputSink) { $OutputSink } else { { param($s) [Console]::Write($s) } }
+
     $model    = $InitialModel
     $prevTree = $null
 
-    [Console]::Write($hideCursor)
+    & $writeFn $hideCursor
     try {
         # Initial render before any messages arrive
         $viewTree     = Invoke-ElmView -ViewFn $ViewFn -Model $model
@@ -39,7 +46,7 @@ function Invoke-ElmEventLoop {
         $patches      = @(Compare-ElmViewTree -OldTree $null -NewTree $measuredTree)
         $prevTree     = $measuredTree
         if ($patches.Count -gt 0) {
-            [Console]::Write((ConvertTo-AnsiOutput -Root $measuredTree))
+            & $writeFn (ConvertTo-AnsiOutput -Root $measuredTree)
         }
 
         if ($null -ne $SubscriptionFn) {
@@ -73,9 +80,9 @@ function Invoke-ElmEventLoop {
 
                 if ($patches.Count -gt 0) {
                     if ($patches[0].Type -eq 'FullRedraw') {
-                        [Console]::Write((ConvertTo-AnsiOutput -Root $measuredTree))
+                        & $writeFn (ConvertTo-AnsiOutput -Root $measuredTree)
                     } else {
-                        [Console]::Write((ConvertTo-AnsiPatch -Patches $patches))
+                        & $writeFn (ConvertTo-AnsiPatch -Patches $patches)
                     }
                 }
 
@@ -105,7 +112,7 @@ function Invoke-ElmEventLoop {
                         } else {
                             $ansiOutput = ConvertTo-AnsiPatch -Patches $patches
                         }
-                        [Console]::Write($ansiOutput)
+                        & $writeFn $ansiOutput
                     }
                 } else {
                     [System.Threading.Thread]::Sleep(1)
@@ -113,7 +120,7 @@ function Invoke-ElmEventLoop {
             }
         }
     } finally {
-        [Console]::Write($showCursor)
+        & $writeFn $showCursor
     }
 
     return $model

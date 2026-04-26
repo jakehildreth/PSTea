@@ -82,13 +82,13 @@ Start-ElmWebServer `
 | Model type | PSCustomObject | Most readable for intermediate PS devs; dot-access syntax |
 | Model mutation | Runtime deep-copies before each `Update` call | Enforces Elm's immutability contract |
 | Layout | Flexbox-inspired: `Fill`, `Auto`, fixed int, percentage | Enables responsive-ish TUI layouts |
-| I/O architecture | Driver abstraction via `ConcurrentQueue[string]` | Decouples event loop from I/O; same loop works for terminal and WebSocket |
+| I/O architecture | `InputQueue`: `ConcurrentQueue[PSCustomObject]` events; output via `-OutputSink [scriptblock]` on event loop | Decouples event loop from I/O; same loop works for terminal and WebSocket |
 | Web serving | `System.Net.HttpListener` WebSocket + embedded xterm.js | Available in .NET 4.5+ (PS 5.1); no external dependencies |
 | Methodology | TDD - tests written before every function | Non-negotiable per Jake's standards |
 | Commit policy | Draft commit → Jake approval → push | Per Jake's standards |
 | Versioning | CalVer (yyyy.M.dHHmm) | Per Jake's standards |
-| Input normalization | Normalize at driver (Option A): each driver converts raw input to a canonical string format before enqueuing | Single testable format; failures isolate to driver lookup tables; queue contents are inspectable for debugging |
-| InputQueue ownership | `Invoke-ElmSubscriptions` is the sole `$InputQueue` dequeuer; event loop never calls `TryDequeue` directly | Eliminates double-consumer race; `Quit` becomes a normal subscription message handled uniformly |
+| Input normalization | Normalize at driver: terminal driver enqueues `PSCustomObject { Type, Key, Char, Modifiers }`; WebSocket driver uses `ConvertFrom-AnsiVtSequence` to produce the same shape | Single testable format; same PSCustomObject shape on both paths |
+| InputQueue ownership | `Invoke-ElmSubscriptions` is the sole `$InputQueue` dequeuer in subscription mode; legacy path in event loop also calls `TryDequeue` directly (backward compat) | Subscription mode eliminates double-consumer race; legacy path preserved for apps without SubscriptionFn |
 | ANSI output functions | Two functions: `ConvertTo-AnsiOutput -Root` (full frame) and `ConvertTo-AnsiPatch -Patches` (incremental) | Single responsibility; first-render detection belongs to the caller, not the function |
 | Subscription state cache | `$SubCache` hashtable owned by the event loop; passed to `Invoke-ElmSubscriptions` each cycle | Timer `$LastFired` persists across cycles without polluting immutable subscription objects |
 | Terminal dimensions | `$W`/`$H` initialized from `[Console]::WindowWidth/Height` before loop starts; `Resize` canonical message updates them and forces `FullRedraw` | Dimensions always current; WebSocket resize handled identically via canonical `Resize` message |
@@ -195,7 +195,7 @@ Start-ElmProgram -Init $Init -Update $Update -View $View -Subscriptions $Subs
 ║  Runtime  (Invoke-ElmEventLoop)                          ║
 ║  Calls Init, View, Update, Subscriptions                 ║
 ║  Deep-copies model before each Update                    ║
-║  Reads InputQueue / writes OutputQueue only              ║
+║  Reads InputQueue / calls OutputSink scriptblock         ║
 ╚══════════╤═══════════════════╤═══════════════════════════╝
            │                   │
 ╔══════════▼═══╗    ╔══════════▼════════════════════════╗
@@ -207,9 +207,9 @@ Start-ElmProgram -Init $Init -Update $Update -View $View -Subscriptions $Subs
 ╚══════════════╝
            │
 ╔══════════▼══════════════════════════════════════════════╗
-║  Driver Abstraction  (ConcurrentQueue[string])          ║
-║  InputQueue  ← keyboard events (ANSI key strings)       ║
-║  OutputQueue → rendered ANSI frames                     ║
+║  Driver Abstraction                                     ║
+║  InputQueue  ← PSCustomObject key events                ║
+║  OutputSink  → scriptblock called with ANSI strings     ║
 ╚══════════╤══════════════════════════════════════════════╝
            │
      ┌─────┴──────┐
@@ -822,59 +822,126 @@ application code. Mirrors Textual's `textual-serve` approach.
 1. Developer calls `Start-ElmWebServer` instead of `Start-ElmProgram`
 2. An `HttpListener` serves the xterm.js HTML page at `GET /`
 3. The browser loads xterm.js, opens a WebSocket to `ws://localhost:{port}/ws`
-4. xterm.js translates keypresses → ANSI sequences → WebSocket → `$InputQueue`
-5. `$OutputQueue` → WebSocket → xterm.js renders ANSI output
-6. The MVU event loop runs identically - it only sees queues
+4. xterm.js `onData` sends raw VT sequences → WebSocket → `ConvertFrom-AnsiVtSequence` →
+   PSCustomObject events → `$InputQueue`
+5. `Invoke-ElmEventLoop` calls `$OutputSink` with ANSI strings → enqueued → WebSocket →
+   xterm.js renders ANSI output
+6. The MVU event loop runs identically
+
+**Architecture notes (diverged from original plan doc — corrected here):**
+
+- The `InputQueue` is `ConcurrentQueue[PSCustomObject]` (not `ConcurrentQueue[string]`).
+  Each item has `{ Type='KeyDown', Key=[ConsoleKey], Char=[char], Modifiers=[ConsoleModifiers] }`.
+  See `New-ElmTerminalDriver.ps1` for the canonical shape.
+- The event loop does NOT have an `OutputQueue`. Instead, `Invoke-ElmEventLoop` accepts an
+  optional `-OutputSink [scriptblock]` parameter. When set, all `[Console]::Write` calls are
+  replaced with `& $OutputSink $ansiString`. There are **4 render sites** in the event loop:
+  initial render, FullRedraw (subscription path), patch (subscription path), legacy path.
+  The hideCursor/showCursor control codes are also routed through `OutputSink`.
+- `Start-ElmWebServer` uses fixed initial dimensions (default 220 cols × 50 rows) because
+  no PTY is available. It bypasses `Start-ElmProgram`'s dimension validation entirely.
+- Resize support is **deferred**. xterm.js sends `ESC[8;rows;colst` on `fitAddon.fit()`, but
+  the event loop ignores unknown message types. This is acceptable for v1.
+- `Start-ElmWebServer` does **NOT** open a browser automatically. The caller opens their browser.
+
+**Elm.psm1 change required:** Add JS file loading at module load:
+```powershell
+$script:XtermJs       = Get-Content "$PSScriptRoot/Private/Web/xterm.min.js"       -Raw -ErrorAction SilentlyContinue
+$script:XtermAddonFit = Get-Content "$PSScriptRoot/Private/Web/xterm-addon-fit.min.js" -Raw -ErrorAction SilentlyContinue
+```
 
 **Deliverables:**
 
+- **`ConvertFrom-AnsiVtSequence`** (Private):
+  - Params: `-InputString [string]`
+  - Returns one or more `PSCustomObject` items matching the InputQueue format.
+  - Handles: printable chars (→ KeyDown with ConsoleKey), control chars `\x01`–`\x1a`
+    (→ Ctrl+A–Ctrl+Z), `\x1b` → Escape, `\x7f` → Backspace, `\r` → Enter, `\t` → Tab,
+    VT arrow/navigation sequences (`ESC[A/B/C/D`, `ESC[H/F`, `ESC[5~/6~`), modified
+    sequences (`ESC[1;5A` = Ctrl+UpArrow).
+  - Multi-byte sequences arriving in a single `onData` batch are all parsed and returned.
+  - Resize sequence `ESC[8;rows;colst` → `{ Type='Resize', Width, Height }` (ignored by
+    event loop but parseable for future use).
+
 - **`Get-ElmXtermPage`** (Private):
   - Params: `-Port [int]`, `-Title [string]`
-  - Returns a self-contained HTML string - no external files, no CDN, no internet required
-  - **Bundles xterm.js and xterm-addon-fit inline** as minified JavaScript strings embedded in
-    the PowerShell module (stored in `Private/Web/xterm.min.js` and `Private/Web/xterm-addon-fit.min.js`,
-    read at module load time and interpolated into the HTML). The app works fully air-gapped.
-  - Pin the bundled xterm.js version in the module manifest notes; update deliberately on new releases
-  - Resize handler: sends `ESC[8;{rows};{cols}t` (terminal resize sequence) on connect and `window.onresize`
+  - Returns a self-contained HTML string - no external files, no CDN, no internet required.
+  - **Bundles xterm.js and xterm-addon-fit inline** from `$script:XtermJs` and
+    `$script:XtermAddonFit` (loaded into module scope at import time).
+  - App works fully air-gapped. Pin xterm.js v5.5.0; update deliberately.
+  - JS WebSocket event handlers use property assignment syntax (not method calls):
+    ```javascript
+    ws.onmessage = (e) => { term.write(e.data); };
+    ws.onclose   = () => { setTimeout(connect, 2000); };
+    ```
+  - Input: `term.onData(d => { if (ws.readyState === WebSocket.OPEN) ws.send(d); });`
 
 - **`Invoke-ElmWebSocketListener`** (Private):
-  - Params: `-Port [int]`, `-InputQueue`, `-OutputQueue`
+  - Params: `-Port [int]`, `-InputQueue [ConcurrentQueue[PSCustomObject]]`,
+    `-OutputQueue [ConcurrentQueue[string]]`, `-HtmlContent [string]`
   - `[System.Net.HttpListener]` on `http://localhost:{port}/`
-  - `GET /` → 200 with `Get-ElmXtermPage` HTML (always served regardless of connection state)
-  - `GET /ws` → if no active connection: `AcceptWebSocketAsync('elm-tui')`; if connection active: `409 Conflict` with body `"A session is already active. Close the existing tab and refresh."`
-  - Disconnection resets connection state, allowing reconnect
-  - Runs receive/send loops in background runspace
+  - Accept loop: `GetContext()` → check `$ctx.Request.IsWebSocketRequest` (not just URL path)
+  - Non-WS requests → 200 with `-HtmlContent`, no-cache headers
+  - WS request (check `IsWebSocketRequest`):
+    - If no active connection: `AcceptWebSocketAsync('elm-tui').GetAwaiter().GetResult()`
+    - If connection active: `409 Conflict` with body
+      `"A session is already active. Close the existing tab and refresh."`
+  - Receive runspace: `ReceiveAsync` loop → UTF-8 decode → `ConvertFrom-AnsiVtSequence` →
+    `InputQueue.Enqueue` (one enqueue per returned PSCustomObject)
+  - Send runspace: drains `OutputQueue` (ConcurrentQueue[string]) via `SendAsync`
+  - WebSocket context stored in `[ref]` variable shared between accept/send runspaces; swapped
+    on reconnect so the send runspace automatically uses the new connection
+  - Disconnection resets active flag, allowing reconnect
 
 - **`New-ElmWebSocketDriver`** (Public):
   - Params: `-Port [int]`
-  - Creates queues, calls `Invoke-ElmWebSocketListener`, returns driver PSCustomObject
+  - Creates `InputQueue` (`ConcurrentQueue[PSCustomObject]`) and internal `OutputQueue`
+    (`ConcurrentQueue[string]`). Calls `Invoke-ElmWebSocketListener`.
+  - Returns `{ InputQueue, OutputSink, Stop }` where `OutputSink` is a scriptblock that
+    enqueues its argument (an ANSI string) to the internal `OutputQueue`.
 
 - **`Start-ElmWebServer`** (Public):
-  - Same params as `Start-ElmProgram` plus `-Port [int]` (default 8080)
-  - Creates WebSocket driver
-  - Opens browser: `Start-Process http://localhost:{port}` (works on Windows/macOS/Linux)
-  - Calls `Invoke-ElmEventLoop` with driver
+  - Params: `-InitFn`, `-UpdateFn`, `-ViewFn`, `-SubscriptionFn` (optional), `-TickMs` (default 0),
+    `-Port [int]` (default 8080), `-Width [int]` (default 220), `-Height [int]` (default 50)
+  - Does NOT call `Start-ElmProgram` (bypasses PTY validation)
+  - Creates WebSocket driver, calls `Invoke-ElmEventLoop` **directly** with `-OutputSink`,
+    `-TerminalWidth`, `-TerminalHeight` from `-Width`/`-Height`
+  - Handles `-TickMs` tick runspace (same as `Start-ElmProgram`)
+  - Does **NOT** open a browser automatically. Prints `Listening on http://localhost:{port}/`
+  - Cleans up driver and tick loop in `finally` block
 
 **Tests to write first:**
+
+`ConvertFrom-AnsiVtSequence.Tests.ps1`:
+- Table-driven: each VT sequence → expected PSCustomObject(s)
+- Multi-sequence input → multiple objects returned
+- Printable chars → KeyDown with correct ConsoleKey and Char
+- Control chars `\x03` → Ctrl+C (Key=C, Modifiers=Ctrl)
+- Arrow sequences → UpArrow/DownArrow/LeftArrow/RightArrow
+- `\r` → Enter, `\x7f` → Backspace
 
 `Get-ElmXtermPage.Tests.ps1`:
 - Returns non-empty string
 - Contains `WebSocket` constructor with correct port
-- Contains xterm.js `<script>` tag
+- Contains xterm.js content (not empty string)
+- `ws.onmessage =` assignment syntax present (not `ws.onmessage(`)
 - `-Title` value appears in `<title>` tag
 
 `Invoke-ElmWebSocketListener.Tests.ps1`:
-- Mock HttpListener: incoming frame → pushed to InputQueue
-- OutputQueue item → WebSocket send called (mock WebSocket)
+- Mock HttpListener: incoming WS frame → PSCustomObject pushed to InputQueue
+- OutputQueue item → WebSocket SendAsync called
 - Starts without error on available port
 
 `New-ElmWebSocketDriver.Tests.ps1`:
-- Returns driver PSCustomObject with `InputQueue`, `OutputQueue`, `Stop` scriptblock
+- Returns driver PSCustomObject with `InputQueue`, `OutputSink`, `Stop` properties
+- `OutputSink` is a scriptblock
+- Calling `OutputSink` enqueues string to internal queue
 
 `Start-ElmWebServer.Tests.ps1`:
 - Creates WebSocket driver (mock `New-ElmWebSocketDriver`)
-- Passes correct driver to event loop (mock `Invoke-ElmEventLoop`)
-- Calls `Start-Process` with correct URL (mock `Start-Process`)
+- Calls `Invoke-ElmEventLoop` (not `Start-ElmProgram`)
+- Passes `-OutputSink`, `-TerminalWidth`, `-TerminalHeight` to event loop
+- Does NOT call `Start-Process`
 
 ---
 

@@ -85,6 +85,40 @@ Describe 'Invoke-ElmEventLoop' {
         }
     }
 
+    Context 'OutputSink' {
+        It 'Should call OutputSink instead of Console::Write when provided' {
+            $captured = [System.Collections.Generic.List[string]]::new()
+            $sink = { param($s) $captured.Add($s) }
+
+            $updateFn = {
+                param($msg, $model)
+                [PSCustomObject]@{ Model = $model; Cmd = [PSCustomObject]@{ Type = 'Quit' } }
+            }
+            $viewFn = { param($model) New-ElmText -Content 'test' }
+            $queue  = [System.Collections.Concurrent.ConcurrentQueue[object]]::new()
+            $queue.Enqueue('any')
+
+            Invoke-ElmEventLoop -InitialModel ([PSCustomObject]@{}) -UpdateFn $updateFn `
+                -ViewFn $viewFn -InputQueue $queue -OutputSink $sink
+
+            # OutputSink must be called at least once (hide cursor + initial render)
+            $captured.Count | Should -BeGreaterThan 0
+        }
+
+        It 'Should not throw when OutputSink is null (falls back to Console::Write)' {
+            $updateFn = {
+                param($msg, $model)
+                [PSCustomObject]@{ Model = $model; Cmd = [PSCustomObject]@{ Type = 'Quit' } }
+            }
+            $viewFn = { param($model) New-ElmText -Content 'x' }
+            $queue  = [System.Collections.Concurrent.ConcurrentQueue[object]]::new()
+            $queue.Enqueue('any')
+
+            { Invoke-ElmEventLoop -InitialModel ([PSCustomObject]@{}) -UpdateFn $updateFn `
+                -ViewFn $viewFn -InputQueue $queue -OutputSink $null } | Should -Not -Throw
+        }
+    }
+
     Context 'Message processing' {
         It 'Should accumulate model changes across multiple messages' {
             $updateFn = {

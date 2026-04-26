@@ -20,3 +20,9 @@ foreach ($function in $publicFunctions) {
 
 # Export public functions and their aliases
 Export-ModuleMember -Function ($publicFunctions | ForEach-Object { $_.BaseName }) -Alias *
+
+# Load bundled web assets for Start-ElmWebServer (Phase 7).
+# SilentlyContinue: module works normally without these; they are only required for web serving.
+$script:XtermJs       = Get-Content -Path "$PSScriptRoot/Private/Web/xterm.min.js"       -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+$script:XtermAddonFit = Get-Content -Path "$PSScriptRoot/Private/Web/xterm-addon-fit.min.js" -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+$script:XtermCss      = Get-Content -Path "$PSScriptRoot/Private/Web/xterm.css"          -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
