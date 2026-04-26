@@ -7,7 +7,7 @@ function New-ElmComponent {
         A Component node represents a nested TEA (The Elm Architecture) sub-program.
         It encapsulates its own SubModel and ViewFn. Measure-ElmViewTree automatically
         expands Component nodes by calling ViewFn with SubModel and measuring the
-        resulting subtree — ConvertTo-AnsiOutput and Compare-ElmViewTree never see
+        resulting subtree - ConvertTo-AnsiOutput and Compare-ElmViewTree never see
         raw Component nodes.
 
         Messages for components are routed using New-ElmComponentMsg, which wraps
@@ -36,7 +36,7 @@ function New-ElmComponent {
                                     -ViewFn $counterView
 
     .NOTES
-        Component nodes are transparent after layout — all measured nodes in the
+        Component nodes are transparent after layout - all measured nodes in the
         output tree will be Text or Box types only.
     #>
     [CmdletBinding()]

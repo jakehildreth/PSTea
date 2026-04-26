@@ -1,4 +1,4 @@
-# ADR-004 — Timer Subscription State Persistence
+# ADR-004 - Timer Subscription State Persistence
 
 | Field    | Value |
 |----------|-------|
@@ -48,7 +48,7 @@ state across cycles without leaking it into user-visible constructs.
 ## Consequences
 
 - `Invoke-ElmSubscriptions` signature gains a `-SubCache [hashtable]` parameter.
-- Stale cache entries (from removed timer subs) are harmless — they are never looked up.
+- Stale cache entries (from removed timer subs) are harmless - they are never looked up.
 - New timer subs (added mid-run) fire immediately on their first eligible cycle (no prior
   `LastFired`), which is the correct behavior.
 - `Invoke-ElmSubscriptions` tests can inject a pre-populated `$SubCache` to control timer state.

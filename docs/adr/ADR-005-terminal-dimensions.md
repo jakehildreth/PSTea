@@ -1,4 +1,4 @@
-# ADR-005 — Terminal Dimensions Initialization and Resize Handling
+# ADR-005 - Terminal Dimensions Initialization and Resize Handling
 
 | Field    | Value |
 |----------|-------|
@@ -17,7 +17,7 @@ node positions. Dimensions captured once at startup become stale if the user res
 | Option | Description |
 |--------|-------------|
 | **Capture once; never update** | Simple but renders incorrectly after resize. |
-| **Read `[Console]::WindowWidth/Height` every cycle** | Accurate but breaks driver abstraction — WebSocket driver has no console. |
+| **Read `[Console]::WindowWidth/Height` every cycle** | Accurate but breaks driver abstraction - WebSocket driver has no console. |
 | **Initialize from console; update via canonical `Resize` message** | Dimensions start from console (or WebSocket connect); resize events flow through `$InputQueue` as canonical strings; event loop updates and redraws. |
 
 ## Decision

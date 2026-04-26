@@ -1,15 +1,15 @@
-# ADR-011 — Named Color Enumeration and Color Profile Downsampling
+# ADR-011 - Named Color Enumeration and Color Profile Downsampling
 
 | Field    | Value |
 |----------|-------|
 | Status   | Accepted |
-| Affects  | Phase 2 (Style System — `Resolve-ElmColor`) |
+| Affects  | Phase 2 (Style System - `Resolve-ElmColor`) |
 
 ## Context
 
 `Resolve-ElmColor` was described as mapping "a reasonable set" of named colors. Without an
 explicit enumeration, `[ValidateSet(...)]` cannot be defined and tests cannot be authored.
-Additionally, not all terminals support truecolor (`#RRGGBB`) or even 256-color — emitting
+Additionally, not all terminals support truecolor (`#RRGGBB`) or even 256-color - emitting
 unsupported sequences produces incorrect or garbled output. LipGloss handles this by
 automatically downsampling colors to the best available profile for the terminal.
 
@@ -26,12 +26,12 @@ BrightBlue, BrightMagenta, BrightCyan, BrightWhite
 ```
 
 All other colors use hex (`'#FF8800'`) or 256-index (`201`). No `Orange`, `Pink`, `Purple` etc.
-as named constants — those are achievable via hex or 256-index and do not need named aliases.
+as named constants - those are achievable via hex or 256-index and do not need named aliases.
 
 ### Color Profile Detection and Downsampling
 
 Not implemented. The framework targets terminals with ANSI support. PowerShell ISE is explicitly
-out of scope — it does not support ANSI escape sequences and is not a supported host.
+out of scope - it does not support ANSI escape sequences and is not a supported host.
 
 `Resolve-ElmColor` always emits the ANSI sequence matching the requested color type:
 - Named color → 16-color ANSI SGR sequence

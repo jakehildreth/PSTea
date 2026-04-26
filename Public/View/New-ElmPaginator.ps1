@@ -67,7 +67,7 @@ function New-ElmPaginator {
         Elm style applied to the active element. Falls back to Style when null.
 
     .OUTPUTS
-        PSCustomObject — Text node (Numeric), Box/Horizontal (Dots or Tabs).
+        PSCustomObject - Text node (Numeric), Box/Horizontal (Dots or Tabs).
 
     .EXAMPLE
         # Numeric pagination
@@ -78,7 +78,7 @@ function New-ElmPaginator {
         New-ElmPaginator -Dots -CurrentPage $model.Page -PageCount $model.TotalPages
 
     .EXAMPLE
-        # Dot pagination — ASCII-safe for Windows PowerShell 5.1
+        # Dot pagination - ASCII-safe for Windows PowerShell 5.1
         New-ElmPaginator -Dots -CurrentPage 3 -PageCount 5 -FilledDot '*' -EmptyDot '-'
 
     .EXAMPLE

@@ -68,7 +68,7 @@ function New-ElmTextarea {
         When null (default) or when unfocused, the outer Box has no Style.
 
     .OUTPUTS
-        PSCustomObject — Box (Vertical) view node.
+        PSCustomObject - Box (Vertical) view node.
 
     .EXAMPLE
         New-ElmTextarea -Lines $model.Lines -CursorRow $model.Row -CursorCol $model.Col -Focused

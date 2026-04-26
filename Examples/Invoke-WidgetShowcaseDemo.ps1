@@ -3,33 +3,33 @@ Import-Module "$PSScriptRoot/../Elm.psd1" -Force
 # ---------------------------------------------------------------------------
 # Widget Showcase demo
 # Demonstrates all five Phase 9 widgets with live-adjustable configuration.
-# Each panel exposes widget params as keybindings — cycle options and see
+# Each panel exposes widget params as keybindings - cycle options and see
 # the widget update in real time.
 #
 # Navigation:
-#   P / N        — previous / next panel
-#   Q            — quit
+#   P / N        - previous / next panel
+#   Q            - quit
 #
-# Panel 1 — Animation  (New-ElmSpinner + New-ElmProgressBar)
+# Panel 1 - Animation  (New-ElmSpinner + New-ElmProgressBar)
 #   W  cycle -Width         (20/30/40)
 #   F  cycle -FilledChar    (#/=/*/+)
 #   E  cycle -EmptyChar     (-/./spc)
 #
-# Panel 2 — List  (New-ElmList)
+# Panel 2 - List  (New-ElmList)
 #   Up/Down  navigate                M  cycle -MaxVisible  (5/8/10)
 #   V        cycle -Prefix           (> / * / | / ->)
 #
-# Panel 3 — Viewport  (New-ElmViewport)
+# Panel 3 - Viewport  (New-ElmViewport)
 #   Up/Down  scroll                  M  cycle -MaxVisible  (4/8/12/16)
 #
-# Panel 4 — TextInput  (New-ElmTextInput)
+# Panel 4 - TextInput  (New-ElmTextInput)
 #   Left/Right  cursor               F  toggle -Focused    (on/off)
 #   Backspace   delete               C  cycle -CursorChar  (|/_/#)
 # ---------------------------------------------------------------------------
 
 $script:PANEL_COUNT = 7
 
-# Config option arrays — indices stored in the model
+# Config option arrays - indices stored in the model
 $script:BAR_WIDTHS    = @(20, 30, 40)
 $script:FILLED_CHARS  = @('#', '=', '*', '+')
 $script:EMPTY_CHARS   = @('-', '.', ' ')
@@ -64,7 +64,7 @@ $script:TABLE_ROWS    = @(
 
 # Viewport content: one line per Phase 9 widget description
 $script:VIEWPORT_LINES = @(
-    'Phase 9 Widget Library — Elm for PowerShell'
+    'Phase 9 Widget Library - Elm for PowerShell'
     '============================================'
     ''
     'New-ElmProgressBar'
@@ -147,7 +147,7 @@ $script:COLOR_NAMES = @(
     'Black'
 )
 
-# Helper — shallow-copy model, optionally overriding specific fields
+# Helper - shallow-copy model, optionally overriding specific fields
 function New-ShowcaseModel {
     param($Model, [hashtable]$Overrides = @{})
     $m = [PSCustomObject]@{
@@ -595,7 +595,7 @@ $viewFn = {
             $prefix = $script:LIST_PREFIXES[$model.ListPrefixIdx]
 
             $children.Add((New-ElmText -Content '' ))
-            $children.Add((New-ElmText -Content 'New-ElmList  —  ANSI Color Names' -Style $labelStyle))
+            $children.Add((New-ElmText -Content 'New-ElmList  -  ANSI Color Names' -Style $labelStyle))
             $listNode = New-ElmList -Items $script:COLOR_NAMES `
                                     -SelectedIndex $model.ListCursor `
                                     -MaxVisible $maxVis `
@@ -620,7 +620,7 @@ $viewFn = {
             $maxVis = $script:VP_MAX_VIS[$model.VpMaxVisIdx]
 
             $children.Add((New-ElmText -Content '' ))
-            $children.Add((New-ElmText -Content 'New-ElmViewport  —  Widget Documentation' -Style $labelStyle))
+            $children.Add((New-ElmText -Content 'New-ElmViewport  -  Widget Documentation' -Style $labelStyle))
             $vpNode = New-ElmViewport -Lines $script:VIEWPORT_LINES `
                                       -ScrollOffset $model.ViewOffset `
                                       -MaxVisible $maxVis `
@@ -695,7 +695,7 @@ $viewFn = {
             $taNode = if ($isFocused) { New-ElmTextarea @taParams -Focused } else { New-ElmTextarea @taParams }
 
             $children.Add((New-ElmText -Content '' ))
-            $children.Add((New-ElmText -Content 'New-ElmTextarea  —  Multi-line editor' -Style $labelStyle))
+            $children.Add((New-ElmText -Content 'New-ElmTextarea  -  Multi-line editor' -Style $labelStyle))
             $children.Add($taNode)
 
             $focusedStr = if ($isFocused) { 'on' } else { 'off' }
@@ -720,7 +720,7 @@ $viewFn = {
             $tableSelStyle = New-ElmStyle -Foreground 'BrightYellow' -Bold
 
             $children.Add((New-ElmText -Content '' ))
-            $children.Add((New-ElmText -Content 'New-ElmTable  —  Widget Reference' -Style $labelStyle))
+            $children.Add((New-ElmText -Content 'New-ElmTable  -  Widget Reference' -Style $labelStyle))
             $tableNode = New-ElmTable -Headers $script:TABLE_HEADERS `
                                       -Rows    $script:TABLE_ROWS `
                                       -SelectedRow  $model.TableCursor `
@@ -731,7 +731,7 @@ $viewFn = {
 
             $selected = $script:TABLE_ROWS[$model.TableCursor]
             $children.Add((New-ElmText -Content '' ))
-            $children.Add((New-ElmText -Content "  Row $($model.TableCursor + 1)/$($script:TABLE_ROWS.Count)  —  $($selected[0])" -Style $hintStyle))
+            $children.Add((New-ElmText -Content "  Row $($model.TableCursor + 1)/$($script:TABLE_ROWS.Count)  -  $($selected[0])" -Style $hintStyle))
             $children.Add((New-ElmText -Content '' ))
             $children.Add((New-ElmText -Content '[Up/Down] select row  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
         }
@@ -744,7 +744,7 @@ $viewFn = {
             $activeTabStyle = New-ElmStyle -Foreground 'BrightWhite' -Bold
 
             $children.Add((New-ElmText -Content '' ))
-            $children.Add((New-ElmText -Content 'New-ElmPaginator  —  Navigation widgets' -Style $labelStyle))
+            $children.Add((New-ElmText -Content 'New-ElmPaginator  -  Navigation widgets' -Style $labelStyle))
             $children.Add((New-ElmText -Content '' ))
 
             $dotStyle     = New-ElmStyle -Foreground 'BrightMagenta'
@@ -793,7 +793,7 @@ $subFn = {
         $subs.Add((New-ElmKeySub -Key 'P' -Handler { 'TabPrev' }))
     }
 
-    # Timer — always runs (spinner animation + progress auto-advance)
+    # Timer - always runs (spinner animation + progress auto-advance)
     $subs.Add((New-ElmTimerSub -IntervalMs 120 -Handler { 'Tick' }))
 
     # Panel-specific keys
@@ -868,13 +868,13 @@ function Invoke-WidgetShowcaseDemo {
         with live-adjustable configuration options.
 
         Global keys:
-          P / N      — previous / next panel
-          Q          — quit
+          P / N      - previous / next panel
+          Q          - quit
 
-        Panel 1 — Animation:   W / F / E  cycle Width / FilledChar / EmptyChar
-        Panel 2 — List:        Up/Down navigate  M / V  cycle MaxVisible / Prefix
-        Panel 3 — Viewport:    Up/Down scroll    M  cycle MaxVisible
-        Panel 4 — TextInput:   Left/Right cursor  Backspace delete  F / C  Focused / CursorChar
+        Panel 1 - Animation:   W / F / E  cycle Width / FilledChar / EmptyChar
+        Panel 2 - List:        Up/Down navigate  M / V  cycle MaxVisible / Prefix
+        Panel 3 - Viewport:    Up/Down scroll    M  cycle MaxVisible
+        Panel 4 - TextInput:   Left/Right cursor  Backspace delete  F / C  Focused / CursorChar
 
     .NOTES
         Requires the Elm module.

@@ -1,4 +1,4 @@
-# ADR-007 — Component Node Expansion: Measure Pass vs. Render Pass
+# ADR-007 - Component Node Expansion: Measure Pass vs. Render Pass
 
 | Field    | Value |
 |----------|-------|
@@ -10,7 +10,7 @@
 Phase 8 originally said `ConvertTo-AnsiOutput` should handle Component nodes by calling `ViewFn`
 with `SubModel` at render time. However, `Measure-ElmViewTree` runs before rendering and assigns
 `X`/`Y`/`Width`/`Height` to every node. If components expand during render, the layout engine
-never measured the component's actual content — surrounding node positions are based on placeholder
+never measured the component's actual content - surrounding node positions are based on placeholder
 dimensions and are incorrect.
 
 ## Options Considered

@@ -40,7 +40,7 @@ $update = {
             $cursor = if ($cursor -lt $count - 1) { $cursor + 1 } else { 0 }
         }
         'Spacebar' {
-            # Toggle done on selected item — clone the array so the model is immutable-ish
+            # Toggle done on selected item - clone the array so the model is immutable-ish
             $newItems = @()
             for ($i = 0; $i -lt $count; $i++) {
                 if ($i -eq $cursor) {

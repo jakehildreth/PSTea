@@ -1,7 +1,7 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Pomodoro countdown timer demo — showcases the subscription system.
+    Pomodoro countdown timer demo - showcases the subscription system.
 
 .DESCRIPTION
     A 25-minute countdown timer demonstrating conditional subscriptions:
@@ -9,9 +9,9 @@
     so pausing it literally removes the sub from the subscription list.
 
     Keys:
-      Space  — toggle start/pause
-      R      — reset to 25:00
-      Q      — quit
+      Space  - toggle start/pause
+      R      - reset to 25:00
+      Q      - quit
 
 .NOTES
     Requires the Elm module to be loaded.
@@ -130,7 +130,7 @@ function Invoke-PomodoroDemo {
     }
 
     # ---------------------------------------------------------- Subscriptions
-    # The timer sub is only active when Running is true — pausing removes it.
+    # The timer sub is only active when Running is true - pausing removes it.
     $subFn = {
         param($model)
         $subs = [System.Collections.Generic.List[object]]::new()

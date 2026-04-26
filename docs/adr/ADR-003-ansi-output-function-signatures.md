@@ -1,4 +1,4 @@
-# ADR-003 — ANSI Output Function Signatures
+# ADR-003 - ANSI Output Function Signatures
 
 | Field    | Value |
 |----------|-------|
@@ -24,9 +24,9 @@ detection inside the function, which requires it to carry state.
 
 **Two separate functions:**
 
-- `ConvertTo-AnsiOutput -Root` — full frame render. Walks the measured tree, emits `ESC[2J` +
+- `ConvertTo-AnsiOutput -Root` - full frame render. Walks the measured tree, emits `ESC[2J` +
   all node positions. Used on first render and after any `FullRedraw` patch.
-- `ConvertTo-AnsiPatch -Patches` — incremental render. Iterates patch list, emits only changed
+- `ConvertTo-AnsiPatch -Patches` - incremental render. Iterates patch list, emits only changed
   cursor-position + content sequences.
 
 The event loop selects which to call:

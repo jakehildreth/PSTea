@@ -1,4 +1,4 @@
-# ADR-001 — Input Queue Serialization Format
+# ADR-001 - Input Queue Serialization Format
 
 | Field    | Value |
 |----------|-------|
@@ -17,8 +17,8 @@ event loop cannot process input.
 
 | Option | Description |
 |--------|-------------|
-| **A — Normalize at driver** | Each driver converts its raw input to a canonical string format before enqueuing. `ConvertFrom-ElmKeyString` deserializes the canonical format. |
-| **B — Push PSCustomObjects** | Use `ConcurrentQueue[object]`. Drivers push already-formed Msg objects. No deserializer needed. |
+| **A - Normalize at driver** | Each driver converts its raw input to a canonical string format before enqueuing. `ConvertFrom-ElmKeyString` deserializes the canonical format. |
+| **B - Push PSCustomObjects** | Use `ConcurrentQueue[object]`. Drivers push already-formed Msg objects. No deserializer needed. |
 
 ## Decision
 
@@ -43,7 +43,7 @@ event loop cannot process input.
 
 ## Rationale
 
-String queue contents are inspectable — they can be dumped, logged, and asserted in tests. Failures
+String queue contents are inspectable - they can be dumped, logged, and asserted in tests. Failures
 isolate to small lookup tables in each driver, not deep in the event loop. PSCustomObjects in a
 queue are opaque and harder to diagnose.
 

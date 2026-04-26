@@ -1,9 +1,9 @@
-# ADR-006 — Background Runspace Module Loading
+# ADR-006 - Background Runspace Module Loading
 
 | Field    | Value |
 |----------|-------|
 | Status   | Accepted |
-| Affects  | Phase 5 (Runtime — `Invoke-ElmDriverLoop`) |
+| Affects  | Phase 5 (Runtime - `Invoke-ElmDriverLoop`) |
 
 ## Context
 
@@ -17,7 +17,7 @@ did not specify how the module is made available inside these runspaces.
 |--------|-------------|
 | **`InitialSessionState.ImportPSModule`** | Import the module by name or path when creating the runspace. |
 | **Inject functions as scriptblock parameters** | Serialize required functions and pass them as named parameters on the `PowerShell` instance. |
-| **Try/fallback — both** | Attempt module import first; fall back to scriptblock injection if import fails; emit a warning in fallback mode. |
+| **Try/fallback - both** | Attempt module import first; fall back to scriptblock injection if import fails; emit a warning in fallback mode. |
 
 ## Decision
 

@@ -24,7 +24,7 @@ function Compare-ElmViewTree {
         The newly measured view tree to compare against the old tree.
 
     .OUTPUTS
-        [object[]] — An array of patch PSCustomObjects. May be empty, contain only a
+        [object[]] - An array of patch PSCustomObjects. May be empty, contain only a
         single FullRedraw, or contain one or more Replace patches.
 
     .EXAMPLE

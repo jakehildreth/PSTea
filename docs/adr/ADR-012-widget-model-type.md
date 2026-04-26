@@ -1,4 +1,4 @@
-# ADR-012 — Widget Architecture: Pure View Functions vs. Full Component Triples
+# ADR-012 - Widget Architecture: Pure View Functions vs. Full Component Triples
 
 | Field    | Value |
 |----------|-------|
@@ -40,7 +40,7 @@ New-ElmViewport  -Lines $lines -ScrollOffset $model.ScrollTop -MaxVisible 8
 
 - **Simpler composition**: no sub-model embedding, no message routing boilerplate, no
   `New-ElmComponentMsg` wrapping for trivial widgets.
-- **Consistent API**: same shape as `New-ElmText`, `New-ElmBox`, `New-ElmRow` — all pure
+- **Consistent API**: same shape as `New-ElmText`, `New-ElmBox`, `New-ElmRow` - all pure
   view functions. Developers already know this pattern.
 - **Framework already has components**: `New-ElmComponent` (Phase 8) exists for cases where
   genuine encapsulation is needed. Widgets that are just presentation don't need it.

@@ -37,7 +37,7 @@ function Invoke-ElmSubscriptions {
         Pass the same instance on every call; Invoke-ElmSubscriptions mutates it.
 
     .OUTPUTS
-        Object[] — zero or more message objects to dispatch to UpdateFn.
+        Object[] - zero or more message objects to dispatch to UpdateFn.
         Always returns an array (never $null).
 
     .EXAMPLE
@@ -145,7 +145,7 @@ function Invoke-ElmSubscriptions {
                     }
                 }
             } else {
-                # Pass-through: no key subs or char subs — forward raw event to UpdateFn
+                # Pass-through: no key subs or char subs - forward raw event to UpdateFn
                 $msgs.Add($item)
             }
         } elseif ($item.Type -eq 'Tick') {

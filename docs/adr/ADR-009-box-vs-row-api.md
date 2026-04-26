@@ -1,4 +1,4 @@
-# ADR-009 — `New-ElmBox` vs. `New-ElmRow` API
+# ADR-009 - `New-ElmBox` vs. `New-ElmRow` API
 
 | Field    | Value |
 |----------|-------|
@@ -10,7 +10,7 @@
 The module structure listed both `New-ElmBox.ps1` and `New-ElmRow.ps1` as separate files. Phase 3
 deliverables described `New-ElmBox` as implicitly vertical, but the example code used
 `New-ElmBox -Direction Vertical`. The plan was internally inconsistent. LipGloss (a primary design
-influence) uses two distinct functions — `JoinHorizontal` and `JoinVertical` — rather than a
+influence) uses two distinct functions - `JoinHorizontal` and `JoinVertical` - rather than a
 single function with a direction parameter.
 
 ## Options Considered
@@ -37,7 +37,7 @@ New-ElmBox -Children @(
 
 LipGloss, a primary design influence, uses two distinct named operations (`JoinVertical`,
 `JoinHorizontal`) rather than one parameterized function. Two named functions produce more
-readable call sites — direction is conveyed by the function name, not a recurring `-Direction`
+readable call sites - direction is conveyed by the function name, not a recurring `-Direction`
 parameter at every call site.
 
 ## Consequences

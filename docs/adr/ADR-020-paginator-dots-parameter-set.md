@@ -1,4 +1,4 @@
-# ADR-020 — Consolidate Paginator Variants into New-ElmPaginator Parameter Sets
+# ADR-020 - Consolidate Paginator Variants into New-ElmPaginator Parameter Sets
 
 | Field    | Value |
 |----------|-------|
@@ -20,16 +20,16 @@ standalone `New-ElmDotPaginator.ps1`.**
 The `Dots` parameter set is selected via a mandatory `[switch]$Dots` parameter:
 
 ```powershell
-# Numeric (default — backward compatible)
+# Numeric (default - backward compatible)
 New-ElmPaginator -CurrentPage 3 -PageCount 7
 
-# Dots with Unicode defaults (requires UTF-8 console — provided by New-ElmTerminalDriver)
+# Dots with Unicode defaults (requires UTF-8 console - provided by New-ElmTerminalDriver)
 New-ElmPaginator -Dots -CurrentPage 3 -PageCount 7
 
 # Dots with ASCII fallback for legacy terminals
 New-ElmPaginator -Dots -CurrentPage 3 -PageCount 7 -FilledDot '*' -EmptyDot '-'
 
-# Named tabs — unchanged
+# Named tabs - unchanged
 New-ElmPaginator -Tabs @('A','B','C') -ActiveTab 1
 ```
 
@@ -46,11 +46,11 @@ A mandatory `[switch]$Dots` solves this cleanly:
 - Keeps `-FilledDot`, `-EmptyDot`, `-Separator` optional with sensible defaults
 
 Rejected alternatives:
-- **Separate function** — Splits conceptually related navigation widgets across the API surface;
+- **Separate function** - Splits conceptually related navigation widgets across the API surface;
   callers have to remember two names
-- **-FilledDot as mandatory** — Forces callers to supply a char they don't want to customize;
+- **-FilledDot as mandatory** - Forces callers to supply a char they don't want to customize;
   ergonomically bad
-- **Infer from presence of -FilledDot/-EmptyDot** — Can't get dots-with-all-defaults; ambiguity
+- **Infer from presence of -FilledDot/-EmptyDot** - Can't get dots-with-all-defaults; ambiguity
   when only `Numeric`-compatible params are passed
 
 ## Unicode Dot Characters

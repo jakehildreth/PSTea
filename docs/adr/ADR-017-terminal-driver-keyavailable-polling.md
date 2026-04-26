@@ -1,9 +1,9 @@
-# ADR-017 — Terminal Driver Uses `KeyAvailable` Polling Over Blocking `ReadKey`
+# ADR-017 - Terminal Driver Uses `KeyAvailable` Polling Over Blocking `ReadKey`
 
 | Field    | Value |
 |----------|-------|
 | Status   | Accepted |
-| Affects  | Phase 5 (Runtime — `New-ElmTerminalDriver`) |
+| Affects  | Phase 5 (Runtime - `New-ElmTerminalDriver`) |
 
 ## Context
 

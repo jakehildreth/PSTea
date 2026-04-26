@@ -1,9 +1,9 @@
-# ADR-014 — WebSocket: Single Connection Policy
+# ADR-014 - WebSocket: Single Connection Policy
 
 | Field    | Value |
 |----------|-------|
 | Status   | Accepted |
-| Affects  | Phase 7 (WebSocket Driver — `Invoke-ElmWebSocketListener`) |
+| Affects  | Phase 7 (WebSocket Driver - `Invoke-ElmWebSocketListener`) |
 
 ## Context
 
@@ -18,13 +18,13 @@ a plain-text explanation.**
 - The listener accepts the first WebSocket upgrade request.
 - Subsequent `GET /ws` requests while a connection is active receive `409 Conflict` with body:
   `"A session is already active. Close the existing tab and refresh."`
-- `GET /` (the HTML page) continues to serve normally regardless of connection state — the user
+- `GET /` (the HTML page) continues to serve normally regardless of connection state - the user
   can load the page again; they just can't open a second WebSocket session.
 - This is documented as a v1 constraint. Multiple sessions are a v2 consideration.
 
 ## Rationale
 
-One app instance = one user session. This is consistent with the model — there is a single
+One app instance = one user session. This is consistent with the model - there is a single
 `$InputQueue` and `$OutputQueue`. Multiple connections sharing one queue would produce
 non-deterministic input routing and interleaved output. A clear `409` is more developer-friendly
 than undefined/silent behavior.

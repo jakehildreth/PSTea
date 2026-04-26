@@ -54,7 +54,7 @@ function New-ElmTextInput {
         node returned is a plain Text node.
 
     .OUTPUTS
-        PSCustomObject — Text view node.
+        PSCustomObject - Text view node.
 
     .EXAMPLE
         New-ElmTextInput -Value $model.Input -CursorPos $model.Cursor -Focused

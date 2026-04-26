@@ -108,7 +108,7 @@ Describe 'New-ElmTextInput' -Tag 'Unit', 'P9' {
         }
     }
 
-    Context 'FocusedBoxStyle — wrapper Box when focused' {
+    Context 'FocusedBoxStyle - wrapper Box when focused' {
         It 'Should return a Box node when focused and FocusedBoxStyle is provided' {
             $fbs = [PSCustomObject]@{ Border = 'Rounded' }
             $ti  = New-ElmTextInput -Value 'hi' -CursorPos 2 -Focused -FocusedBoxStyle $fbs

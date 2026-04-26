@@ -1,7 +1,7 @@
 Import-Module "$PSScriptRoot/../Elm.psd1" -Force
 
 # ---------------------------------------------------------------------------
-# Static showcase — no state changes, Q to quit
+# Static showcase - no state changes, Q to quit
 # Demonstrates: border styles, text decorations, foreground/background colors
 # ---------------------------------------------------------------------------
 

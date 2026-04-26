@@ -18,7 +18,7 @@ function ConvertTo-AnsiPatch {
         has a Type property ('Replace', 'Clear', or 'FullRedraw').
 
     .OUTPUTS
-        [string] — A single ANSI escape sequence string ready for Console output.
+        [string] - A single ANSI escape sequence string ready for Console output.
         Returns an empty string when the patch list is empty or contains only FullRedraw.
 
     .EXAMPLE
@@ -68,7 +68,7 @@ function ConvertTo-AnsiPatch {
                 }
             }
             'FullRedraw' {
-                # Intentionally skipped — caller handles full-redraw via ConvertTo-AnsiOutput
+                # Intentionally skipped - caller handles full-redraw via ConvertTo-AnsiOutput
             }
         }
     }

@@ -75,7 +75,7 @@ Describe 'ConvertTo-AnsiPatch' {
     }
 
     Context 'FullRedraw patch' {
-        It 'Should be skipped — not emitted in output' {
+        It 'Should be skipped - not emitted in output' {
             $patch = [PSCustomObject]@{ Type = 'FullRedraw' }
             $result = ConvertTo-AnsiPatch -Patches @($patch)
             $result | Should -Be ''

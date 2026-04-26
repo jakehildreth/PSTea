@@ -6,10 +6,10 @@ Import-Module "$PSScriptRoot/../Elm.psd1" -Force
 # Demonstrates: timer + key subscriptions together, game loop state, grid render.
 #
 # Controls:
-#   Arrow keys / WASD  — change direction
-#   Space              — start / pause
-#   R                  — restart
-#   Q                  — quit
+#   Arrow keys / WASD  - change direction
+#   Space              - start / pause
+#   R                  - restart
+#   Q                  - quit
 # ---------------------------------------------------------------------------
 
 $script:COLS  = 30   # playfield columns (each cell = 1 char)

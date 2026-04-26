@@ -172,7 +172,7 @@ Describe 'New-ElmTextarea' -Tag 'Unit', 'P10' {
         }
     }
 
-    Context 'FocusedBoxStyle — outer Box style when focused' {
+    Context 'FocusedBoxStyle - outer Box style when focused' {
         It 'Should apply FocusedBoxStyle to the outer Box when focused' {
             $fbs = [PSCustomObject]@{ Border = 'Rounded' }
             $ta  = New-ElmTextarea -Lines @('hello') -CursorRow 0 -CursorCol 0 -Focused -FocusedBoxStyle $fbs

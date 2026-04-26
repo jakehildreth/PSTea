@@ -1,15 +1,15 @@
-# ADR-015 — `Apply-ElmStyle` Multi-Line Border Rendering
+# ADR-015 - `Apply-ElmStyle` Multi-Line Border Rendering
 
 | Field    | Value |
 |----------|-------|
 | Status   | Accepted |
-| Affects  | Phase 2 (Style System — `Apply-ElmStyle`) |
+| Affects  | Phase 2 (Style System - `Apply-ElmStyle`) |
 
 ## Context
 
 `Apply-ElmStyle` adds border characters around styled content. The plan specified top-row
 (`TL`/`T`/`TR`) and bottom-row (`BL`/`B`/`BR`) characters but did not define behavior for
-multi-line content — specifically whether `L` and `R` side characters are repeated on each
+multi-line content - specifically whether `L` and `R` side characters are repeated on each
 interior line.
 
 ## Decision
@@ -27,7 +27,7 @@ interior line.
 ## Rationale
 
 This is standard box-drawing convention. A border that only has a top and bottom row with no
-sides is not a box — it is two horizontal rules. Every TUI framework renders borders this way.
+sides is not a box - it is two horizontal rules. Every TUI framework renders borders this way.
 
 ## Consequences
 

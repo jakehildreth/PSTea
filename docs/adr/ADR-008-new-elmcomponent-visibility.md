@@ -1,4 +1,4 @@
-# ADR-008 — `New-ElmComponent` Visibility (Public vs. Internal)
+# ADR-008 - `New-ElmComponent` Visibility (Public vs. Internal)
 
 | Field    | Value |
 |----------|-------|
@@ -18,7 +18,7 @@ scriptblocks written by the developer. If it is private, developers cannot use i
 
 It is called in user-authored View functions. There is no mechanism for a private function to be
 accessible from a scriptblock defined outside the module. The "consider internal" note in the
-original plan was an error — the usage pattern makes the visibility requirement unambiguous.
+original plan was an error - the usage pattern makes the visibility requirement unambiguous.
 
 ## Consequences
 

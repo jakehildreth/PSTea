@@ -6,12 +6,12 @@ Import-Module "$PSScriptRoot/../Elm.psd1" -Force
 # Demonstrates: timer-driven data polling, tabular rendering, sort/scroll.
 #
 # Controls:
-#   UpArrow / K   — scroll up
-#   DownArrow / J — scroll down
-#   C             — sort by CPU
-#   M             — sort by memory
-#   R             — force refresh now
-#   Q             — quit
+#   UpArrow / K   - scroll up
+#   DownArrow / J - scroll down
+#   C             - sort by CPU
+#   M             - sort by memory
+#   R             - force refresh now
+#   Q             - quit
 # ---------------------------------------------------------------------------
 
 $script:PAGE_SIZE = 10   # visible process rows

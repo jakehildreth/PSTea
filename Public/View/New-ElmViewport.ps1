@@ -25,7 +25,7 @@ function New-ElmViewport {
         Optional Elm style applied to each line.
 
     .OUTPUTS
-        PSCustomObject — Box view node.
+        PSCustomObject - Box view node.
 
     .EXAMPLE
         New-ElmViewport -Lines $model.Lines -ScrollOffset $model.Scroll -MaxVisible 20

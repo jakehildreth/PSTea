@@ -5,7 +5,7 @@ function New-ElmCharSub {
 
     .DESCRIPTION
         Returns a subscription descriptor that fires for any printable character
-        (Unicode code point 0x0020–0x007E) that was NOT already consumed by a
+        (Unicode code point 0x0020-0x007E) that was NOT already consumed by a
         specific New-ElmKeySub in the same subscription list.
 
         The handler scriptblock receives the raw KeyDown event as its first

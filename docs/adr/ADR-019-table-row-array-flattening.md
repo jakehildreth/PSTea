@@ -1,4 +1,4 @@
-# ADR-019 — PowerShell Array Flattening in Table Widget Parameter
+# ADR-019 - PowerShell Array Flattening in Table Widget Parameter
 
 | Field    | Value |
 |----------|-------|

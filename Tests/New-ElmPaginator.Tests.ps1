@@ -4,7 +4,7 @@ BeforeAll {
 
 Describe 'New-ElmPaginator' -Tag 'Unit', 'P10' {
 
-    Context 'Numeric mode — return value structure' {
+    Context 'Numeric mode - return value structure' {
         It 'Should return a Text node' {
             $p = New-ElmPaginator -CurrentPage 3 -PageCount 7
             $p.Type | Should -Be 'Text'
@@ -21,7 +21,7 @@ Describe 'New-ElmPaginator' -Tag 'Unit', 'P10' {
         }
     }
 
-    Context 'Numeric mode — content' {
+    Context 'Numeric mode - content' {
         It 'Should include current page number' {
             $p = New-ElmPaginator -CurrentPage 3 -PageCount 7
             $p.Content | Should -Match '3'
@@ -58,7 +58,7 @@ Describe 'New-ElmPaginator' -Tag 'Unit', 'P10' {
         }
     }
 
-    Context 'Numeric mode — clamping' {
+    Context 'Numeric mode - clamping' {
         It 'Should clamp CurrentPage below 1 to 1' {
             $p = New-ElmPaginator -CurrentPage -5 -PageCount 5
             $p.Content | Should -Match ' 1 '
@@ -70,7 +70,7 @@ Describe 'New-ElmPaginator' -Tag 'Unit', 'P10' {
         }
     }
 
-    Context 'Tabs mode — return value structure' {
+    Context 'Tabs mode - return value structure' {
         It 'Should return a Box node' {
             $p = New-ElmPaginator -Tabs @('A', 'B', 'C') -ActiveTab 0
             $p.Type | Should -Be 'Box'
@@ -93,7 +93,7 @@ Describe 'New-ElmPaginator' -Tag 'Unit', 'P10' {
         }
     }
 
-    Context 'Tabs mode — content' {
+    Context 'Tabs mode - content' {
         It 'Should wrap the active tab label in brackets' {
             $p = New-ElmPaginator -Tabs @('Alpha', 'Beta') -ActiveTab 0
             $p.Children[0].Content | Should -Be '[Alpha]'
@@ -128,7 +128,7 @@ Describe 'New-ElmPaginator' -Tag 'Unit', 'P10' {
         }
     }
 
-    Context 'Tabs mode — ActiveTab clamping' {
+    Context 'Tabs mode - ActiveTab clamping' {
         It 'Should clamp ActiveTab below 0 to 0' {
             $p = New-ElmPaginator -Tabs @('A', 'B', 'C') -ActiveTab -1
             $p.Children[0].Content | Should -Be '[A]'
@@ -140,7 +140,7 @@ Describe 'New-ElmPaginator' -Tag 'Unit', 'P10' {
         }
     }
 
-    Context 'Style passthrough — Numeric' {
+    Context 'Style passthrough - Numeric' {
         It 'Should apply ActiveStyle to the numeric Text node' {
             $as = [PSCustomObject]@{ Foreground = 'BrightCyan' }
             $p  = New-ElmPaginator -CurrentPage 2 -PageCount 5 -ActiveStyle $as
@@ -154,7 +154,7 @@ Describe 'New-ElmPaginator' -Tag 'Unit', 'P10' {
         }
     }
 
-    Context 'Dots mode — return value structure' {
+    Context 'Dots mode - return value structure' {
         It 'Should return a Box node' {
             $p = New-ElmPaginator -Dots -CurrentPage 1 -PageCount 5
             $p.Type | Should -Be 'Box'
@@ -182,7 +182,7 @@ Describe 'New-ElmPaginator' -Tag 'Unit', 'P10' {
         }
     }
 
-    Context 'Dots mode — content' {
+    Context 'Dots mode - content' {
         It 'Should use FilledDot for the active page' {
             $p = New-ElmPaginator -Dots -CurrentPage 3 -PageCount 5
             # child index for page 3: (3-1) * 2 = 4
@@ -216,20 +216,20 @@ Describe 'New-ElmPaginator' -Tag 'Unit', 'P10' {
         }
     }
 
-    Context 'Dots mode — clamping' {
-        It 'Should clamp CurrentPage below 1 to 1 — first dot is filled' {
+    Context 'Dots mode - clamping' {
+        It 'Should clamp CurrentPage below 1 to 1 - first dot is filled' {
             $p = New-ElmPaginator -Dots -CurrentPage -5 -PageCount 5
             $p.Children[0].Content | Should -Be ([char]0x25CF).ToString()
         }
 
-        It 'Should clamp CurrentPage above PageCount to PageCount — last dot is filled' {
+        It 'Should clamp CurrentPage above PageCount to PageCount - last dot is filled' {
             $p = New-ElmPaginator -Dots -CurrentPage 99 -PageCount 3
             # last dot child index: (3-1)*2 = 4
             $p.Children[4].Content | Should -Be ([char]0x25CF).ToString()
         }
     }
 
-    Context 'Dots mode — styles' {
+    Context 'Dots mode - styles' {
         It 'Should apply ActiveStyle to the active dot' {
             $as = [PSCustomObject]@{ Foreground = 'BrightWhite' }
             $p  = New-ElmPaginator -Dots -CurrentPage 1 -PageCount 3 -ActiveStyle $as

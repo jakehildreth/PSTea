@@ -44,7 +44,7 @@ function New-ElmTable {
         Elm style applied to the selected row. When omitted, defaults to bold.
 
     .OUTPUTS
-        PSCustomObject — Box (Vertical) view node.
+        PSCustomObject - Box (Vertical) view node.
 
     .EXAMPLE
         New-ElmTable -Headers @('Name','Age','City') `

@@ -1,9 +1,9 @@
-# ADR-018 — Printable-Character Subscription: `New-ElmCharSub`
+# ADR-018 - Printable-Character Subscription: `New-ElmCharSub`
 
 | Field    | Value |
 |----------|-------|
 | Status   | Accepted |
-| Affects  | Phase 9 (Widget Library — `New-ElmTextInput`), Phase 6 (Subscriptions) |
+| Affects  | Phase 9 (Widget Library - `New-ElmTextInput`), Phase 6 (Subscriptions) |
 
 ## Context
 
@@ -19,7 +19,7 @@ Three designs were considered for capturing printable input.
 |--------|-------------|
 | **Wildcard KeySub** | `New-ElmKeySub -Key '*'` matches any key. Developer checks `.Char` in handler. |
 | **All-key fallthrough in Update** | No special sub; every unmatched key event passes through to Update as a raw message. Developer pattern-matches on `$msg.Char`. |
-| **Dedicated `New-ElmCharSub` type** | New subscription type that fires only for printable ASCII chars (0x20–0x7E) not already consumed by a `New-ElmKeySub` in the same cycle. |
+| **Dedicated `New-ElmCharSub` type** | New subscription type that fires only for printable ASCII chars (0x20-0x7E) not already consumed by a `New-ElmKeySub` in the same cycle. |
 
 ## Decision
 
@@ -40,7 +40,7 @@ New-ElmCharSub -Handler { param($e) "Input:$([string]$e.Char)" }
 
 **Wildcard KeySub** conflates two different semantics: "I want this specific key" vs. "I want
 any printable character." A wildcard would also fire for arrow keys, function keys, and modifier
-combos — the developer would filter these in the handler, which is boilerplate every text input
+combos - the developer would filter these in the handler, which is boilerplate every text input
 needs to repeat.
 
 **All-key fallthrough** removes the subscription abstraction entirely for this case. It bypasses

@@ -42,7 +42,7 @@ function New-ElmList {
         Style applied to the selected item. When omitted, defaults to bold.
 
     .OUTPUTS
-        PSCustomObject — Box view node.
+        PSCustomObject - Box view node.
 
     .EXAMPLE
         New-ElmList -Items @('Apple', 'Banana', 'Cherry') -SelectedIndex $model.Index

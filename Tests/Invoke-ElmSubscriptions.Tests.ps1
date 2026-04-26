@@ -7,7 +7,7 @@ BeforeAll {
 
 Describe 'Invoke-ElmSubscriptions' -Tag 'Unit', 'P6' {
 
-    Context 'Empty subscriptions — pass-through mode' {
+    Context 'Empty subscriptions - pass-through mode' {
         It 'Should return an empty array when queue is empty and no subs' {
             $queue = [System.Collections.Concurrent.ConcurrentQueue[object]]::new()
             $state  = @{}
@@ -45,7 +45,7 @@ Describe 'Invoke-ElmSubscriptions' -Tag 'Unit', 'P6' {
         }
     }
 
-    Context 'Key subscriptions — matching' {
+    Context 'Key subscriptions - matching' {
         It 'Should invoke handler and return message for matching key' {
             $sub   = New-ElmKeySub -Key 'Q' -Handler { 'Quit' }
             $queue = [System.Collections.Concurrent.ConcurrentQueue[object]]::new()
@@ -88,7 +88,7 @@ Describe 'Invoke-ElmSubscriptions' -Tag 'Unit', 'P6' {
         }
     }
 
-    Context 'Key subscriptions — case-insensitive letter matching' {
+    Context 'Key subscriptions - case-insensitive letter matching' {
         It 'Should match lowercase key event for a sub with no modifiers' {
             $sub   = New-ElmKeySub -Key 'Q' -Handler { 'Quit' }
             $queue = [System.Collections.Concurrent.ConcurrentQueue[object]]::new()
@@ -117,7 +117,7 @@ Describe 'Invoke-ElmSubscriptions' -Tag 'Unit', 'P6' {
         }
     }
 
-    Context 'Key subscriptions — Ctrl modifier matching' {
+    Context 'Key subscriptions - Ctrl modifier matching' {
         It 'Should match Ctrl+Q exactly' {
             $sub   = New-ElmKeySub -Key 'Ctrl+Q' -Handler { 'CtrlQuit' }
             $queue = [System.Collections.Concurrent.ConcurrentQueue[object]]::new()

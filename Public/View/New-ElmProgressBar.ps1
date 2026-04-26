@@ -33,7 +33,7 @@ function New-ElmProgressBar {
         Optional Elm style PSCustomObject from New-ElmStyle.
 
     .OUTPUTS
-        PSCustomObject — Text view node.
+        PSCustomObject - Text view node.
 
     .EXAMPLE
         New-ElmProgressBar -Value 0.75 -Width 30

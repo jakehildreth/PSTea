@@ -87,7 +87,7 @@ function New-ElmStyle {
         $active = New-ElmStyle -Base $style -Background '#5C4AE4'
 
     .NOTES
-        All fields are always present on the returned object — no $null ambiguity for consumers.
+        All fields are always present on the returned object - no $null ambiguity for consumers.
     #>
     [CmdletBinding()]
     param(

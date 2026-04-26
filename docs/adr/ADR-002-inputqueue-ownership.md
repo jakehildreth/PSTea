@@ -1,4 +1,4 @@
-# ADR-002 — InputQueue Ownership (Who Dequeues)
+# ADR-002 - InputQueue Ownership (Who Dequeues)
 
 | Field    | Value |
 |----------|-------|
@@ -9,7 +9,7 @@
 
 The original plan had the event loop calling `TryDequeue` directly on `$InputQueue` AND passing
 `$InputQueue` to `Invoke-ElmSubscriptions` for key subscription callbacks. `ConcurrentQueue`
-supports `TryPeek` only for the first item — there is no non-destructive full-queue scan. This
+supports `TryPeek` only for the first item - there is no non-destructive full-queue scan. This
 creates a race: either the event loop consumes a key before subscriptions see it, or subscriptions
 consume it and the loop misses it.
 
@@ -30,12 +30,12 @@ consume it and the loop misses it.
 
 Two consumers on one queue with no coordination guarantee produce non-deterministic behavior.
 Shared ownership requires synchronization primitives that add complexity and new failure modes.
-Subscriptions already own the `OnKey` callbacks that map keys to messages — they are the natural
+Subscriptions already own the `OnKey` callbacks that map keys to messages - they are the natural
 and complete home for key event handling.
 
 ## Consequences
 
-- `Quit` is no longer a special case in the event loop — it is a normal message returned by a
+- `Quit` is no longer a special case in the event loop - it is a normal message returned by a
   subscription's `OnKey` callback, handled uniformly alongside all other messages.
 - If the developer registers no `New-ElmKeySub`, keyboard input is silently ignored. This is
   consistent with Elm's model and must be documented.

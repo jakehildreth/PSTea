@@ -39,7 +39,7 @@ $View = {
 Start-ElmProgram -InitFn $Init -UpdateFn $Update -ViewFn $View
 ```
 
-Swap `Start-ElmProgram` for `Start-ElmWebServer -Port 8080` and the exact same app runs in a browser — no code changes required.
+Swap `Start-ElmProgram` for `Start-ElmWebServer -Port 8080` and the exact same app runs in a browser - no code changes required.
 
 ---
 
@@ -114,7 +114,7 @@ New-ElmKeySub -OnKey {
     }
 }
 
-# Printable characters (letters, digits, symbols) — for text input
+# Printable characters (letters, digits, symbols) - for text input
 New-ElmCharSub -Handler {
     param($Key)
     [PSCustomObject]@{ Type = 'CharInput'; Char = $Key.KeyChar }
@@ -126,14 +126,14 @@ New-ElmTimerSub -IntervalMs 500 -OnTick {
 }
 ```
 
-`New-ElmCharSub` fires for printable ASCII (0x20–0x7E) only after all `New-ElmKeySub` handlers
+`New-ElmCharSub` fires for printable ASCII (0x20-0x7E) only after all `New-ElmKeySub` handlers
 have been checked. Use it alongside `New-ElmTextInput` or `New-ElmTextarea` to handle typed text.
 
 ---
 
 ## Components
 
-Components are reusable sub-programs with their own model, update, and view — nested TEA embedded in a parent app.
+Components are reusable sub-programs with their own model, update, and view - nested TEA embedded in a parent app.
 
 ```powershell
 # Define a component as a plain PSCustomObject with Init/Update/View
@@ -199,7 +199,7 @@ Start-ElmWebServer `
     -Port          8080
 ```
 
-Serves a self-contained HTML page (no CDN, bundled xterm.js) at `http://localhost:8080`. Keyboard input and ANSI output flow over a WebSocket — the application loop is identical to terminal mode.
+Serves a self-contained HTML page (no CDN, bundled xterm.js) at `http://localhost:8080`. Keyboard input and ANSI output flow over a WebSocket - the application loop is identical to terminal mode.
 
 ---
 
@@ -209,7 +209,7 @@ All examples are in the `Examples/` folder.
 
 | Example | What it shows |
 |---|---|
-| `Invoke-IncrementDecrement` | minimal counter — the hello world of TEA |
+| `Invoke-IncrementDecrement` | minimal counter - the hello world of TEA |
 | `Invoke-TodoList` | keyboard selection, space-to-toggle, strikethrough for done items |
 | `Invoke-StyleShowcase` | every border style, text decoration, named/hex/256-index color |
 | `Invoke-LayoutDemo` | two-pane row layout with nav menu and dynamic content panel |
@@ -220,7 +220,7 @@ All examples are in the `Examples/` folder.
 | `Invoke-StopwatchDemo` | stopwatch with lap tracking and tick-driven animation |
 | `Invoke-QuizDemo` | multiple-choice quiz with list widget and score tracking |
 | `Invoke-FileExplorerDemo` | scrollable directory tree with viewport and keyboard navigation |
-| `Invoke-SnakeDemo` | Snake game — real-time tick-driven movement and collision detection |
+| `Invoke-SnakeDemo` | Snake game - real-time tick-driven movement and collision detection |
 | `Invoke-SystemMonitorDemo` | live CPU/memory stats via timer subscription |
 
 ---

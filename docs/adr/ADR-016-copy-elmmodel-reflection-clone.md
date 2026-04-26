@@ -1,9 +1,9 @@
-# ADR-016 — `Copy-ElmModel` Uses Reflection-Based Clone Instead of JSON Roundtrip
+# ADR-016 - `Copy-ElmModel` Uses Reflection-Based Clone Instead of JSON Roundtrip
 
 | Field    | Value |
 |----------|-------|
 | Status   | Accepted |
-| Affects  | Phase 5 (Runtime — `Copy-ElmModel`, `Invoke-ElmUpdate`) |
+| Affects  | Phase 5 (Runtime - `Copy-ElmModel`, `Invoke-ElmUpdate`) |
 
 ## Context
 
@@ -16,8 +16,8 @@ $Model | ConvertTo-Json -Depth 20 | ConvertFrom-Json
 ```
 
 This approach was correct for correctness but expensive at runtime. `Invoke-ElmUpdate` is
-called on every message — every keypress and every tick. For tick-driven demos at 100–150ms
-intervals that is 6–10 roundtrips per second. For interactive demos with complex models
+called on every message - every keypress and every tick. For tick-driven demos at 100-150ms
+intervals that is 6-10 roundtrips per second. For interactive demos with complex models
 (Quiz with a questions array, Snake with a growing body array) the cost was measurable as
 input latency and sluggish rendering.
 
@@ -42,7 +42,7 @@ The helper walks the object graph directly:
 ## Rationale
 
 - **Performance**: no string allocation, no JSON parser invocation, no Depth limit traversal.
-  For a flat model of 5–10 primitive properties, the reflection clone is an order of magnitude
+  For a flat model of 5-10 primitive properties, the reflection clone is an order of magnitude
   faster.
 - **Correctness**: typed .NET objects are still passed by reference (not cloned), which matches
   the documented constraint that models should contain only primitives. The behavior is no
@@ -52,7 +52,7 @@ The helper walks the object graph directly:
 
 ## Consequences
 
-- `Copy-ElmModel` no longer silently converts `[DateTime]`/`[TimeSpan]`/etc. to strings —
+- `Copy-ElmModel` no longer silently converts `[DateTime]`/`[TimeSpan]`/etc. to strings -
   it passes them by reference. Models containing typed objects will not crash, but mutations
   to those objects inside `UpdateFn` will affect the original model. The documented contract
   (models must be primitives) is unchanged.

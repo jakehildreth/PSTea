@@ -47,13 +47,13 @@ function Invoke-ElmPass1 {
 
     if ($Node.Type -eq 'Component') {
         # Expand the component by calling its ViewFn with its SubModel.
-        # The resulting subtree is measured transparently — no Component nodes
+        # The resulting subtree is measured transparently - no Component nodes
         # appear in the measured output.
         $expanded = & $Node.ViewFn $Node.SubModel
         return Invoke-ElmPass1 -Node $expanded
     }
 
-    # Box node — recurse into all children first
+    # Box node - recurse into all children first
     $measuredChildren = [System.Collections.ArrayList]::new()
     foreach ($child in $Node.Children) {
         [void]$measuredChildren.Add((Invoke-ElmPass1 -Node $child))
@@ -124,7 +124,7 @@ function Invoke-ElmPass2 {
         }
     }
 
-    # Box node — distribute space to children
+    # Box node - distribute space to children
     $resolvedChildren = [System.Collections.ArrayList]::new()
 
     if ($Node.Direction -eq 'Horizontal') {
@@ -168,7 +168,7 @@ function Invoke-ElmPass2 {
             $cursorX += $rc.Width
         }
     } else {
-        # Vertical — same pattern, distributing height
+        # Vertical - same pattern, distributing height
         $childResolvedH = @{}
         $fixedTotal     = 0
         $fillCount      = 0
@@ -243,7 +243,7 @@ function Measure-ElmViewTree {
         Available terminal height in rows.
 
     .OUTPUTS
-        PSCustomObject — a new tree with the same structure as the input but with
+        PSCustomObject - a new tree with the same structure as the input but with
         X, Y, Width, Height, NaturalWidth, and NaturalHeight fields on every node.
 
     .EXAMPLE

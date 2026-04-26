@@ -1,9 +1,9 @@
-# ADR-010 — `Fill` Remainder Distribution Strategy
+# ADR-010 - `Fill` Remainder Distribution Strategy
 
 | Field    | Value |
 |----------|-------|
 | Status   | Accepted |
-| Affects  | Phase 3 (Flexbox Layout — `Measure-ElmViewTree`) |
+| Affects  | Phase 3 (Flexbox Layout - `Measure-ElmViewTree`) |
 
 ## Context
 

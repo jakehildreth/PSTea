@@ -20,14 +20,14 @@ function Invoke-ElmUpdate {
             { param($Message, $Model) ... return [PSCustomObject]@{ Model = ...; Cmd = ... } }
 
     .PARAMETER Message
-        The message (event) to process. May be any type — the Update function
+        The message (event) to process. May be any type - the Update function
         determines how to handle it.
 
     .PARAMETER Model
         The current model. A deep copy is passed to the Update function.
 
     .OUTPUTS
-        [PSCustomObject] — Object with Model and Cmd properties as returned by UpdateFn.
+        [PSCustomObject] - Object with Model and Cmd properties as returned by UpdateFn.
 
     .EXAMPLE
         $updateFn = {

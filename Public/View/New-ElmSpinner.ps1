@@ -32,7 +32,7 @@ function New-ElmSpinner {
         Optional Elm style PSCustomObject from New-ElmStyle.
 
     .OUTPUTS
-        PSCustomObject — Text view node.
+        PSCustomObject - Text view node.
 
     .EXAMPLE
         # In view function:

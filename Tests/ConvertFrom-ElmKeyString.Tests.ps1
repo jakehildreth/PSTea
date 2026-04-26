@@ -4,7 +4,7 @@ BeforeAll {
 
 Describe 'ConvertFrom-ElmKeyString' -Tag 'Unit', 'P6' {
 
-    Context 'Single letter key — no modifier' {
+    Context 'Single letter key - no modifier' {
         It 'Should parse Q to ConsoleKey.Q with no modifiers' {
             $result = ConvertFrom-ElmKeyString -KeyString 'Q'
             $result.Key | Should -Be ([System.ConsoleKey]::Q)

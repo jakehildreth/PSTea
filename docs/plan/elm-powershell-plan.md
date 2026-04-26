@@ -14,16 +14,16 @@
 - [Canonical Input Format](#canonical-input-format)
 - [Module Structure](#module-structure)
 - [Implementation Phases](#implementation-phases)
-  - [Phase 1 — Foundation & Module Scaffold ✓](#phase-1--foundation--module-scaffold)
-  - [Phase 2 — Style System ✓](#phase-2--style-system-lipgloss-inspired)
-  - [Phase 3 — View DSL & Flexbox Layout ✓](#phase-3--view-dsl--flexbox-layout)
-  - [Phase 4 — Diff Engine ✓](#phase-4--diff-engine)
-  - [Phase 5 — Core Runtime & Driver Abstraction ✓](#phase-5--core-runtime--driver-abstraction)
-  - [Phase 6 — Subscriptions ✓](#phase-6--subscriptions)
-  - [Phase 7 — Web App Support ○ PENDING](#phase-7--web-app-support)
-  - [Phase 8 — Component Model ✓](#phase-8--component-model-bubbles-inspired)
-  - [Phase 9 — Built-in Widget Library ✓](#phase-9--built-in-widget-library)
-  - [Phase 10 — Extended Widget Library ✓](#phase-10--extended-widget-library)
+  - [Phase 1 - Foundation & Module Scaffold ✓](#phase-1--foundation--module-scaffold)
+  - [Phase 2 - Style System ✓](#phase-2--style-system-lipgloss-inspired)
+  - [Phase 3 - View DSL & Flexbox Layout ✓](#phase-3--view-dsl--flexbox-layout)
+  - [Phase 4 - Diff Engine ✓](#phase-4--diff-engine)
+  - [Phase 5 - Core Runtime & Driver Abstraction ✓](#phase-5--core-runtime--driver-abstraction)
+  - [Phase 6 - Subscriptions ✓](#phase-6--subscriptions)
+  - [Phase 7 - Web App Support ○ PENDING](#phase-7--web-app-support)
+  - [Phase 8 - Component Model ✓](#phase-8--component-model-bubbles-inspired)
+  - [Phase 9 - Built-in Widget Library ✓](#phase-9--built-in-widget-library)
+  - [Phase 10 - Extended Widget Library ✓](#phase-10--extended-widget-library)
 - [Key Technical Notes](#key-technical-notes)
 - [Out of Scope](#out-of-scope-initial-release)
 - [Future: Async Commands](#future-async-commands)
@@ -35,8 +35,8 @@
 
 Implement the Elm Architecture (The Elm Architecture / Model-View-Update) as a PowerShell module
 targeting PS 5.1+ on Windows, with cross-platform support via PS 7+. The result is a framework for
-building interactive terminal user interfaces — and serving those same apps in a browser via
-WebSocket + xterm.js — without changing a line of application code.
+building interactive terminal user interfaces - and serving those same apps in a browser via
+WebSocket + xterm.js - without changing a line of application code.
 
 Developers define three pure functions and hand them to a runtime:
 
@@ -62,7 +62,7 @@ Start-ElmWebServer `
 
 | Framework    | Language | Influence |
 |---|---|---|
-| **BubbleTea** | Go | Direct TEA implementation in a terminal context — validates the architecture |
+| **BubbleTea** | Go | Direct TEA implementation in a terminal context - validates the architecture |
 | **Bubbles**   | Go | Pre-built reusable component library (TextInput, List, Viewport, Spinner, ProgressBar) |
 | **LipGloss**  | Go | CSS-inspired style API: truecolor/256-color, borders, padding, margin, alignment |
 | **Textual**   | Python | Flexbox-ish layout engine; web app serving via WebSocket + xterm.js |
@@ -84,7 +84,7 @@ Start-ElmWebServer `
 | Layout | Flexbox-inspired: `Fill`, `Auto`, fixed int, percentage | Enables responsive-ish TUI layouts |
 | I/O architecture | Driver abstraction via `ConcurrentQueue[string]` | Decouples event loop from I/O; same loop works for terminal and WebSocket |
 | Web serving | `System.Net.HttpListener` WebSocket + embedded xterm.js | Available in .NET 4.5+ (PS 5.1); no external dependencies |
-| Methodology | TDD — tests written before every function | Non-negotiable per Jake's standards |
+| Methodology | TDD - tests written before every function | Non-negotiable per Jake's standards |
 | Commit policy | Draft commit → Jake approval → push | Per Jake's standards |
 | Versioning | CalVer (yyyy.M.dHHmm) | Per Jake's standards |
 | Input normalization | Normalize at driver (Option A): each driver converts raw input to a canonical string format before enqueuing | Single testable format; failures isolate to driver lookup tables; queue contents are inspectable for debugging |
@@ -108,7 +108,7 @@ $Init = {
     }
 }
 
-# 2. Update: pure function — given a Msg and current Model, return a new Model
+# 2. Update: pure function - given a Msg and current Model, return a new Model
 $Update = {
     param(
         [Parameter(Mandatory)] $Msg,
@@ -127,7 +127,7 @@ $Update = {
     }
 }
 
-# 3. View: pure function — given Model, return a view tree
+# 3. View: pure function - given Model, return a view tree
 $View = {
     param([Parameter(Mandatory)] $Model)
 
@@ -254,8 +254,8 @@ All view nodes are `PSCustomObject`. The runtime validates shape on each cycle.
 ```powershell
 [PSCustomObject]@{
     Type        = 'Component'   # string, required
-    ComponentId = 'my-list'     # string, required — used for message routing
-    SubModel    = $subModel     # PSCustomObject, required — component's own model
+    ComponentId = 'my-list'     # string, required - used for message routing
+    SubModel    = $subModel     # PSCustomObject, required - component's own model
     ViewFn      = $viewFn       # scriptblock: param($SubModel) → ViewNode, required
 }
 ```
@@ -332,22 +332,22 @@ $OutputQueue = [System.Collections.Concurrent.ConcurrentQueue[string]]::new()
 ### Terminal Driver
 
 Spawns two background runspaces:
-1. **Input runspace** — polls `[Console]::KeyAvailable`; converts `ConsoleKeyInfo` to key
+1. **Input runspace** - polls `[Console]::KeyAvailable`; converts `ConsoleKeyInfo` to key
    message string; pushes to `$InputQueue`
-2. **Output runspace** — dequeues from `$OutputQueue`; writes to `[Console]::Out`
+2. **Output runspace** - dequeues from `$OutputQueue`; writes to `[Console]::Out`
 
 ### WebSocket Driver
 
-1. **`Invoke-ElmWebSocketListener`** — `System.Net.HttpListener` WebSocket host:
+1. **`Invoke-ElmWebSocketListener`** - `System.Net.HttpListener` WebSocket host:
    - `GET /` → serves embedded xterm.js HTML page
    - `GET /ws` → upgrades to WebSocket via `AcceptWebSocketAsync()`
    - Receive loop: WebSocket frame → UTF-8 decode → push to `$InputQueue`
    - Send loop: dequeue `$OutputQueue` → UTF-8 encode → WebSocket send
-2. **`Get-ElmXtermPage`** — returns an HTML string (no file system required):
+2. **`Get-ElmXtermPage`** - returns an HTML string (no file system required):
    - xterm.js from CDN
    - `const ws = new WebSocket('ws://localhost:{port}/ws')`
-   - `terminal.onData(d => ws.send(d))` — keyboard → WebSocket
-   - `ws.onmessage(e => terminal.write(e.data))` — ANSI output → xterm.js
+   - `terminal.onData(d => ws.send(d))` - keyboard → WebSocket
+   - `ws.onmessage(e => terminal.write(e.data))` - ANSI output → xterm.js
    - Resize handler sends terminal dimensions to PS app on connect/resize
 
 Both drivers return the same PSCustomObject shape:
@@ -452,15 +452,15 @@ Elm/
 
 ## Implementation Phases
 
-### Phase 1 — Foundation & Module Scaffold ✓ COMPLETE
+### Phase 1 - Foundation & Module Scaffold ✓ COMPLETE
 
 **Goal:** Buildable, importable module skeleton with core utility functions all later phases depend on.
 
 **Deliverables:**
 
-- `Elm.psd1` — manifest: `RootModule = 'Elm.psm1'`, `PowerShellVersion = '5.1'`,
+- `Elm.psd1` - manifest: `RootModule = 'Elm.psm1'`, `PowerShellVersion = '5.1'`,
   `FunctionsToExport = @()` (populated as public functions are added)
-- `Elm.psm1` — dot-sources `Public/**/*.ps1` and `Private/**/*.ps1` at import- All folder structure created
+- `Elm.psm1` - dot-sources `Public/**/*.ps1` and `Private/**/*.ps1` at import- All folder structure created
 - `.gitignore` (`.vs/`, `*.user`, `TestResults/`, `*.pester.xml`)
 
 - **`Enable-VirtualTerminal`**:
@@ -474,7 +474,7 @@ Elm/
   - Input: any `PSCustomObject` (or hashtable)
   - Mechanism: `$Model | ConvertTo-Json -Depth 20 | ConvertFrom-Json`
   - **Depth limit:** `ConvertTo-Json -Depth 20` silently truncates objects nested deeper than 20
-    levels in PS 5.1 (no error thrown). Document this as a framework constraint — deeply nested
+    levels in PS 5.1 (no error thrown). Document this as a framework constraint - deeply nested
     models will be silently corrupted on copy. If a developer hits this, they should flatten
     their model structure.
   - Returns new PSCustomObject with same shape; all nested objects are new references
@@ -496,7 +496,7 @@ Elm/
 
 ---
 
-### Phase 2 — Style System (LipGloss-inspired) ✓ COMPLETE
+### Phase 2 - Style System (LipGloss-inspired) ✓ COMPLETE
 
 **Goal:** A composable style object and the ANSI color/border rendering functions that apply it.
 
@@ -562,7 +562,7 @@ Elm/
 
 ---
 
-### Phase 3 — View DSL & Flexbox Layout ✓ COMPLETE
+### Phase 3 - View DSL & Flexbox Layout ✓ COMPLETE
 
 **Goal:** Factory functions for view tree nodes and a two-pass layout engine that assigns
 screen coordinates to every node.
@@ -571,16 +571,16 @@ screen coordinates to every node.
 
 - **`New-ElmText`**: params `-Content [string]` (mandatory), `-Style`; returns Text node
 - **`New-ElmBox`**: params `-Children [object[]]` (mandatory), `-Style`, `-Width`, `-Height`; returns Box Vertical node (`Direction = 'Vertical'`)
-- **`New-ElmRow`**: params `-Children [object[]]` (mandatory), `-Style`, `-Width`, `-Height`; returns Box Horizontal node (`Direction = 'Horizontal'`). Neither function accepts a `-Direction` parameter — direction is encoded in the function name.
+- **`New-ElmRow`**: params `-Children [object[]]` (mandatory), `-Style`, `-Width`, `-Height`; returns Box Horizontal node (`Direction = 'Horizontal'`). Neither function accepts a `-Direction` parameter - direction is encoded in the function name.
 
 - **`Measure-ElmViewTree`**:
   - Input: root view node, available `$TermWidth` (int), `$TermHeight` (int)
-  - **Pass 1 (bottom-up)** — compute natural sizes for `Auto` nodes:
+  - **Pass 1 (bottom-up)** - compute natural sizes for `Auto` nodes:
     - Text: `NaturalWidth = Content.Length + PaddingLeft + PaddingRight + (border ? 2 : 0)`
     - Box Vertical: `NaturalWidth = max(children NaturalWidth)`; `NaturalHeight = sum(children NaturalHeight) + padding`
     - Box Horizontal: `NaturalWidth = sum(children NaturalWidth) + padding`; `NaturalHeight = max(children NaturalHeight)`
     - Skip `Fill` children in this pass
-  - **Pass 2 (top-down)** — assign `X`, `Y`, `Width`, `Height`:
+  - **Pass 2 (top-down)** - assign `X`, `Y`, `Width`, `Height`:
     - Root gets terminal dimensions
     - Fixed children: get their natural size
     - `Fill` children: divide remaining space equally; the last `Fill` child receives any remainder columns/rows from integer division
@@ -633,10 +633,10 @@ screen coordinates to every node.
 
 ---
 
-### Phase 4 — Diff Engine ✓ COMPLETE
+### Phase 4 - Diff Engine ✓ COMPLETE
 
 **Goal:** Compare two measured view trees and produce the minimal ANSI patch set to transform
-the previous frame into the new one — avoiding full clear+redraw every cycle.
+the previous frame into the new one - avoiding full clear+redraw every cycle.
 
 **Deliverables:**
 
@@ -666,7 +666,7 @@ the previous frame into the new one — avoiding full clear+redraw every cycle.
 
 ---
 
-### Phase 5 — Core Runtime & Driver Abstraction ✓ COMPLETE
+### Phase 5 - Core Runtime & Driver Abstraction ✓ COMPLETE
 
 **Goal:** The event loop and the two concrete drivers (terminal, WebSocket) that feed it.
 
@@ -739,7 +739,7 @@ the previous frame into the new one — avoiding full clear+redraw every cycle.
         }
         Start-Sleep -Milliseconds 16   # ~60fps cap
     }
-    # finally block always runs — restores terminal state on Quit, Ctrl+C, or any unhandled exception
+    # finally block always runs - restores terminal state on Quit, Ctrl+C, or any unhandled exception
     ```
 
 - **`Start-ElmProgram`** (Public):
@@ -772,7 +772,7 @@ the previous frame into the new one — avoiding full clear+redraw every cycle.
 
 ---
 
-### Phase 6 — Subscriptions ✓ COMPLETE
+### Phase 6 - Subscriptions ✓ COMPLETE
 
 **Goal:** A declarative subscription system letting the developer declare event sources as a
 pure function of the model.
@@ -780,11 +780,11 @@ pure function of the model.
 **Deliverables:**
 
 - **`New-ElmKeySub`** (Public):
-  - Params: `-OnKey [scriptblock]` — receives `$Key` string (ConsoleKey name), returns Msg or `$null`
+  - Params: `-OnKey [scriptblock]` - receives `$Key` string (ConsoleKey name), returns Msg or `$null`
   - Returns: `@{ Type = 'Key'; OnKey = $scriptblock }`
 
 - **`New-ElmTimerSub`** (Public):
-  - Params: `-IntervalMs [int]`, `-OnTick [scriptblock]` — receives `[datetime]`, returns Msg
+  - Params: `-IntervalMs [int]`, `-OnTick [scriptblock]` - receives `[datetime]`, returns Msg
   - Returns: `@{ Type = 'Timer'; IntervalMs = $n; LastFired = $null; OnTick = $scriptblock }`
 
 - **`Invoke-ElmSubscriptions`** (Private):
@@ -813,7 +813,7 @@ pure function of the model.
 
 ---
 
-### Phase 7 — Web App Support ○ PENDING
+### Phase 7 - Web App Support ○ PENDING
 
 **Goal:** Serve any PS Elm app in a browser via WebSocket + xterm.js with no changes to
 application code. Mirrors Textual's `textual-serve` approach.
@@ -824,13 +824,13 @@ application code. Mirrors Textual's `textual-serve` approach.
 3. The browser loads xterm.js, opens a WebSocket to `ws://localhost:{port}/ws`
 4. xterm.js translates keypresses → ANSI sequences → WebSocket → `$InputQueue`
 5. `$OutputQueue` → WebSocket → xterm.js renders ANSI output
-6. The MVU event loop runs identically — it only sees queues
+6. The MVU event loop runs identically - it only sees queues
 
 **Deliverables:**
 
 - **`Get-ElmXtermPage`** (Private):
   - Params: `-Port [int]`, `-Title [string]`
-  - Returns a self-contained HTML string — no external files, no CDN, no internet required
+  - Returns a self-contained HTML string - no external files, no CDN, no internet required
   - **Bundles xterm.js and xterm-addon-fit inline** as minified JavaScript strings embedded in
     the PowerShell module (stored in `Private/Web/xterm.min.js` and `Private/Web/xterm-addon-fit.min.js`,
     read at module load time and interpolated into the HTML). The app works fully air-gapped.
@@ -878,10 +878,10 @@ application code. Mirrors Textual's `textual-serve` approach.
 
 ---
 
-### Phase 8 — Component Model (Bubbles-inspired) ✓ COMPLETE
+### Phase 8 - Component Model (Bubbles-inspired) ✓ COMPLETE
 
 **Goal:** Reusable, composable UI components with their own internal state, update logic, and
-view — nested TEA programs embedded in a parent program.
+view - nested TEA programs embedded in a parent program.
 
 **Pattern:**
 ```powershell
@@ -939,9 +939,9 @@ $View = {
 ```
 
 **Deliverables:**
-- `New-ElmComponent` (Public — required by View functions; see ADR-011)
-- `New-ElmComponentMsg -ComponentId $id -Msg $innerMsg` (Public helper) — creates wrapper message
-- `Measure-ElmViewTree` expanded to handle `Component` nodes: calls `& $Node.ViewFn $Node.SubModel`, recursively measures the resulting subtree, replaces the Component node in the measured output — `ConvertTo-AnsiOutput` and `Compare-ElmViewTree` never see raw Component nodes
+- `New-ElmComponent` (Public - required by View functions; see ADR-011)
+- `New-ElmComponentMsg -ComponentId $id -Msg $innerMsg` (Public helper) - creates wrapper message
+- `Measure-ElmViewTree` expanded to handle `Component` nodes: calls `& $Node.ViewFn $Node.SubModel`, recursively measures the resulting subtree, replaces the Component node in the measured output - `ConvertTo-AnsiOutput` and `Compare-ElmViewTree` never see raw Component nodes
 
 **Tests to write first:**
 - Component Init returns valid model
@@ -954,7 +954,7 @@ $View = {
 
 ---
 
-### Phase 9 — Built-in Widget Library ✓ COMPLETE
+### Phase 9 - Built-in Widget Library ✓ COMPLETE
 
 **Goal:** Pure view-function widgets (stateless renderers). Caller owns all state in their model;
 widgets just render. Each widget returns a view-tree node. `New-ElmCharSub` added to the
@@ -981,7 +981,7 @@ triples. This is simpler, composable with any model shape, and consistent with t
 - **Requires**: caller drives frame counter (e.g. from `New-ElmTimerSub` Tick messages)
 
 #### `New-ElmProgressBar` ✓
-- **Params**: `-Value` (0.0–1.0) or `-Percent` (0–100); `-Width` (default 20, min 4);
+- **Params**: `-Value` (0.0-1.0) or `-Percent` (0-100); `-Width` (default 20, min 4);
   `-FilledChar` (default `#`), `-EmptyChar` (default `-`), `-Style`
 - **Returns**: `Text` node with `[####----]` format; ratio clamped to `[0, 1]`
 
@@ -992,7 +992,7 @@ triples. This is simpler, composable with any model shape, and consistent with t
 #### `New-ElmCharSub` ✓ (new subscription type)
 - **Params**: `-Handler [scriptblock]`
 - **Returns**: subscription object `@{ Type='Char'; Handler=... }`
-- Fires for any printable ASCII char (0x20–0x7E) **not** already consumed by a `New-ElmKeySub`
+- Fires for any printable ASCII char (0x20-0x7E) **not** already consumed by a `New-ElmKeySub`
   in the same subscription list; handler receives raw `KeyDown` event with `.Char` property
 
 **`Invoke-ElmSubscriptions` updated** to collect `Char` subs and dispatch after key-sub matching;
@@ -1004,7 +1004,7 @@ live-adjustable config options and modal text input.
 
 ---
 
-### Phase 10 — Extended Widget Library ✓ COMPLETE
+### Phase 10 - Extended Widget Library ✓ COMPLETE
 
 **Goal:** Add the three widgets shared by both Bubbles and Textual that were missing from Phase 9:
 a multi-line text editor, a data table, and a page/tab navigator.
@@ -1092,12 +1092,12 @@ public class ElmConsoleHelper {
 
 ### Flexbox Layout Algorithm (simplified)
 ```
-Pass 1 — bottom-up natural sizes (skip Fill children):
+Pass 1 - bottom-up natural sizes (skip Fill children):
   Text:             NaturalW = Content.Length + padding + border
   Box Vertical:     NaturalW = max(children NaturalW); NaturalH = sum(children NaturalH)
   Box Horizontal:   NaturalW = sum(children NaturalW); NaturalH = max(children NaturalH)
 
-Pass 2 — top-down assignment:
+Pass 2 - top-down assignment:
   Root = (TermWidth, TermHeight)
   For each box, track remaining space after fixed/auto children are placed
   Divide remaining space equally among Fill children
@@ -1126,14 +1126,14 @@ ESC[48;5;Nm         256-color background
 
 ## Out of Scope (Initial Release)
 
-- **PowerShell ISE** — does not support ANSI escape sequences; not a supported host.
+- **PowerShell ISE** - does not support ANSI escape sequences; not a supported host.
   It is 2026. Please use [Windows Terminal](https://aka.ms/terminal), VS Code, or any terminal
   that was built after the Obama administration.
-- **`Cmd` (async side effects)** — In Elm, `Update` returns `(Model, Cmd)` where `Cmd` represents
+- **`Cmd` (async side effects)** - In Elm, `Update` returns `(Model, Cmd)` where `Cmd` represents
   side effects (HTTP, random, time) the runtime executes and feeds back as messages. Implementing
-  this correctly in PS 5.1 requires runspaces with synchronized result queues — substantial
+  this correctly in PS 5.1 requires runspaces with synchronized result queues - substantial
   complexity. Deferred to a future milestone.
-- **Ports (external interop)** — Elm's bidirectional named channels for JS interop. PS equivalent
+- **Ports (external interop)** - Elm's bidirectional named channels for JS interop. PS equivalent
   would be hooks for embedding the TUI in a larger script. Deferred.
 - Mouse input subscriptions
 - Module publishing / versioning
@@ -1142,12 +1142,12 @@ ESC[48;5;Nm         256-color background
 
 ## Future: Async Commands
 
-- **`Cmd` (async side effects)** — `Update` returns `(Model, Cmd[])`. Each `Cmd` is a scriptblock
+- **`Cmd` (async side effects)** - `Update` returns `(Model, Cmd[])`. Each `Cmd` is a scriptblock
   that runs in a runspace and posts a result message back to `$InputQueue` when done.
-- **`Send-ElmUrl`** — opens URL in browser platform-agnostically (terminal: `Start-Process`;
+- **`Send-ElmUrl`** - opens URL in browser platform-agnostically (terminal: `Start-Process`;
   web: instructs xterm.js to open link via WebSocket protocol extension)
-- **`Send-ElmFile`** — delivers file to user (terminal: write to disk + notify; web: stream as
-  ephemeral single-use download URL — mirrors Textual's `deliver_binary` / `App.deliver_text`)
+- **`Send-ElmFile`** - delivers file to user (terminal: write to disk + notify; web: stream as
+  ephemeral single-use download URL - mirrors Textual's `deliver_binary` / `App.deliver_text`)
 - Mouse input subscriptions (via `ENABLE_MOUSE_INPUT` + ANSI mouse tracking: `ESC[?1000h`)
 - Port-like interop hooks (named channels for embedding TUI in larger PS scripts)
 - PSGallery module publishing
@@ -1156,11 +1156,11 @@ ESC[48;5;Nm         256-color background
 
 ## Future: Cloud Hosting
 
-- **Azure Web PubSub driver** — `New-ElmAzureWebPubSubDriver` replaces `New-ElmWebSocketDriver`
+- **Azure Web PubSub driver** - `New-ElmAzureWebPubSubDriver` replaces `New-ElmWebSocketDriver`
   with a driver backed by Azure Web PubSub. The MVU event loop and all application code are
-  unchanged — only the entry point differs. Requires Azure Durable Functions or a Premium plan
+  unchanged - only the entry point differs. Requires Azure Durable Functions or a Premium plan
   host (no execution timeout) to keep the event loop alive.
-- **`Start-ElmAzureFunction`** — entry point for hosting a PS Elm app as a cloud-served TUI
+- **`Start-ElmAzureFunction`** - entry point for hosting a PS Elm app as a cloud-served TUI
   accessible from any browser, with no self-hosted infrastructure.
 
 ---
@@ -1178,4 +1178,4 @@ ESC[48;5;Nm         256-color background
 - CalVer versioning: `yyyy.M.dHHmm`
 - No emojis in code or documentation (README excepted)
 - Conventional commits: `type(scope): message` with max 5 bullet points
-- NEVER run `git commit` or `git push` without Jake's explicit approval — always draft first
+- NEVER run `git commit` or `git push` without Jake's explicit approval - always draft first
