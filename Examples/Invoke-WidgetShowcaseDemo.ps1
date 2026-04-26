@@ -565,16 +565,22 @@ $viewFn = {
     $selStyle      = New-ElmStyle -Foreground 'BrightYellow' -Bold
     $vpStyle       = New-ElmStyle -Foreground 'BrightGreen'
 
-    $tabNames = @('[1] Animate', '[2] List', '[3] Viewport', '[4] Input', '[5] Textarea', '[6] Table', '[7] Paginator')
-    $tabRow   = [System.Collections.Generic.List[object]]::new()
+    $tabNames  = @('[1] Animate', '[2] List', '[3] Viewport', '[4] Input', '[5] Textarea', '[6] Table', '[7] Paginator')
+    $tabWidth  = ($tabNames | ForEach-Object { $_.Length } | Measure-Object -Maximum).Maximum
+    $tabRow1   = [System.Collections.Generic.List[object]]::new()
+    $tabRow2   = [System.Collections.Generic.List[object]]::new()
     for ($i = 0; $i -lt $tabNames.Count; $i++) {
-        $ts = if ($i -eq $model.Tab) { $activeTab } else { $inactiveTab }
-        $tabRow.Add((New-ElmText -Content "  $($tabNames[$i])  " -Style $ts))
+        $ts     = if ($i -eq $model.Tab) { $activeTab } else { $inactiveTab }
+        $padded = $tabNames[$i].PadRight($tabWidth)
+        $node   = New-ElmText -Content "  $padded  " -Style $ts
+        if ($i -lt 4) { $tabRow1.Add($node) } else { $tabRow2.Add($node) }
     }
 
     $children = [System.Collections.Generic.List[object]]::new()
     $children.Add((New-ElmText -Content 'Elm Widget Showcase' -Style $titleStyle))
-    $children.Add((New-ElmRow -Children $tabRow.ToArray()))
+    $children.Add((New-ElmText -Content ''))
+    $children.Add((New-ElmRow -Children $tabRow1.ToArray()))
+    $children.Add((New-ElmRow -Children $tabRow2.ToArray()))
 
     switch ($model.Tab) {
         0 {
@@ -708,7 +714,7 @@ $viewFn = {
                 CursorCol       = $model.TextareaCol
                 MaxVisible      = $maxVis
                 ScrollOffset    = $model.TextareaOffset
-                Placeholder     = 'Press F to focus here!'
+                Placeholder     = 'Press F to focus here, then type some stuff and press Enter!'
                 CursorChar      = $cursorChar
                 Style           = $inputStyle
                 FocusedStyle    = $inputFocStyle
@@ -718,7 +724,8 @@ $viewFn = {
 
             $children.Add((New-ElmText -Content '' ))
             $children.Add((New-ElmText -Content 'New-ElmTextarea  -  Multi-line editor' -Style $labelStyle))
-            $children.Add($taNode)
+            $taLabel = New-ElmText -Content '  > ' -Style $hintStyle
+            $children.Add((New-ElmRow -Children @($taLabel, $taNode)))
 
             $focusedStr = if ($isFocused) { 'on' } else { 'off' }
             $taMaxOpts  = $script:TA_MAX_VIS -join '/'
@@ -767,7 +774,6 @@ $viewFn = {
 
             $children.Add((New-ElmText -Content '' ))
             $children.Add((New-ElmText -Content 'New-ElmPaginator  -  Navigation widgets' -Style $labelStyle))
-            $children.Add((New-ElmText -Content '' ))
 
             $dotStyle     = New-ElmStyle -Foreground 'BrightMagenta'
             $activeDotStyle = New-ElmStyle -Foreground 'BrightWhite' -Bold
@@ -775,21 +781,21 @@ $viewFn = {
             # Numeric mode row
             $numNode = New-ElmPaginator -CurrentPage $model.PagerPage -PageCount $script:PAGER_PAGES -Style $numericStyle
             $label   = New-ElmText -Content '  Numeric:  ' -Style $hintStyle
-            $arrow   = if ($pagerMode -eq 'Numeric') { New-ElmText -Content '>> ' -Style $accentStyle } else { New-ElmText -Content '   ' }
+            $arrow   = if ($pagerMode -eq 'Numeric') { New-ElmText -Content '> ' -Style $accentStyle } else { New-ElmText -Content '  ' }
             $children.Add((New-ElmRow -Children @($arrow, $label, $numNode)))
 
             # Dots mode row
             $dotsNode = New-ElmPaginator -Dots -CurrentPage $model.PagerDotsPage -PageCount $script:PAGER_PAGES `
                                          -Style $dotStyle -ActiveStyle $activeDotStyle
             $label3   = New-ElmText -Content '  Dots:     ' -Style $hintStyle
-            $arrow3   = if ($pagerMode -eq 'Dots') { New-ElmText -Content '>> ' -Style $accentStyle } else { New-ElmText -Content '   ' }
+            $arrow3   = if ($pagerMode -eq 'Dots') { New-ElmText -Content '> ' -Style $accentStyle } else { New-ElmText -Content '  ' }
             $children.Add((New-ElmRow -Children @($arrow3, $label3, $dotsNode)))
 
             # Tabs mode row
             $tabNode = New-ElmPaginator -Tabs $script:PAGER_TAB_LABELS -ActiveTab $model.PagerTabIdx `
                                         -Style $tabStyle -ActiveStyle $activeTabStyle
             $label2  = New-ElmText -Content '  Tabs:     ' -Style $hintStyle
-            $arrow2  = if ($pagerMode -eq 'Tabs') { New-ElmText -Content '>> ' -Style $accentStyle } else { New-ElmText -Content '   ' }
+            $arrow2  = if ($pagerMode -eq 'Tabs') { New-ElmText -Content '> ' -Style $accentStyle } else { New-ElmText -Content '  ' }
             $children.Add((New-ElmRow -Children @($arrow2, $label2, $tabNode)))
 
             $modeOpts = $script:PAGER_MODES -join '/'

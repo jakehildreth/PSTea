@@ -147,7 +147,9 @@ $view = {
         $children += New-ElmText -Content 'Laps:' -Style $lapStyle
         $lapStart = [Math]::Max(0, $laps.Count - 8)
         for ($i = $lapStart; $i -lt $laps.Count; $i++) {
-            $children += New-ElmText -Content "  $($i + 1). $(Format-ElapsedTime -Ms $laps[$i])" -Style $lapStyle
+            $total   = $laps[$i]
+            $lapTime = if ($i -gt 0) { $total - $laps[$i - 1] } else { $total }
+            $children += New-ElmText -Content "  $($i + 1). $(Format-ElapsedTime -Ms $total)  (lap: $(Format-ElapsedTime -Ms $lapTime))" -Style $lapStyle
         }
         $children += New-ElmText -Content ''
     }

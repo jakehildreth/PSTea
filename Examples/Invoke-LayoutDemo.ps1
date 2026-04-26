@@ -116,7 +116,7 @@ $view = {
     $headingStyle    = New-ElmStyle -Bold -Foreground 'BrightCyan'
     $contentStyle    = New-ElmStyle -Foreground 'White'
     $hintStyle       = New-ElmStyle -Foreground 'BrightBlack'
-    $navPanelStyle   = New-ElmStyle -Border 'Normal' -Padding @(1, 1) -Width 18
+    $navPanelStyle   = New-ElmStyle -Border 'Normal' -Padding @(1, 1) -Width 18 -MarginRight 2
     $contentPanStyle = New-ElmStyle -Border 'Normal' -Padding @(1, 2) -Width 36
 
     # Left: nav menu
@@ -127,7 +127,8 @@ $view = {
         New-ElmText -Content $label -Style $style
     }
     $navItems += New-ElmText -Content ''
-    $navItems += New-ElmText -Content '[q] quit' -Style $hintStyle
+    $navItems += New-ElmText -Content '[Up/Down] move' -Style $hintStyle
+    $navItems += New-ElmText -Content '[q] quit'       -Style $hintStyle
 
     $navPanel = New-ElmBox -Style $navPanelStyle -Children $navItems
 
