@@ -524,9 +524,15 @@ $updateFn = {
                 }
             }
         }
-        'PagerModeCycle' {
+        'PagerModeNext' {
             return [PSCustomObject]@{
                 Model = New-ShowcaseModel $model @{ PagerModeIdx = ($model.PagerModeIdx + 1) % $script:PAGER_MODES.Count }
+                Cmd   = $null
+            }
+        }
+        'PagerModePrev' {
+            return [PSCustomObject]@{
+                Model = New-ShowcaseModel $model @{ PagerModeIdx = ($model.PagerModeIdx + $script:PAGER_MODES.Count - 1) % $script:PAGER_MODES.Count }
                 Cmd   = $null
             }
         }
@@ -791,7 +797,7 @@ $viewFn = {
             $children.Add((New-ElmText -Content '' ))
             $children.Add((New-ElmText -Content "  Active mode: $pagerMode [M: $modeOpts]" -Style $configStyle))
             $children.Add((New-ElmText -Content '' ))
-            $children.Add((New-ElmText -Content '[Left/Right] navigate  [M] Mode  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
+            $children.Add((New-ElmText -Content '[Left/Right] navigate  [Up/Down] Mode  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
         }
     }
 
@@ -873,9 +879,10 @@ $subFn = {
             $subs.Add((New-ElmKeySub -Key 'DownArrow' -Handler { 'TableDown' }))
         }
         6 {
-            $subs.Add((New-ElmKeySub -Key 'LeftArrow'  -Handler { 'PagerLeft'      }))
-            $subs.Add((New-ElmKeySub -Key 'RightArrow' -Handler { 'PagerRight'     }))
-            $subs.Add((New-ElmKeySub -Key 'M'          -Handler { 'PagerModeCycle' }))
+            $subs.Add((New-ElmKeySub -Key 'LeftArrow'  -Handler { 'PagerLeft'     }))
+            $subs.Add((New-ElmKeySub -Key 'RightArrow' -Handler { 'PagerRight'    }))
+            $subs.Add((New-ElmKeySub -Key 'UpArrow'    -Handler { 'PagerModePrev' }))
+            $subs.Add((New-ElmKeySub -Key 'DownArrow'  -Handler { 'PagerModeNext' }))
         }
     }
 
