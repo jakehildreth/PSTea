@@ -95,6 +95,17 @@ function Start-ElmWebServer {
     # Enable ANSI/VT processing (no-op on Linux/macOS; needed on Windows conhost)
     $null = Enable-VirtualTerminal
 
+    # Fail fast if port is already in use
+    try {
+        $testListener = [System.Net.HttpListener]::new()
+        $testListener.Prefixes.Add("http://localhost:$Port/")
+        $testListener.Start()
+        $testListener.Stop()
+        $testListener.Close()
+    } catch {
+        throw "Port $Port is already in use. Kill the existing process or choose a different port."
+    }
+
     # Create the WebSocket driver (starts HttpListener + accept/send runspaces)
     $driver = New-ElmWebSocketDriver -Port $Port -Width $Width -Height $Height -Title $Title
 
@@ -128,6 +139,11 @@ function Start-ElmWebServer {
             -TerminalWidth  $Width `
             -TerminalHeight $Height `
             -OutputSink     $driver.OutputSink
+    } catch {
+        $ts = [datetime]::Now.ToString('HH:mm:ss.fff')
+        Add-Content -Path '/tmp/elm-web-debug.log' -Value "[$ts][EVENTLOOP] FATAL: $_" -ErrorAction SilentlyContinue
+        Add-Content -Path '/tmp/elm-web-debug.log' -Value "[$ts][EVENTLOOP] StackTrace: $($_.ScriptStackTrace)" -ErrorAction SilentlyContinue
+        throw
     } finally {
         if ($null -ne $tickLoop) {
             try { $tickLoop.PowerShell.Stop() } catch {}

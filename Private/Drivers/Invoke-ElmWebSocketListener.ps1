@@ -227,7 +227,7 @@ function Invoke-ElmWebSocketListener {
                 $sharedState.SessionActive = $true
                 try {
                     dbg 'Calling AcceptWebSocketAsync...'
-                    $wsTask = $ctx.AcceptWebSocketAsync('elm-tui')
+                    $wsTask = $ctx.AcceptWebSocketAsync([NullString]::Value)
                     $wsTask.Wait()
                     $ws = $wsTask.Result.WebSocket
                     $sharedState.ActiveSocket = $ws
