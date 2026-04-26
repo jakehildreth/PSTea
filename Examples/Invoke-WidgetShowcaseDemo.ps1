@@ -554,7 +554,7 @@ $viewFn = {
     # Shared styles
     $titleStyle    = New-ElmStyle -Foreground 'BrightCyan'  -Bold
     $hintStyle     = New-ElmStyle -Foreground 'BrightBlack'
-    $activeTab     = New-ElmStyle -Foreground 'BrightWhite' -Bold -Underline
+    $activeTab     = New-ElmStyle -Foreground 'BrightWhite' -Bold
     $inactiveTab   = New-ElmStyle -Foreground 'BrightBlack'
     $accentStyle   = New-ElmStyle -Foreground 'BrightYellow'
     $labelStyle    = New-ElmStyle -Foreground 'BrightWhite'
@@ -575,7 +575,6 @@ $viewFn = {
     $children = [System.Collections.Generic.List[object]]::new()
     $children.Add((New-ElmText -Content 'Elm Widget Showcase' -Style $titleStyle))
     $children.Add((New-ElmRow -Children $tabRow.ToArray()))
-    $children.Add((New-ElmText -Content ('-' * 50) -Style $hintStyle))
 
     switch ($model.Tab) {
         0 {
