@@ -753,21 +753,21 @@ $viewFn = {
             # Numeric mode row
             $numNode = New-ElmPaginator -CurrentPage $model.PagerPage -PageCount $script:PAGER_PAGES -Style $numericStyle
             $label   = New-ElmText -Content '  Numeric:  ' -Style $hintStyle
-            $arrow   = if ($pagerMode -eq 'Numeric') { New-ElmText -Content '  <- active' -Style $accentStyle } else { New-ElmText -Content '' }
+            $arrow   = if ($pagerMode -eq 'Numeric') { New-ElmText -Content '  << active' -Style $accentStyle } else { New-ElmText -Content '' }
             $children.Add((New-ElmRow -Children @($label, $numNode, $arrow)))
 
             # Dots mode row
             $dotsNode = New-ElmPaginator -Dots -CurrentPage $model.PagerPage -PageCount $script:PAGER_PAGES `
                                          -Style $dotStyle -ActiveStyle $activeDotStyle
             $label3   = New-ElmText -Content '  Dots:     ' -Style $hintStyle
-            $arrow3   = if ($pagerMode -eq 'Dots') { New-ElmText -Content '  <- active' -Style $accentStyle } else { New-ElmText -Content '' }
+            $arrow3   = if ($pagerMode -eq 'Dots') { New-ElmText -Content '  << active' -Style $accentStyle } else { New-ElmText -Content '' }
             $children.Add((New-ElmRow -Children @($label3, $dotsNode, $arrow3)))
 
             # Tabs mode row
             $tabNode = New-ElmPaginator -Tabs $script:PAGER_TAB_LABELS -ActiveTab $model.PagerTabIdx `
                                         -Style $tabStyle -ActiveStyle $activeTabStyle
             $label2  = New-ElmText -Content '  Tabs:     ' -Style $hintStyle
-            $arrow2  = if ($pagerMode -eq 'Tabs') { New-ElmText -Content '  <- active' -Style $accentStyle } else { New-ElmText -Content '' }
+            $arrow2  = if ($pagerMode -eq 'Tabs') { New-ElmText -Content '  << active' -Style $accentStyle } else { New-ElmText -Content '' }
             $children.Add((New-ElmRow -Children @($label2, $tabNode, $arrow2)))
 
             $modeOpts = $script:PAGER_MODES -join '/'
