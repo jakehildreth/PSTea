@@ -298,7 +298,7 @@ function Invoke-ElmWebSocketListener {
 
     # Stop scriptblock — shuts everything down cleanly
     $stopFn = {
-        Write-ElmWebDebug 'Stop called'
+        $ts = [datetime]::Now.ToString('HH:mm:ss.fff'); Add-Content -Path $script:ElmWebDebugLog -Value "[$ts][STOP] Stop called" -ErrorAction SilentlyContinue
         $sharedState.Stop = $true
 
         $ws = $sharedState.ActiveSocket
@@ -319,7 +319,7 @@ function Invoke-ElmWebSocketListener {
         try { $sendRs.Close()  } catch {}
         try { $listener.Stop() } catch {}
         try { $listener.Close() } catch {}
-        Write-ElmWebDebug 'Stop complete'
+        $ts = [datetime]::Now.ToString('HH:mm:ss.fff'); Add-Content -Path $script:ElmWebDebugLog -Value "[$ts][STOP] Stop complete" -ErrorAction SilentlyContinue
     }.GetNewClosure()
 
     return [PSCustomObject]@{
