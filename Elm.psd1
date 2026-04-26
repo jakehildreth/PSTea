@@ -4,7 +4,7 @@
 RootModule = 'Elm.psm1'
 
 # Version number of this module.
-ModuleVersion = '0.1.0'
+ModuleVersion = '0.2.1'
 
 # Supported PSEditions
 # CompatiblePSEditions = @()
@@ -22,7 +22,7 @@ CompanyName = 'Gilmour Technologies Ltd'
 Copyright = '(c) 2026 Jake Hildreth, Gilmour Technologies Ltd. All rights reserved.'
 
 # Description of the functionality provided by this module
-Description = 'An Elm infrastructure implementation in PowerShell. Heavily influenced by CharmBracelet stuff and Textual'
+Description = 'An Elm infrastructure implementation in PowerShell. Heavily influenced by CharmBracelet''s BubbleTea and Textual.'
 
 # Minimum version of the PowerShell engine required by this module
 PowerShellVersion = '5.1'
