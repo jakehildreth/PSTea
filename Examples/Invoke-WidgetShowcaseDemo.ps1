@@ -800,7 +800,7 @@ $viewFn = {
 
             $modeOpts = $script:PAGER_MODES -join '/'
             $children.Add((New-ElmText -Content '' ))
-            $children.Add((New-ElmText -Content "  Active mode: $pagerMode [M: $modeOpts]" -Style $configStyle))
+            $children.Add((New-ElmText -Content "  Active mode: $pagerMode" -Style $configStyle))
             $children.Add((New-ElmText -Content '' ))
             $children.Add((New-ElmText -Content '[Left/Right] navigate  [Up/Down] Mode  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
         }
