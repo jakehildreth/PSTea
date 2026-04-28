@@ -4,17 +4,17 @@ function ConvertTo-AnsiPatch {
         Converts a list of view-diff patches into an incremental ANSI escape sequence string.
 
     .DESCRIPTION
-        Processes each patch from Compare-ElmViewTree:
+        Processes each patch from Compare-TeaViewTree:
 
         - Replace: emits a cursor-position sequence (ESC[{Y+1};{X+1}H) followed by
-          the styled content from Apply-ElmStyle.
+          the styled content from Apply-TeaStyle.
         - Clear: emits a cursor-position sequence followed by spaces spanning Width
           for each row in Height, erasing the vacated region.
         - FullRedraw: skipped. The caller is expected to detect FullRedraw patches
           and invoke ConvertTo-AnsiOutput instead.
 
     .PARAMETER Patches
-        An array of patch PSCustomObjects produced by Compare-ElmViewTree. Each object
+        An array of patch PSCustomObjects produced by Compare-TeaViewTree. Each object
         has a Type property ('Replace', 'Clear', or 'FullRedraw').
 
     .OUTPUTS
@@ -22,7 +22,7 @@ function ConvertTo-AnsiPatch {
         Returns an empty string when the patch list is empty or contains only FullRedraw.
 
     .EXAMPLE
-        $patches = Compare-ElmViewTree -OldTree $prev -NewTree $new
+        $patches = Compare-TeaViewTree -OldTree $prev -NewTree $new
         $ansi    = ConvertTo-AnsiPatch -Patches $patches
         [Console]::Out.Write($ansi)
 
@@ -48,7 +48,7 @@ function ConvertTo-AnsiPatch {
                 $patchWidth  = if ($patch.PSObject.Properties['Width']    -and $null -ne $patch.Width)    { $patch.Width }    else { $patch.Content.Length }
                 $oldWidth    = if ($patch.PSObject.Properties['OldWidth'] -and $null -ne $patch.OldWidth) { $patch.OldWidth } else { $patchWidth }
                 $clearWidth  = [Math]::Max($patchWidth, $oldWidth)
-                $content     = Apply-ElmStyle -Content $patch.Content -Style $patch.Style -Width $patchWidth
+                $content     = Apply-TeaStyle -Content $patch.Content -Style $patch.Style -Width $patchWidth
                 # Compute visual width of styled output (SGR codes are zero-width).
                 # Append trailing spaces to fill clearWidth, overwriting stale chars from shorter-to-longer transitions.
                 $visualLen = $patch.Content.Length
@@ -75,3 +75,5 @@ function ConvertTo-AnsiPatch {
 
     return $sb.ToString()
 }
+
+

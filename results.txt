@@ -1,0 +1,9 @@
+Start-TeaProgram.ps1:4: Starts a TEA (The Elm Architecture) program in the terminal.
+Start-TeaProgram.ps1:11: The three required scriptblocks mirror The Elm Architecture (TEA):
+New-TeaComponent.ps1:7: A Component node represents a nested TEA (The Elm Architecture) sub-program.
+New-TeaComponentMsg.ps1:9: Elm Language's Cmd.map and Html.map approach for nested programs.
+Invoke-LayoutDemo.ps1:53: 'The Elm Architecture:'
+Invoke-QuizDemo.ps1:14: 'Terminal Elm Architecture'
+Invoke-QuizDemo.ps1:15: 'The Elm Architecture'
+Invoke-QuizDemo.ps1:32: Text    = 'In the Elm Architecture, which function handles messages?'
+Invoke-SnakeDemo.ps1:282: Demonstrates combined timer + key subscriptions in the TEA (The Elm Architecture).

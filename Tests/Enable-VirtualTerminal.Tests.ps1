@@ -9,10 +9,10 @@ Describe 'Enable-VirtualTerminal' -Tag 'Unit', 'P1' {
             $result | Should -BeTrue
         }
 
-        It 'Should not define ElmConsoleHelper type' -Skip:(-not (($PSVersionTable.PSVersion.Major -ge 7) -and (-not $IsWindows))) {
+        It 'Should not define TeaConsoleHelper type' -Skip:(-not (($PSVersionTable.PSVersion.Major -ge 7) -and (-not $IsWindows))) {
             Enable-VirtualTerminal | Out-Null
             [System.AppDomain]::CurrentDomain.GetAssemblies().GetTypes() |
-                Where-Object { $_.Name -eq 'ElmConsoleHelper' } |
+                Where-Object { $_.Name -eq 'TeaConsoleHelper' } |
                 Should -BeNullOrEmpty
         }
     }

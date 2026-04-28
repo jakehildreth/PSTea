@@ -1,3 +1,0 @@
-function New-Elm {
-    'Elm!'
-}

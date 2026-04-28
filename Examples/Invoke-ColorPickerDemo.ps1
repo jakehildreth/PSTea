@@ -1,4 +1,4 @@
-Import-Module "$PSScriptRoot/../Elm.psd1" -Force
+Import-Module "$PSScriptRoot/../PSTea.psd1" -Force
 
 # ---------------------------------------------------------------------------
 # 256-Color Palette picker demo
@@ -81,10 +81,10 @@ $update = {
 $view = {
     param($model)
 
-    $titleStyle = New-ElmStyle -Foreground 'BrightCyan' -Bold
-    $infoStyle  = New-ElmStyle -Foreground 'BrightWhite'
-    $hintStyle  = New-ElmStyle -Foreground 'BrightBlack'
-    $boxStyle   = New-ElmStyle -Border 'Rounded' -Padding @(0, 1)
+    $titleStyle = New-TeaStyle -Foreground 'BrightCyan' -Bold
+    $infoStyle  = New-TeaStyle -Foreground 'BrightWhite'
+    $hintStyle  = New-TeaStyle -Foreground 'BrightBlack'
+    $boxStyle   = New-TeaStyle -Border 'Rounded' -Padding @(0, 1)
 
     $selectedIndex = $model.CursorY * 16 + $model.CursorX
 
@@ -96,27 +96,27 @@ $view = {
             $idx      = $y * 16 + $x
             $isCursor = ($x -eq $model.CursorX -and $y -eq $model.CursorY)
             if ($isCursor) {
-                $cells += New-ElmText -Content '()' -Style (New-ElmStyle -Background $idx -Foreground 'White')
+                $cells += New-TeaText -Content '()' -Style (New-TeaStyle -Background $idx -Foreground 'White')
             } else {
-                $cells += New-ElmText -Content '  ' -Style (New-ElmStyle -Background $idx)
+                $cells += New-TeaText -Content '  ' -Style (New-TeaStyle -Background $idx)
             }
         }
-        $rows += New-ElmRow -Children $cells
+        $rows += New-TeaRow -Children $cells
     }
 
     $colorDesc = Get-ColorDescription -Index $selectedIndex
 
     $children = @(
-        New-ElmText -Content '256-Color Palette' -Style $titleStyle
-        New-ElmText -Content ''
+        New-TeaText -Content '256-Color Palette' -Style $titleStyle
+        New-TeaText -Content ''
     )
     $children += $rows
-    $children += New-ElmText -Content ''
-    $children += New-ElmText -Content "Index: $selectedIndex   $colorDesc   ESC[48;5;${selectedIndex}m" -Style $infoStyle
-    $children += New-ElmText -Content ''
-    $children += New-ElmText -Content '[Arrow keys] navigate  [Q] quit' -Style $hintStyle
+    $children += New-TeaText -Content ''
+    $children += New-TeaText -Content "Index: $selectedIndex   $colorDesc   ESC[48;5;${selectedIndex}m" -Style $infoStyle
+    $children += New-TeaText -Content ''
+    $children += New-TeaText -Content '[Arrow keys] navigate  [Q] quit' -Style $hintStyle
 
-    New-ElmBox -Style $boxStyle -Children $children
+    New-TeaBox -Style $boxStyle -Children $children
 }
 
-Start-ElmProgram -InitFn $init -UpdateFn $update -ViewFn $view
+Start-TeaProgram -InitFn $init -UpdateFn $update -ViewFn $view

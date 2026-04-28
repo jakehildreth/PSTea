@@ -7,7 +7,7 @@ function ConvertFrom-AnsiVtSequence {
         xterm.js fires onData with a raw string that may contain one or more VT sequences,
         printable characters, or control characters in a single callback. This function parses
         the entire input string and returns one PSCustomObject per logical key event, matching
-        the shape produced by New-ElmTerminalDriver:
+        the shape produced by New-TeaTerminalDriver:
 
             [PSCustomObject]@{
                 Type      = 'KeyDown'
@@ -19,7 +19,7 @@ function ConvertFrom-AnsiVtSequence {
         Resize sequences (ESC[8;rows;colst) are parsed into:
             [PSCustomObject]@{ Type = 'Resize'; Width = [int]; Height = [int] }
 
-        These are enqueued into the InputQueue by Invoke-ElmWebSocketListener; the event loop
+        These are enqueued into the InputQueue by Invoke-TeaWebSocketListener; the event loop
         ignores Resize types (resize support deferred per ADR-024).
 
     .PARAMETER InputString
@@ -34,7 +34,7 @@ function ConvertFrom-AnsiVtSequence {
         # Returns: @{ Type='KeyDown'; Key=[ConsoleKey]::UpArrow; Char=[char]0; Modifiers=None }
 
     .NOTES
-        Called by Invoke-ElmWebSocketListener on each WebSocket receive. See ADR-022.
+        Called by Invoke-TeaWebSocketListener on each WebSocket receive. See ADR-022.
     #>
     [CmdletBinding()]
     param(
@@ -313,3 +313,5 @@ function _ConvertFrom-AnsiCharToConsoleKey {
     }
     return [PSCustomObject]@{ Key = $ck }
 }
+
+

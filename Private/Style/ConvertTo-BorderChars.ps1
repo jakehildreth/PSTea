@@ -26,3 +26,5 @@ function ConvertTo-BorderChars {
     $PSCmdlet.WriteError($errorRecord)
     return $borderMap['None']
 }
+
+

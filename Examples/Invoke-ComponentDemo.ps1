@@ -1,10 +1,10 @@
-Import-Module "$PSScriptRoot/../Elm.psd1" -Force
+Import-Module "$PSScriptRoot/../PSTea.psd1" -Force
 
 # ---------------------------------------------------------------------------
 # Component demo
 # Two independent counters, each a self-contained component with its own
 # model, update, and view. The parent routes ComponentMsg to each one.
-# Demonstrates: New-ElmComponent, New-ElmComponentMsg, message routing
+# Demonstrates: New-TeaComponent, New-TeaComponentMsg, message routing
 # ---------------------------------------------------------------------------
 
 # ---------------------------------------------------------------------------
@@ -27,12 +27,12 @@ $Counter = [PSCustomObject]@{
     }
     View   = {
         param($model)
-        $labelStyle = New-ElmStyle -Foreground 'BrightCyan' -Bold
-        $countStyle = New-ElmStyle -Foreground 'BrightWhite'
-        $boxStyle   = New-ElmStyle -Border 'Rounded' -Padding @(0, 2) -Width 24
-        New-ElmBox -Style $boxStyle -Children @(
-            New-ElmText -Content $model.Label -Style $labelStyle
-            New-ElmText -Content "  $($model.Count)"  -Style $countStyle
+        $labelStyle = New-TeaStyle -Foreground 'BrightCyan' -Bold
+        $countStyle = New-TeaStyle -Foreground 'BrightWhite'
+        $boxStyle   = New-TeaStyle -Border 'Rounded' -Padding @(0, 2) -Width 24
+        New-TeaBox -Style $boxStyle -Children @(
+            New-TeaText -Content $model.Label -Style $labelStyle
+            New-TeaText -Content "  $($model.Count)"  -Style $countStyle
         )
     }
 }
@@ -112,28 +112,28 @@ $update = {
 
 # ---------------------------------------------------------------------------
 # Parent View
-# Embeds each counter as a New-ElmComponent node
+# Embeds each counter as a New-TeaComponent node
 # ---------------------------------------------------------------------------
 
 $view = {
     param($model)
 
-    $hintStyle      = New-ElmStyle -Foreground 'BrightBlack'
-    $focusLabelStyle = New-ElmStyle -Foreground 'BrightYellow' -Bold
+    $hintStyle      = New-TeaStyle -Foreground 'BrightBlack'
+    $focusLabelStyle = New-TeaStyle -Foreground 'BrightYellow' -Bold
 
     $focusText = "Focus: $($model.Focus)"
 
-    $leftComponent  = New-ElmComponent -ComponentId 'left'  -SubModel $model.LeftModel  -ViewFn $Counter.View
-    $rightComponent = New-ElmComponent -ComponentId 'right' -SubModel $model.RightModel -ViewFn $Counter.View
+    $leftComponent  = New-TeaComponent -ComponentId 'left'  -SubModel $model.LeftModel  -ViewFn $Counter.View
+    $rightComponent = New-TeaComponent -ComponentId 'right' -SubModel $model.RightModel -ViewFn $Counter.View
 
-    New-ElmBox -Children @(
-        New-ElmText -Content 'Component Demo' -Style (New-ElmStyle -Bold -Foreground 'BrightWhite')
-        New-ElmText -Content ''
-        New-ElmRow -Children @($leftComponent, (New-ElmText -Content '  '), $rightComponent)
-        New-ElmText -Content ''
-        New-ElmText -Content $focusText -Style $focusLabelStyle
-        New-ElmText -Content '[Up] inc  [Down] dec  [Tab] switch  [Q] quit' -Style $hintStyle
+    New-TeaBox -Children @(
+        New-TeaText -Content 'Component Demo' -Style (New-TeaStyle -Bold -Foreground 'BrightWhite')
+        New-TeaText -Content ''
+        New-TeaRow -Children @($leftComponent, (New-TeaText -Content '  '), $rightComponent)
+        New-TeaText -Content ''
+        New-TeaText -Content $focusText -Style $focusLabelStyle
+        New-TeaText -Content '[Up] inc  [Down] dec  [Tab] switch  [Q] quit' -Style $hintStyle
     )
 }
 
-Start-ElmProgram -InitFn $init -UpdateFn $update -ViewFn $view
+Start-TeaProgram -InitFn $init -UpdateFn $update -ViewFn $view

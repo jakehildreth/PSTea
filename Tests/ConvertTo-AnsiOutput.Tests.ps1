@@ -1,7 +1,7 @@
 BeforeAll {
-    . $PSScriptRoot/../Private/Style/Resolve-ElmColor.ps1
+    . $PSScriptRoot/../Private/Style/Resolve-TeaColor.ps1
     . $PSScriptRoot/../Private/Style/ConvertTo-BorderChars.ps1
-    . $PSScriptRoot/../Private/Style/Apply-ElmStyle.ps1
+    . $PSScriptRoot/../Private/Style/Apply-TeaStyle.ps1
     . $PSScriptRoot/../Private/Rendering/ConvertTo-AnsiOutput.ps1
 }
 
@@ -52,8 +52,8 @@ Describe 'ConvertTo-AnsiOutput' {
 
     Context 'Text node with style' {
         It 'Should contain an SGR escape sequence when Bold style is applied' {
-            . $PSScriptRoot/../Public/Style/New-ElmStyle.ps1
-            $style = New-ElmStyle -Bold
+            . $PSScriptRoot/../Public/Style/New-TeaStyle.ps1
+            $style = New-TeaStyle -Bold
             $node  = [PSCustomObject]@{ Type = 'Text'; Content = 'hi'; Style = $style; Width = 2; Height = 1; X = 0; Y = 0 }
             $result = ConvertTo-AnsiOutput -Root $node
             # Bold = ESC[1m

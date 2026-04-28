@@ -1,8 +1,8 @@
-Import-Module "$PSScriptRoot/../Elm.psd1" -Force
+Import-Module "$PSScriptRoot/../PSTea.psd1" -Force
 
 # ---------------------------------------------------------------------------
 # Quiz demo
-# Five PowerShell/Elm-Architecture multiple-choice questions.
+# Five PowerShell/TEA multiple-choice questions.
 # Demonstrates: multi-phase views (Quiz -> Results), answer tracking,
 # conditional rendering based on model state
 # ---------------------------------------------------------------------------
@@ -49,7 +49,7 @@ $questions = @(
         Answer  = 2
     }
     [PSCustomObject]@{
-        Text    = 'What does Compare-ElmViewTree return on the very first render?'
+        Text    = 'What does Compare-TeaViewTree return on the very first render?'
         Options = @(
             'Empty list'
             'Clear patch'
@@ -153,14 +153,14 @@ $update = {
 $view = {
     param($model)
 
-    $titleStyle    = New-ElmStyle -Foreground 'BrightCyan' -Bold
-    $questionStyle = New-ElmStyle -Foreground 'BrightWhite'
-    $selectedStyle = New-ElmStyle -Foreground 'BrightYellow' -Bold
-    $normalStyle   = New-ElmStyle -Foreground 'White'
-    $correctStyle  = New-ElmStyle -Foreground 'BrightGreen'
-    $wrongStyle    = New-ElmStyle -Foreground 'BrightRed'
-    $hintStyle     = New-ElmStyle -Foreground 'BrightBlack'
-    $boxStyle      = New-ElmStyle -Border 'Rounded' -Padding @(0, 2) -Width 56
+    $titleStyle    = New-TeaStyle -Foreground 'BrightCyan' -Bold
+    $questionStyle = New-TeaStyle -Foreground 'BrightWhite'
+    $selectedStyle = New-TeaStyle -Foreground 'BrightYellow' -Bold
+    $normalStyle   = New-TeaStyle -Foreground 'White'
+    $correctStyle  = New-TeaStyle -Foreground 'BrightGreen'
+    $wrongStyle    = New-TeaStyle -Foreground 'BrightRed'
+    $hintStyle     = New-TeaStyle -Foreground 'BrightBlack'
+    $boxStyle      = New-TeaStyle -Border 'Rounded' -Padding @(0, 2) -Width 56
 
     if ($model.Phase -eq 'Results') {
         $answers = @($model.Answers)
@@ -168,23 +168,23 @@ $view = {
         $total   = $answers.Count
 
         $children = @(
-            New-ElmText -Content 'Quiz Results' -Style $titleStyle
-            New-ElmText -Content ''
-            New-ElmText -Content "Score: $score / $total" -Style $questionStyle
-            New-ElmText -Content ''
+            New-TeaText -Content 'Quiz Results' -Style $titleStyle
+            New-TeaText -Content ''
+            New-TeaText -Content "Score: $score / $total" -Style $questionStyle
+            New-TeaText -Content ''
         )
 
         $qs = @($model.Questions)
         for ($i = 0; $i -lt $qs.Count; $i++) {
             $marker = if ($answers[$i]) { '[+]' } else { '[x]' }
             $style  = if ($answers[$i]) { $correctStyle } else { $wrongStyle }
-            $children += New-ElmText -Content "$marker $($qs[$i].Text)" -Style $style
+            $children += New-TeaText -Content "$marker $($qs[$i].Text)" -Style $style
         }
 
-        $children += New-ElmText -Content ''
-        $children += New-ElmText -Content '[R] try again  [Q] quit' -Style $hintStyle
+        $children += New-TeaText -Content ''
+        $children += New-TeaText -Content '[R] try again  [Q] quit' -Style $hintStyle
 
-        return New-ElmBox -Style $boxStyle -Children $children
+        return New-TeaBox -Style $boxStyle -Children $children
     }
 
     # Quiz phase
@@ -194,22 +194,22 @@ $view = {
     $opts   = @($q.Options)
 
     $children = @(
-        New-ElmText -Content "Question $qNum of $qTotal" -Style $hintStyle
-        New-ElmText -Content ''
-        New-ElmText -Content $q.Text -Style $questionStyle
-        New-ElmText -Content ''
+        New-TeaText -Content "Question $qNum of $qTotal" -Style $hintStyle
+        New-TeaText -Content ''
+        New-TeaText -Content $q.Text -Style $questionStyle
+        New-TeaText -Content ''
     )
 
     for ($i = 0; $i -lt $opts.Count; $i++) {
         $marker = if ($i -eq $model.Selected) { '(*) ' } else { '( ) ' }
         $style  = if ($i -eq $model.Selected) { $selectedStyle } else { $normalStyle }
-        $children += New-ElmText -Content "$marker$($opts[$i])" -Style $style
+        $children += New-TeaText -Content "$marker$($opts[$i])" -Style $style
     }
 
-    $children += New-ElmText -Content ''
-    $children += New-ElmText -Content '[Up/Down] select  [Enter] confirm  [Q] quit' -Style $hintStyle
+    $children += New-TeaText -Content ''
+    $children += New-TeaText -Content '[Up/Down] select  [Enter] confirm  [Q] quit' -Style $hintStyle
 
-    New-ElmBox -Style $boxStyle -Children $children
+    New-TeaBox -Style $boxStyle -Children $children
 }
 
-Start-ElmProgram -InitFn $init -UpdateFn $update -ViewFn $view
+Start-TeaProgram -InitFn $init -UpdateFn $update -ViewFn $view

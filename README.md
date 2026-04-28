@@ -1,6 +1,6 @@
-# Elm
+# PSTea
 
-An implementation of the [Elm Architecture](https://guide.elm-lang.org/architecture/) (Model-View-Update / TEA) as a PowerShell module. Build interactive terminal UIs and serve those same apps in a browser via WebSocket + xterm.js without changing a line of application code.
+A PowerShell implementation of The Elm Architecture (TEA / Model-View-Update). Build interactive terminal UIs and serve those same apps in a browser via WebSocket + xterm.js without changing a line of application code. Build interactive terminal UIs and serve those same apps in a browser via WebSocket + xterm.js without changing a line of application code.
 
 Heavily influenced by:
 * [BubbleTea](https://github.com/charmbracelet/bubbletea)
@@ -13,7 +13,7 @@ Heavily influenced by:
 ## Quick Start
 
 ```powershell
-Install-Module -Name Elm
+Install-Module -Name PSTea
 
 $Init = {
     [PSCustomObject]@{ Model = [PSCustomObject]@{ Count = 0 }; Cmd = $null }
@@ -30,16 +30,16 @@ $Update = {
 
 $View = {
     param($Model)
-    New-ElmBox -Children @(
-        New-ElmText -Content " Count: $($Model.Count) "
-        New-ElmText -Content ' [Up] inc  [Q] quit' -Style (New-ElmStyle -Foreground 'BrightBlack')
+    New-TeaBox -Children @(
+        New-TeaText -Content " Count: $($Model.Count) "
+        New-TeaText -Content ' [Up] inc  [Q] quit' -Style (New-TeaStyle -Foreground 'BrightBlack')
     )
 }
 
-Start-ElmProgram -InitFn $Init -UpdateFn $Update -ViewFn $View
+Start-TeaProgram -InitFn $Init -UpdateFn $Update -ViewFn $View
 ```
 
-Swap `Start-ElmProgram` for `Start-ElmWebServer -Port 8080` and the exact same app runs in a browser - no code changes required.
+Swap `Start-TeaProgram` for `Start-TeaWebServer -Port 8080` and the exact same app runs in a browser - no code changes required.
 
 ---
 
@@ -69,13 +69,13 @@ Each cycle:
 
 ```powershell
 # Text node
-New-ElmText -Content 'hello' -Style $MyStyle
+New-TeaText -Content 'hello' -Style $MyStyle
 
 # Vertical box (default)
-New-ElmBox -Children @($Node1, $Node2)
+New-TeaBox -Children @($Node1, $Node2)
 
 # Horizontal row
-New-ElmRow -Children @($Node1, $Node2)
+New-TeaRow -Children @($Node1, $Node2)
 ```
 
 Width/Height values: `'Fill'`, `'Auto'`, integer (columns/rows), or `'50%'`.
@@ -85,7 +85,7 @@ Width/Height values: `'Fill'`, `'Auto'`, integer (columns/rows), or `'50%'`.
 ## Styles
 
 ```powershell
-$Style = New-ElmStyle `
+$Style = New-TeaStyle `
     -Foreground '#88C0D0' `
     -Background '#2E3440' `
     -Bold `
@@ -93,7 +93,7 @@ $Style = New-ElmStyle `
     -Padding 1, 2   # top/bottom=1, left/right=2
 
 # Inherit and override
-$ActiveStyle = New-ElmStyle -Base $Style -Background '#5C4AE4'
+$ActiveStyle = New-TeaStyle -Base $Style -Background '#5C4AE4'
 ```
 
 Border options: `None`, `Normal`, `Rounded`, `Thick`, `Double`.
@@ -106,7 +106,7 @@ Colors: hex `'#RRGGBB'`, 256-index int, or named (`Black`, `White`, `Red`, `Gree
 
 ```powershell
 # Special keys (arrows, Enter, Backspace, F-keys, ctrl/shift combos)
-New-ElmKeySub -OnKey {
+New-TeaKeySub -OnKey {
     param($Key)
     switch ($Key) {
         'UpArrow' { [PSCustomObject]@{ Type = 'MoveUp' } }
@@ -115,19 +115,19 @@ New-ElmKeySub -OnKey {
 }
 
 # Printable characters (letters, digits, symbols) - for text input
-New-ElmCharSub -Handler {
+New-TeaCharSub -Handler {
     param($Key)
     [PSCustomObject]@{ Type = 'CharInput'; Char = $Key.KeyChar }
 }
 
 # Timer
-New-ElmTimerSub -IntervalMs 500 -OnTick {
+New-TeaTimerSub -IntervalMs 500 -OnTick {
     [PSCustomObject]@{ Type = 'Tick'; Timestamp = (Get-Date) }
 }
 ```
 
-`New-ElmCharSub` fires for printable ASCII (0x20-0x7E) only after all `New-ElmKeySub` handlers
-have been checked. Use it alongside `New-ElmTextInput` or `New-ElmTextarea` to handle typed text.
+`New-TeaCharSub` fires for printable ASCII (0x20-0x7E) only after all `New-TeaKeySub` handlers
+have been checked. Use it alongside `New-TeaTextInput` or `New-TeaTextarea` to handle typed text.
 
 ---
 
@@ -148,24 +148,24 @@ $Counter = [PSCustomObject]@{
     }
     View   = {
         param($Model)
-        New-ElmText -Content "Count: $($Model.Count)"
+        New-TeaText -Content "Count: $($Model.Count)"
     }
 }
 
-# Parent View embeds it via New-ElmComponent
+# Parent View embeds it via New-TeaComponent
 $View = {
     param($Model)
-    New-ElmRow -Children @(
-        New-ElmComponent -ComponentId 'left'  -SubModel $Model.LeftModel  -ViewFn $Counter.View
-        New-ElmComponent -ComponentId 'right' -SubModel $Model.RightModel -ViewFn $Counter.View
+    New-TeaRow -Children @(
+        New-TeaComponent -ComponentId 'left'  -SubModel $Model.LeftModel  -ViewFn $Counter.View
+        New-TeaComponent -ComponentId 'right' -SubModel $Model.RightModel -ViewFn $Counter.View
     )
 }
 
 # Wrap messages for routing in parent Update
-$WrappedMsg = New-ElmComponentMsg -ComponentId 'left' -Msg ([PSCustomObject]@{ Type = 'Increment' })
+$WrappedMsg = New-TeaComponentMsg -ComponentId 'left' -Msg ([PSCustomObject]@{ Type = 'Increment' })
 ```
 
-Component nodes are expanded transparently at layout time. `ConvertTo-AnsiOutput` and `Compare-ElmViewTree` never see raw `Component` nodes.
+Component nodes are expanded transparently at layout time. `ConvertTo-AnsiOutput` and `Compare-TeaViewTree` never see raw `Component` nodes.
 
 ---
 
@@ -173,25 +173,25 @@ Component nodes are expanded transparently at layout time. `ConvertTo-AnsiOutput
 
 | Cmdlet | Returns | Key params |
 |---|---|---|
-| `New-ElmTextInput` | `Text`/`Box` | `-Value`, `-CursorPos`, `-Focused`, `-Placeholder`, `-FocusedStyle`, `-FocusedBoxStyle` |
-| `New-ElmTextarea` | `Box/Vertical` | `-Lines`, `-CursorRow/-Col`, `-Focused`, `-MaxVisible`, `-ScrollOffset`, `-FocusedStyle`, `-FocusedBoxStyle` |
-| `New-ElmList` | `Box/Vertical` | `-Items`, `-SelectedIndex`, `-MaxVisible`, `-Style`, `-SelectedStyle` |
-| `New-ElmTable` | `Box/Vertical` | `-Headers`, `-Rows`, `-SelectedRow`, `-ColumnWidths`, `-HeaderStyle`, `-SelectedStyle` |
-| `New-ElmPaginator` | `Text`/`Box` | `-CurrentPage`/`-PageCount` (numeric); `-Tabs`/`-ActiveTab` (tabs); `-Dots` (dot indicators) |
-| `New-ElmSpinner` | `Text` | `-Frame`, `-Variant` (`Dots`\|`Braille`\|`Bounce`\|`Arrow`), `-Frames` |
-| `New-ElmProgressBar` | `Text` | `-Value`/`-Percent`, `-Width`, `-FilledChar`, `-EmptyChar` |
-| `New-ElmViewport` | `Box/Vertical` | `-Lines`, `-ScrollOffset`, `-MaxVisible` |
+| `New-TeaTextInput` | `Text`/`Box` | `-Value`, `-CursorPos`, `-Focused`, `-Placeholder`, `-FocusedStyle`, `-FocusedBoxStyle` |
+| `New-TeaTextarea` | `Box/Vertical` | `-Lines`, `-CursorRow/-Col`, `-Focused`, `-MaxVisible`, `-ScrollOffset`, `-FocusedStyle`, `-FocusedBoxStyle` |
+| `New-TeaList` | `Box/Vertical` | `-Items`, `-SelectedIndex`, `-MaxVisible`, `-Style`, `-SelectedStyle` |
+| `New-TeaTable` | `Box/Vertical` | `-Headers`, `-Rows`, `-SelectedRow`, `-ColumnWidths`, `-HeaderStyle`, `-SelectedStyle` |
+| `New-TeaPaginator` | `Text`/`Box` | `-CurrentPage`/`-PageCount` (numeric); `-Tabs`/`-ActiveTab` (tabs); `-Dots` (dot indicators) |
+| `New-TeaSpinner` | `Text` | `-Frame`, `-Variant` (`Dots`\|`Braille`\|`Bounce`\|`Arrow`), `-Frames` |
+| `New-TeaProgressBar` | `Text` | `-Value`/`-Percent`, `-Width`, `-FilledChar`, `-EmptyChar` |
+| `New-TeaViewport` | `Box/Vertical` | `-Lines`, `-ScrollOffset`, `-MaxVisible` |
 
 `-FocusedStyle` swaps foreground/background when the widget is focused. `-FocusedBoxStyle` wraps
-the focused widget in a `Box` with the given style (e.g. `New-ElmStyle -Border 'Rounded'`).
-Both are optional; the caller passes whatever `New-ElmStyle` produces.
+the focused widget in a `Box` with the given style (e.g. `New-TeaStyle -Border 'Rounded'`).
+Both are optional; the caller passes whatever `New-TeaStyle` produces.
 
 ---
 
 ## Web Mode
 
 ```powershell
-Start-ElmWebServer `
+Start-TeaWebServer `
     -Init          $Init `
     -Update        $Update `
     -View          $View `
@@ -236,11 +236,11 @@ All examples are in the `Examples/` folder.
 
 ```powershell
 # PowerShell Gallery (coming soon)
-Install-Module -Name Elm
+Install-Module -Name PSTea
 
 # From source
-git clone https://github.com/jakehildreth/Elm.git
-Import-Module ./Elm/Elm.psd1
+git clone https://github.com/jakehildreth/PSTea.git
+Import-Module ./PSTea/PSTea.psd1
 ```
 
 ---

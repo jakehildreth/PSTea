@@ -14,14 +14,14 @@
       Q      - quit
 
 .NOTES
-    Requires the Elm module to be loaded.
+    Requires the PSTea module to be loaded.
     Run from the Examples directory: . .\Invoke-PomodoroDemo.ps1; Invoke-PomodoroDemo
 #>
 function Invoke-PomodoroDemo {
     [CmdletBinding()]
     param()
 
-    Import-Module "$PSScriptRoot/../Elm.psd1" -Force
+    Import-Module "$PSScriptRoot/../PSTea.psd1" -Force
 
     # ------------------------------------------------------------------ Model
     # SecondsLeft : [int]  remaining seconds (0..1500)
@@ -110,22 +110,22 @@ function Invoke-PomodoroDemo {
         $empty      = 40 - $filled
         $bar        = ('[') + ([string]'#' * $filled) + ([string]'-' * $empty) + (']')
 
-        $titleStyle  = New-ElmStyle -Foreground 'Cyan'    -Bold
-        $clockStyle  = New-ElmStyle -Foreground 'White'   -Bold
-        $phaseStyle  = New-ElmStyle -Foreground $(if ($model.Phase -eq 'Work') { 'Red' } else { 'Green' })
-        $barStyle    = New-ElmStyle -Foreground 'BrightBlack'
-        $hintStyle   = New-ElmStyle -Foreground 'BrightBlack'
-        $stateStyle  = New-ElmStyle -Foreground $(if ($model.Running) { 'Green' } else { 'Yellow' })
+        $titleStyle  = New-TeaStyle -Foreground 'Cyan'    -Bold
+        $clockStyle  = New-TeaStyle -Foreground 'White'   -Bold
+        $phaseStyle  = New-TeaStyle -Foreground $(if ($model.Phase -eq 'Work') { 'Red' } else { 'Green' })
+        $barStyle    = New-TeaStyle -Foreground 'BrightBlack'
+        $hintStyle   = New-TeaStyle -Foreground 'BrightBlack'
+        $stateStyle  = New-TeaStyle -Foreground $(if ($model.Running) { 'Green' } else { 'Yellow' })
 
-        New-ElmBox -Children @(
-            New-ElmText -Content '  Pomodoro Timer  ' -Style $titleStyle
-            New-ElmText -Content ''
-            New-ElmText -Content "  $phaseLabel  " -Style $phaseStyle
-            New-ElmText -Content "  $clock  " -Style $clockStyle
-            New-ElmText -Content "  $bar  " -Style $barStyle
-            New-ElmText -Content "  $stateLabel  " -Style $stateStyle
-            New-ElmText -Content ''
-            New-ElmText -Content "  $toggleLabel   [R] Reset   [Q] Quit  " -Style $hintStyle
+        New-TeaBox -Children @(
+            New-TeaText -Content '  Pomodoro Timer  ' -Style $titleStyle
+            New-TeaText -Content ''
+            New-TeaText -Content "  $phaseLabel  " -Style $phaseStyle
+            New-TeaText -Content "  $clock  " -Style $clockStyle
+            New-TeaText -Content "  $bar  " -Style $barStyle
+            New-TeaText -Content "  $stateLabel  " -Style $stateStyle
+            New-TeaText -Content ''
+            New-TeaText -Content "  $toggleLabel   [R] Reset   [Q] Quit  " -Style $hintStyle
         )
     }
 
@@ -134,16 +134,16 @@ function Invoke-PomodoroDemo {
     $subFn = {
         param($model)
         $subs = [System.Collections.Generic.List[object]]::new()
-        $subs.Add((New-ElmKeySub -Key 'Q'     -Handler { 'Quit'   }))
-        $subs.Add((New-ElmKeySub -Key 'Space' -Handler { 'Toggle' }))
-        $subs.Add((New-ElmKeySub -Key 'R'     -Handler { 'Reset'  }))
+        $subs.Add((New-TeaKeySub -Key 'Q'     -Handler { 'Quit'   }))
+        $subs.Add((New-TeaKeySub -Key 'Space' -Handler { 'Toggle' }))
+        $subs.Add((New-TeaKeySub -Key 'R'     -Handler { 'Reset'  }))
         if ($model.Running) {
-            $subs.Add((New-ElmTimerSub -IntervalMs 1000 -Handler { 'Tick' }))
+            $subs.Add((New-TeaTimerSub -IntervalMs 1000 -Handler { 'Tick' }))
         }
         return $subs.ToArray()
     }
 
-    Start-ElmProgram -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -SubscriptionFn $subFn
+    Start-TeaProgram -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -SubscriptionFn $subFn
 }
 
 Invoke-PomodoroDemo

@@ -1,11 +1,11 @@
-Import-Module "$PSScriptRoot/../Elm.psd1" -Force
+Import-Module "$PSScriptRoot/../PSTea.psd1" -Force
 
 # ---------------------------------------------------------------------------
 # File explorer demo
 # Navigate the filesystem with arrow keys, Enter to open directories.
 # Demonstrates: real PS integration, two-pane layout, scrollable list,
 # script-scoped item cache (keeps Items out of the model to avoid
-# expensive JSON roundtrips in Copy-ElmModel on every keypress)
+# expensive JSON roundtrips in Copy-TeaModel on every keypress)
 # ---------------------------------------------------------------------------
 
 # Cache: path -> items array. Never serialized as part of the model.
@@ -110,16 +110,16 @@ $update = {
 $view = {
     param($model)
 
-    $titleStyle    = New-ElmStyle -Foreground 'BrightCyan' -Bold
-    $pathStyle     = New-ElmStyle -Foreground 'BrightBlack'
-    $selectedStyle = New-ElmStyle -Foreground 'BrightYellow' -Bold
-    $dirStyle      = New-ElmStyle -Foreground 'BrightBlue'
-    $fileStyle     = New-ElmStyle -Foreground 'White'
-    $labelStyle    = New-ElmStyle -Foreground 'BrightBlack'
-    $valueStyle    = New-ElmStyle -Foreground 'BrightWhite'
-    $hintStyle     = New-ElmStyle -Foreground 'BrightBlack'
-    $leftStyle     = New-ElmStyle -Border 'Normal' -Width 34 -Padding @(0, 1)
-    $rightStyle    = New-ElmStyle -Border 'Normal' -Width 'Fill' -Padding @(0, 1)
+    $titleStyle    = New-TeaStyle -Foreground 'BrightCyan' -Bold
+    $pathStyle     = New-TeaStyle -Foreground 'BrightBlack'
+    $selectedStyle = New-TeaStyle -Foreground 'BrightYellow' -Bold
+    $dirStyle      = New-TeaStyle -Foreground 'BrightBlue'
+    $fileStyle     = New-TeaStyle -Foreground 'White'
+    $labelStyle    = New-TeaStyle -Foreground 'BrightBlack'
+    $valueStyle    = New-TeaStyle -Foreground 'BrightWhite'
+    $hintStyle     = New-TeaStyle -Foreground 'BrightBlack'
+    $leftStyle     = New-TeaStyle -Border 'Normal' -Width 34 -Padding @(0, 1)
+    $rightStyle    = New-TeaStyle -Border 'Normal' -Width 'Fill' -Padding @(0, 1)
 
     $items     = @(Get-CachedItems -Path $model.Path)
     $itemCount = $items.Count
@@ -127,7 +127,7 @@ $view = {
     # Left pane: scrollable file list
     $listNodes = @()
     if ($itemCount -eq 0) {
-        $listNodes += New-ElmText -Content '(empty)' -Style $labelStyle
+        $listNodes += New-TeaText -Content '(empty)' -Style $labelStyle
     } else {
         $end = [Math]::Min($model.Offset + $visibleCount - 1, $itemCount - 1)
         for ($i = $model.Offset; $i -le $end; $i++) {
@@ -138,49 +138,49 @@ $view = {
             $prefix    = if ($isDir) { '[>] ' } else { '    ' }
             $baseStyle = if ($isDir) { $dirStyle } else { $fileStyle }
             $style     = if ($i -eq $model.Cursor) { $selectedStyle } else { $baseStyle }
-            $listNodes += New-ElmText -Content "$prefix$name" -Style $style
+            $listNodes += New-TeaText -Content "$prefix$name" -Style $style
         }
     }
 
-    $leftPane = New-ElmBox -Style $leftStyle -Children $listNodes
+    $leftPane = New-TeaBox -Style $leftStyle -Children $listNodes
 
     # Right pane: selected item details
     $rightNodes = @()
     if ($itemCount -gt 0) {
         $sel = $items[$model.Cursor]
-        $rightNodes += New-ElmText -Content 'Name' -Style $labelStyle
-        $rightNodes += New-ElmText -Content $sel.Name -Style $valueStyle
-        $rightNodes += New-ElmText -Content ''
-        $rightNodes += New-ElmText -Content 'Type' -Style $labelStyle
-        $rightNodes += New-ElmText -Content $(if ($sel.PSIsContainer) { 'Directory' } else { 'File' }) -Style $valueStyle
+        $rightNodes += New-TeaText -Content 'Name' -Style $labelStyle
+        $rightNodes += New-TeaText -Content $sel.Name -Style $valueStyle
+        $rightNodes += New-TeaText -Content ''
+        $rightNodes += New-TeaText -Content 'Type' -Style $labelStyle
+        $rightNodes += New-TeaText -Content $(if ($sel.PSIsContainer) { 'Directory' } else { 'File' }) -Style $valueStyle
 
         if (-not $sel.PSIsContainer) {
-            $rightNodes += New-ElmText -Content ''
-            $rightNodes += New-ElmText -Content 'Size' -Style $labelStyle
-            $rightNodes += New-ElmText -Content (Format-ItemSize -Bytes $sel.Length) -Style $valueStyle
+            $rightNodes += New-TeaText -Content ''
+            $rightNodes += New-TeaText -Content 'Size' -Style $labelStyle
+            $rightNodes += New-TeaText -Content (Format-ItemSize -Bytes $sel.Length) -Style $valueStyle
         }
 
         if ($sel.LastWriteTime -ne '') {
-            $rightNodes += New-ElmText -Content ''
-            $rightNodes += New-ElmText -Content 'Modified' -Style $labelStyle
-            $rightNodes += New-ElmText -Content $sel.LastWriteTime -Style $valueStyle
+            $rightNodes += New-TeaText -Content ''
+            $rightNodes += New-TeaText -Content 'Modified' -Style $labelStyle
+            $rightNodes += New-TeaText -Content $sel.LastWriteTime -Style $valueStyle
         }
     } else {
-        $rightNodes += New-ElmText -Content '(no selection)' -Style $labelStyle
+        $rightNodes += New-TeaText -Content '(no selection)' -Style $labelStyle
     }
 
-    $rightPane = New-ElmBox -Style $rightStyle -Children $rightNodes
+    $rightPane = New-TeaBox -Style $rightStyle -Children $rightNodes
 
     $displayPath = $model.Path
     if ($displayPath.Length -gt 60) { $displayPath = '...' + $displayPath.Substring($displayPath.Length - 57) }
     $scrollInfo = if ($itemCount -gt 0) { " ($($model.Cursor + 1)/$itemCount)" } else { '' }
 
-    New-ElmBox -Children @(
-        New-ElmText -Content 'File Explorer' -Style $titleStyle
-        New-ElmText -Content "$displayPath$scrollInfo" -Style $pathStyle
-        New-ElmRow -Children @($leftPane, $rightPane)
-        New-ElmText -Content '[Up/Down] navigate  [Enter] open dir / ..  [Q] quit' -Style $hintStyle
+    New-TeaBox -Children @(
+        New-TeaText -Content 'File Explorer' -Style $titleStyle
+        New-TeaText -Content "$displayPath$scrollInfo" -Style $pathStyle
+        New-TeaRow -Children @($leftPane, $rightPane)
+        New-TeaText -Content '[Up/Down] navigate  [Enter] open dir / ..  [Q] quit' -Style $hintStyle
     )
 }
 
-Start-ElmProgram -InitFn $init -UpdateFn $update -ViewFn $view
+Start-TeaProgram -InitFn $init -UpdateFn $update -ViewFn $view

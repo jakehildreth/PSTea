@@ -1,4 +1,4 @@
-Import-Module "$PSScriptRoot/../Elm.psd1" -Force
+Import-Module "$PSScriptRoot/../PSTea.psd1" -Force
 
 # ---------------------------------------------------------------------------
 # Model
@@ -72,16 +72,16 @@ $update = {
 $view = {
     param($model)
 
-    $titleStyle    = New-ElmStyle -Bold -Foreground 'BrightCyan'
-    $hintStyle     = New-ElmStyle -Foreground 'BrightBlack'
-    $selectedStyle = New-ElmStyle -Background 'Blue' -Foreground 'BrightWhite' -Bold
-    $doneStyle     = New-ElmStyle -Foreground 'BrightBlack' -Strikethrough
-    $normalStyle   = New-ElmStyle -Foreground 'White'
-    $boxStyle      = New-ElmStyle -Border 'Rounded' -Padding @(0, 1) -Width 42
+    $titleStyle    = New-TeaStyle -Bold -Foreground 'BrightCyan'
+    $hintStyle     = New-TeaStyle -Foreground 'BrightBlack'
+    $selectedStyle = New-TeaStyle -Background 'Blue' -Foreground 'BrightWhite' -Bold
+    $doneStyle     = New-TeaStyle -Foreground 'BrightBlack' -Strikethrough
+    $normalStyle   = New-TeaStyle -Foreground 'White'
+    $boxStyle      = New-TeaStyle -Border 'Rounded' -Padding @(0, 1) -Width 42
 
     $rows = @(
-        New-ElmText -Content '  todo list' -Style $titleStyle
-        New-ElmText -Content ''
+        New-TeaText -Content '  todo list' -Style $titleStyle
+        New-TeaText -Content ''
     )
 
     for ($i = 0; $i -lt $model.Items.Count; $i++) {
@@ -90,22 +90,22 @@ $view = {
         $label  = $prefix + $item.Text
 
         if ($i -eq $model.Cursor) {
-            $rows += New-ElmText -Content "> $label" -Style $selectedStyle
+            $rows += New-TeaText -Content "> $label" -Style $selectedStyle
         } elseif ($item.Done) {
-            $rows += New-ElmText -Content "  $label" -Style $doneStyle
+            $rows += New-TeaText -Content "  $label" -Style $doneStyle
         } else {
-            $rows += New-ElmText -Content "  $label" -Style $normalStyle
+            $rows += New-TeaText -Content "  $label" -Style $normalStyle
         }
     }
 
-    $rows += New-ElmText -Content ''
-    $rows += New-ElmText -Content '  [up/down] move  [space] toggle  [q] quit' -Style $hintStyle
+    $rows += New-TeaText -Content ''
+    $rows += New-TeaText -Content '  [up/down] move  [space] toggle  [q] quit' -Style $hintStyle
 
-    New-ElmBox -Style $boxStyle -Children $rows
+    New-TeaBox -Style $boxStyle -Children $rows
 }
 
 # ---------------------------------------------------------------------------
 # Run
 # ---------------------------------------------------------------------------
 
-Start-ElmProgram -InitFn $init -UpdateFn $update -ViewFn $view
+Start-TeaProgram -InitFn $init -UpdateFn $update -ViewFn $view

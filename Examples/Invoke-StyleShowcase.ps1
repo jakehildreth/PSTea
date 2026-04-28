@@ -1,4 +1,4 @@
-Import-Module "$PSScriptRoot/../Elm.psd1" -Force
+Import-Module "$PSScriptRoot/../PSTea.psd1" -Force
 
 # ---------------------------------------------------------------------------
 # Static showcase - no state changes, Q to quit
@@ -21,75 +21,75 @@ $view = {
     # --- border styles ---
     $borders = @('None', 'Normal', 'Rounded', 'Thick', 'Double')
     $borderNodes = foreach ($b in $borders) {
-        New-ElmBox -Style (New-ElmStyle -Border $b -Padding @(0, 1) -MarginRight 2) -Children @(
-            New-ElmText -Content " $b "
+        New-TeaBox -Style (New-TeaStyle -Border $b -Padding @(0, 1) -MarginRight 2) -Children @(
+            New-TeaText -Content " $b "
         )
     }
-    $borderRow = New-ElmRow -Children $borderNodes
+    $borderRow = New-TeaRow -Children $borderNodes
 
     # --- text decorations ---
     $decoNodes = @(
-        New-ElmText -Content ' Normal    ' -Style (New-ElmStyle)
-        New-ElmText -Content ' Bold      ' -Style (New-ElmStyle -Bold)
-        New-ElmText -Content ' Italic    ' -Style (New-ElmStyle -Italic)
-        New-ElmText -Content ' Underline ' -Style (New-ElmStyle -Underline)
-        New-ElmText -Content ' Strike    ' -Style (New-ElmStyle -Strikethrough)
+        New-TeaText -Content ' Normal    ' -Style (New-TeaStyle)
+        New-TeaText -Content ' Bold      ' -Style (New-TeaStyle -Bold)
+        New-TeaText -Content ' Italic    ' -Style (New-TeaStyle -Italic)
+        New-TeaText -Content ' Underline ' -Style (New-TeaStyle -Underline)
+        New-TeaText -Content ' Strike    ' -Style (New-TeaStyle -Strikethrough)
     )
-    $decoRow = New-ElmRow -Children $decoNodes
+    $decoRow = New-TeaRow -Children $decoNodes
 
     # --- named foreground colors ---
     $namedColors = @('Black','Red','Green','Yellow','Blue','Magenta','Cyan','White',
                      'BrightBlack','BrightRed','BrightGreen','BrightYellow',
                      'BrightBlue','BrightMagenta','BrightCyan','BrightWhite')
     $colorNodes = foreach ($c in $namedColors) {
-        New-ElmText -Content " $c " -Style (New-ElmStyle -Foreground $c)
+        New-TeaText -Content " $c " -Style (New-TeaStyle -Foreground $c)
     }
-    $colorRow1 = New-ElmRow -Children $colorNodes[0..7]
-    $colorRow2 = New-ElmRow -Children $colorNodes[8..15]
+    $colorRow1 = New-TeaRow -Children $colorNodes[0..7]
+    $colorRow2 = New-TeaRow -Children $colorNodes[8..15]
 
     # --- background colors ---
     $bgNodes = foreach ($c in @('Red','Green','Blue','Magenta','Cyan','Yellow')) {
-        New-ElmText -Content "  $c  " -Style (New-ElmStyle -Background $c -Foreground 'Black')
+        New-TeaText -Content "  $c  " -Style (New-TeaStyle -Background $c -Foreground 'Black')
     }
-    $bgRow = New-ElmRow -Children $bgNodes
+    $bgRow = New-TeaRow -Children $bgNodes
 
     # --- hex / 256-index samples ---
     $hexNodes = @(
-        New-ElmText -Content ' #FF6B6B ' -Style (New-ElmStyle -Foreground '#FF6B6B')
-        New-ElmText -Content ' #6BCB77 ' -Style (New-ElmStyle -Foreground '#6BCB77')
-        New-ElmText -Content ' #4D96FF ' -Style (New-ElmStyle -Foreground '#4D96FF')
-        New-ElmText -Content ' #FFD93D ' -Style (New-ElmStyle -Foreground '#FFD93D')
-        New-ElmText -Content ' 196 '     -Style (New-ElmStyle -Foreground 196)
-        New-ElmText -Content ' 46  '     -Style (New-ElmStyle -Foreground 46)
-        New-ElmText -Content ' 21  '     -Style (New-ElmStyle -Foreground 21)
+        New-TeaText -Content ' #FF6B6B ' -Style (New-TeaStyle -Foreground '#FF6B6B')
+        New-TeaText -Content ' #6BCB77 ' -Style (New-TeaStyle -Foreground '#6BCB77')
+        New-TeaText -Content ' #4D96FF ' -Style (New-TeaStyle -Foreground '#4D96FF')
+        New-TeaText -Content ' #FFD93D ' -Style (New-TeaStyle -Foreground '#FFD93D')
+        New-TeaText -Content ' 196 '     -Style (New-TeaStyle -Foreground 196)
+        New-TeaText -Content ' 46  '     -Style (New-TeaStyle -Foreground 46)
+        New-TeaText -Content ' 21  '     -Style (New-TeaStyle -Foreground 21)
     )
-    $hexRow = New-ElmRow -Children $hexNodes
+    $hexRow = New-TeaRow -Children $hexNodes
 
-    $headingStyle = New-ElmStyle -Bold -Foreground 'BrightCyan'
-    $hintStyle    = New-ElmStyle -Foreground 'BrightBlack'
-    $outerStyle   = New-ElmStyle -Border 'Rounded' -Padding @(1, 2)
+    $headingStyle = New-TeaStyle -Bold -Foreground 'BrightCyan'
+    $hintStyle    = New-TeaStyle -Foreground 'BrightBlack'
+    $outerStyle   = New-TeaStyle -Border 'Rounded' -Padding @(1, 2)
 
-    New-ElmBox -Style $outerStyle -Children @(
-        New-ElmText -Content 'Elm Style Showcase' -Style $headingStyle
-        New-ElmText -Content ''
-        New-ElmText -Content 'Borders' -Style (New-ElmStyle -Underline)
+    New-TeaBox -Style $outerStyle -Children @(
+        New-TeaText -Content 'PSTea Style Showcase' -Style $headingStyle
+        New-TeaText -Content ''
+        New-TeaText -Content 'Borders' -Style (New-TeaStyle -Underline)
         $borderRow
-        New-ElmText -Content ''
-        New-ElmText -Content 'Text Decorations' -Style (New-ElmStyle -Underline)
+        New-TeaText -Content ''
+        New-TeaText -Content 'Text Decorations' -Style (New-TeaStyle -Underline)
         $decoRow
-        New-ElmText -Content ''
-        New-ElmText -Content 'Named Foreground Colors' -Style (New-ElmStyle -Underline)
+        New-TeaText -Content ''
+        New-TeaText -Content 'Named Foreground Colors' -Style (New-TeaStyle -Underline)
         $colorRow1
         $colorRow2
-        New-ElmText -Content ''
-        New-ElmText -Content 'Background Colors' -Style (New-ElmStyle -Underline)
+        New-TeaText -Content ''
+        New-TeaText -Content 'Background Colors' -Style (New-TeaStyle -Underline)
         $bgRow
-        New-ElmText -Content ''
-        New-ElmText -Content 'Hex + 256-Index Colors' -Style (New-ElmStyle -Underline)
+        New-TeaText -Content ''
+        New-TeaText -Content 'Hex + 256-Index Colors' -Style (New-TeaStyle -Underline)
         $hexRow
-        New-ElmText -Content ''
-        New-ElmText -Content '[q] quit' -Style $hintStyle
+        New-TeaText -Content ''
+        New-TeaText -Content '[q] quit' -Style $hintStyle
     )
 }
 
-Start-ElmProgram -InitFn $init -UpdateFn $update -ViewFn $view
+Start-TeaProgram -InitFn $init -UpdateFn $update -ViewFn $view

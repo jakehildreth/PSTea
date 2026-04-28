@@ -1,4 +1,4 @@
-Import-Module "$PSScriptRoot/../Elm.psd1" -Force
+Import-Module "$PSScriptRoot/../PSTea.psd1" -Force
 
 # ---------------------------------------------------------------------------
 # Widget Showcase - Web version
@@ -28,27 +28,27 @@ $script:PAGER_TAB_LABELS = @('Animate','List','Viewport','Input','Textarea','Tab
 
 $script:TABLE_HEADERS = @('Widget', 'Returns', 'Key Params')
 $script:TABLE_ROWS    = @(
-    ,@('New-ElmProgressBar', 'Text',        '-Value/-Percent, -Width')
-    ,@('New-ElmSpinner',     'Text',        '-Frame, -Variant')
-    ,@('New-ElmList',        'Box/Vertical','-Items, -SelectedIndex')
-    ,@('New-ElmViewport',    'Box/Vertical','-Lines, -ScrollOffset')
-    ,@('New-ElmTextInput',   'Text/Box',    '-Value, -CursorPos, -FocusedStyle, -FocusedBoxStyle')
-    ,@('New-ElmTextarea',    'Box/Vertical','-Lines, -CursorRow/-Col, -FocusedStyle, -FocusedBoxStyle')
-    ,@('New-ElmTable',       'Box/Vertical','-Headers, -Rows')
-    ,@('New-ElmPaginator',   'Text/Box',    '-CurrentPage / -Tabs / -Dots')
+    ,@('New-TeaProgressBar', 'Text',        '-Value/-Percent, -Width')
+    ,@('New-TeaSpinner',     'Text',        '-Frame, -Variant')
+    ,@('New-TeaList',        'Box/Vertical','-Items, -SelectedIndex')
+    ,@('New-TeaViewport',    'Box/Vertical','-Lines, -ScrollOffset')
+    ,@('New-TeaTextInput',   'Text/Box',    '-Value, -CursorPos, -FocusedStyle, -FocusedBoxStyle')
+    ,@('New-TeaTextarea',    'Box/Vertical','-Lines, -CursorRow/-Col, -FocusedStyle, -FocusedBoxStyle')
+    ,@('New-TeaTable',       'Box/Vertical','-Headers, -Rows')
+    ,@('New-TeaPaginator',   'Text/Box',    '-CurrentPage / -Tabs / -Dots')
 )
 
 $script:VIEWPORT_LINES = @(
-    'Phase 9 Widget Library - Elm for PowerShell'
+    'Phase 9 Widget Library - PSTea'
     '============================================'
     ''
-    'New-ElmProgressBar'
+    'New-TeaProgressBar'
     '  Horizontal progress bar.'
     '  -Value 0.0..1.0 or -Percent 0..100'
     '  -Width (min 4), -FilledChar, -EmptyChar'
     '  Returns a Text node: [###-------]'
     ''
-    'New-ElmSpinner'
+    'New-TeaSpinner'
     '  Animated spinner driven by a frame counter.'
     '  -Frame (caller increments), -Variant:'
     '    Dots   |  /  -  \  (default)'
@@ -57,20 +57,20 @@ $script:VIEWPORT_LINES = @(
     '    Arrow   >  >>  >>>'
     '  -Frames for a fully custom sequence.'
     ''
-    'New-ElmList'
+    'New-TeaList'
     '  Scrollable, selectable list of strings.'
     '  -Items, -SelectedIndex, -MaxVisible'
     '  -Prefix (selected), -UnselectedPrefix'
     '  -Style, -SelectedStyle'
     '  Returns a Box (Vertical) of Text nodes.'
     ''
-    'New-ElmViewport'
+    'New-TeaViewport'
     '  Fixed-height window into a string array.'
     '  -Lines, -ScrollOffset, -MaxVisible, -Style'
     '  Clamps scroll offset automatically.'
     '  Returns a Box (Vertical) of Text nodes.'
     ''
-    'New-ElmTextInput'
+    'New-TeaTextInput'
     '  Single-line text input with cursor.'
     '  -Value, -CursorPos, -Focused (switch)'
     '  -Placeholder shown when empty+unfocused.'
@@ -78,21 +78,21 @@ $script:VIEWPORT_LINES = @(
     '  -Style, -FocusedStyle'
     '  Returns a Text node.'
     ''
-    'New-ElmTextarea'
+    'New-TeaTextarea'
     '  Multi-line text area with cursor.'
     '  -Lines [string[]], -CursorRow, -CursorCol'
     '  -Focused (switch), -MaxVisible, -ScrollOffset'
     '  -Placeholder, -CursorChar, -Style, -FocusedStyle'
     '  Returns a Box (Vertical) of Text nodes.'
     ''
-    'New-ElmTable'
+    'New-TeaTable'
     '  Data table with optional headers and row selection.'
     '  -Headers [string[]], -Rows [object[]]'
     '  -SelectedRow (-1 = no selection), -ColumnWidths'
     '  -Style, -HeaderStyle, -SelectedStyle'
     '  Returns a Box (Vertical) of Text nodes.'
     ''
-    'New-ElmPaginator'
+    'New-TeaPaginator'
     '  Numeric page indicator or named tab bar.'
     '  Numeric: -CurrentPage, -PageCount'
     '    renders: < 3 / 7 >'
@@ -512,18 +512,18 @@ $updateFn = {
 $viewFn = {
     param($model)
 
-    $titleStyle    = New-ElmStyle -Foreground 'BrightCyan'  -Bold
-    $hintStyle     = New-ElmStyle -Foreground 'BrightBlack'
-    $activeTab     = New-ElmStyle -Foreground 'BrightWhite' -Bold
-    $inactiveTab   = New-ElmStyle -Foreground 'BrightBlack'
-    $accentStyle   = New-ElmStyle -Foreground 'BrightYellow'
-    $labelStyle    = New-ElmStyle -Foreground 'BrightWhite'
-    $configStyle   = New-ElmStyle -Foreground 'BrightCyan'
-    $inputStyle    = New-ElmStyle -Foreground 'White'
-    $inputFocStyle = New-ElmStyle -Foreground 'Black' -Background 'White'
-    $listStyle     = New-ElmStyle -Foreground 'White'
-    $selStyle      = New-ElmStyle -Foreground 'BrightYellow' -Bold
-    $vpStyle       = New-ElmStyle -Foreground 'BrightGreen'
+    $titleStyle    = New-TeaStyle -Foreground 'BrightCyan'  -Bold
+    $hintStyle     = New-TeaStyle -Foreground 'BrightBlack'
+    $activeTab     = New-TeaStyle -Foreground 'BrightWhite' -Bold
+    $inactiveTab   = New-TeaStyle -Foreground 'BrightBlack'
+    $accentStyle   = New-TeaStyle -Foreground 'BrightYellow'
+    $labelStyle    = New-TeaStyle -Foreground 'BrightWhite'
+    $configStyle   = New-TeaStyle -Foreground 'BrightCyan'
+    $inputStyle    = New-TeaStyle -Foreground 'White'
+    $inputFocStyle = New-TeaStyle -Foreground 'Black' -Background 'White'
+    $listStyle     = New-TeaStyle -Foreground 'White'
+    $selStyle      = New-TeaStyle -Foreground 'BrightYellow' -Bold
+    $vpStyle       = New-TeaStyle -Foreground 'BrightGreen'
 
     $tabNames  = @('[1] Animate', '[2] List', '[3] Viewport', '[4] Input', '[5] Textarea', '[6] Table', '[7] Paginator')
     $tabWidth  = ($tabNames | ForEach-Object { $_.Length } | Measure-Object -Maximum).Maximum
@@ -532,15 +532,15 @@ $viewFn = {
     for ($i = 0; $i -lt $tabNames.Count; $i++) {
         $ts     = if ($i -eq $model.Tab) { $activeTab } else { $inactiveTab }
         $padded = $tabNames[$i].PadRight($tabWidth)
-        $node   = New-ElmText -Content "  $padded  " -Style $ts
+        $node   = New-TeaText -Content "  $padded  " -Style $ts
         if ($i -lt 4) { $tabRow1.Add($node) } else { $tabRow2.Add($node) }
     }
 
     $children = [System.Collections.Generic.List[object]]::new()
-    $children.Add((New-ElmText -Content 'Elm Widget Showcase' -Style $titleStyle))
-    $children.Add((New-ElmText -Content ''))
-    $children.Add((New-ElmRow -Children $tabRow1.ToArray()))
-    $children.Add((New-ElmRow -Children $tabRow2.ToArray()))
+    $children.Add((New-TeaText -Content 'PSTea Widget Showcase' -Style $titleStyle))
+    $children.Add((New-TeaText -Content ''))
+    $children.Add((New-TeaRow -Children $tabRow1.ToArray()))
+    $children.Add((New-TeaRow -Children $tabRow2.ToArray()))
 
     switch ($model.Tab) {
         0 {
@@ -548,38 +548,38 @@ $viewFn = {
             $filledChar = $script:FILLED_CHARS[$model.FilledCharIdx]
             $emptyChar  = $script:EMPTY_CHARS[$model.EmptyCharIdx]
 
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content 'New-ElmSpinner' -Style $labelStyle))
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content 'New-TeaSpinner' -Style $labelStyle))
             $spinVariants = @('Dots', 'Braille', 'Bounce', 'Arrow')
             foreach ($variant in $spinVariants) {
-                $spinNode = New-ElmSpinner -Frame $model.Frame -Variant $variant -Style $accentStyle
-                $label    = New-ElmText -Content "  -Variant $($variant.PadRight(7)): " -Style $hintStyle
-                $children.Add((New-ElmRow -Children @($label, $spinNode)))
+                $spinNode = New-TeaSpinner -Frame $model.Frame -Variant $variant -Style $accentStyle
+                $label    = New-TeaText -Content "  -Variant $($variant.PadRight(7)): " -Style $hintStyle
+                $children.Add((New-TeaRow -Children @($label, $spinNode)))
             }
 
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content 'New-ElmProgressBar' -Style $labelStyle))
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content 'New-TeaProgressBar' -Style $labelStyle))
             $pct     = [int]([math]::Round($model.Progress * 100))
-            $barNode = New-ElmProgressBar -Value $model.Progress -Width $barWidth `
+            $barNode = New-TeaProgressBar -Value $model.Progress -Width $barWidth `
                                           -FilledChar $filledChar -EmptyChar $emptyChar `
                                           -Style $accentStyle
             $children.Add($barNode)
-            $children.Add((New-ElmText -Content "  $pct%" -Style $hintStyle))
+            $children.Add((New-TeaText -Content "  $pct%" -Style $hintStyle))
 
-            $children.Add((New-ElmText -Content ''))
+            $children.Add((New-TeaText -Content ''))
             $emptyDisplay = if ($emptyChar -eq ' ') { 'spc' } else { $emptyChar }
-            $children.Add((New-ElmText -Content "  -Width $barWidth  -FilledChar '$filledChar'  -EmptyChar '$emptyDisplay'" -Style $configStyle))
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content '[W] Width  [F] FilledChar  [E] EmptyChar  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
+            $children.Add((New-TeaText -Content "  -Width $barWidth  -FilledChar '$filledChar'  -EmptyChar '$emptyDisplay'" -Style $configStyle))
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content '[W] Width  [F] FilledChar  [E] EmptyChar  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
         }
 
         1 {
             $maxVis = $script:LIST_MAX_VIS[$model.ListMaxVisIdx]
             $prefix = $script:LIST_PREFIXES[$model.ListPrefixIdx]
 
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content 'New-ElmList  -  ANSI Color Names' -Style $labelStyle))
-            $listNode = New-ElmList -Items $script:COLOR_NAMES `
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content 'New-TeaList  -  ANSI Color Names' -Style $labelStyle))
+            $listNode = New-TeaList -Items $script:COLOR_NAMES `
                                     -SelectedIndex $model.ListCursor `
                                     -MaxVisible $maxVis `
                                     -Prefix $prefix.Sel `
@@ -589,37 +589,37 @@ $viewFn = {
             $children.Add($listNode)
 
             $itemName   = $script:COLOR_NAMES[$model.ListCursor]
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content "  Selected: $itemName  ($($model.ListCursor + 1)/$($script:COLOR_NAMES.Count))" -Style (New-ElmStyle -Foreground $itemName)))
-            $children.Add((New-ElmText -Content "  -MaxVisible $maxVis  -Prefix '$($prefix.Sel)'" -Style $configStyle))
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content '[Up/Down] navigate  [M] MaxVisible  [V] Prefix  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content "  Selected: $itemName  ($($model.ListCursor + 1)/$($script:COLOR_NAMES.Count))" -Style (New-TeaStyle -Foreground $itemName)))
+            $children.Add((New-TeaText -Content "  -MaxVisible $maxVis  -Prefix '$($prefix.Sel)'" -Style $configStyle))
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content '[Up/Down] navigate  [M] MaxVisible  [V] Prefix  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
         }
 
         2 {
             $maxVis = $script:VP_MAX_VIS[$model.VpMaxVisIdx]
 
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content 'New-ElmViewport  -  Widget Documentation' -Style $labelStyle))
-            $vpNode = New-ElmViewport -Lines $script:VIEWPORT_LINES `
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content 'New-TeaViewport  -  Widget Documentation' -Style $labelStyle))
+            $vpNode = New-TeaViewport -Lines $script:VIEWPORT_LINES `
                                       -ScrollOffset $model.ViewOffset `
                                       -MaxVisible $maxVis `
                                       -Style $vpStyle
             $children.Add($vpNode)
 
             $maxOff = [math]::Max(0, $script:VIEWPORT_LINES.Count - $maxVis)
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content "  Line $($model.ViewOffset + 1)/$($script:VIEWPORT_LINES.Count)  (scroll range: 0-$maxOff)" -Style $hintStyle))
-            $children.Add((New-ElmText -Content "  -MaxVisible $maxVis" -Style $configStyle))
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content '[Up/Down] scroll  [M] MaxVisible  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content "  Line $($model.ViewOffset + 1)/$($script:VIEWPORT_LINES.Count)  (scroll range: 0-$maxOff)" -Style $hintStyle))
+            $children.Add((New-TeaText -Content "  -MaxVisible $maxVis" -Style $configStyle))
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content '[Up/Down] scroll  [M] MaxVisible  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
         }
 
         3 {
             $cursorChar = $script:CURSOR_CHARS[$model.CursorCharIdx]
             $isFocused  = $model.InputFocused
 
-            $focusedBoxStyle = New-ElmStyle -Border 'Rounded'
+            $focusedBoxStyle = New-TeaStyle -Border 'Rounded'
             $tiParams = @{
                 Value           = $model.InputValue
                 CursorPos       = $model.InputCursor
@@ -629,24 +629,24 @@ $viewFn = {
                 FocusedStyle    = $inputFocStyle
                 FocusedBoxStyle = $focusedBoxStyle
             }
-            $tiNode = if ($isFocused) { New-ElmTextInput @tiParams -Focused } else { New-ElmTextInput @tiParams }
+            $tiNode = if ($isFocused) { New-TeaTextInput @tiParams -Focused } else { New-TeaTextInput @tiParams }
 
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content 'New-ElmTextInput' -Style $labelStyle))
-            $label = New-ElmText -Content '  > ' -Style $hintStyle
-            $children.Add((New-ElmRow -Children @($label, $tiNode)))
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content 'New-TeaTextInput' -Style $labelStyle))
+            $label = New-TeaText -Content '  > ' -Style $hintStyle
+            $children.Add((New-TeaRow -Children @($label, $tiNode)))
 
             $val        = [string]$model.InputValue
             $focusedStr = if ($isFocused) { 'on' } else { 'off' }
             $cursorOpts = $script:CURSOR_CHARS -join '/'
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content "  Length: $($val.Length)  Cursor: $($model.InputCursor)" -Style $hintStyle))
-            $children.Add((New-ElmText -Content "  -Focused $focusedStr [F: on/off]  -CursorChar '$cursorChar' [C: $cursorOpts]" -Style $configStyle))
-            $children.Add((New-ElmText -Content ''))
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content "  Length: $($val.Length)  Cursor: $($model.InputCursor)" -Style $hintStyle))
+            $children.Add((New-TeaText -Content "  -Focused $focusedStr [F: on/off]  -CursorChar '$cursorChar' [C: $cursorOpts]" -Style $configStyle))
+            $children.Add((New-TeaText -Content ''))
             if ($isFocused) {
-                $children.Add((New-ElmText -Content '[type] input  [Left/Right] cursor  [Backspace] delete  [Esc] unfocus' -Style $hintStyle))
+                $children.Add((New-TeaText -Content '[type] input  [Left/Right] cursor  [Backspace] delete  [Esc] unfocus' -Style $hintStyle))
             } else {
-                $children.Add((New-ElmText -Content '[F] Focused  [C] CursorChar  [Left/Right] cursor  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
+                $children.Add((New-TeaText -Content '[F] Focused  [C] CursorChar  [Left/Right] cursor  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
             }
         }
 
@@ -655,7 +655,7 @@ $viewFn = {
             $maxVis     = $script:TA_MAX_VIS[$model.TextareaMaxVisIdx]
             $isFocused  = $model.TextareaFocused
 
-            $focusedBoxStyle = New-ElmStyle -Border 'Rounded'
+            $focusedBoxStyle = New-TeaStyle -Border 'Rounded'
             $taParams = @{
                 Lines           = $model.TextareaLines
                 CursorRow       = $model.TextareaRow
@@ -668,35 +668,35 @@ $viewFn = {
                 FocusedStyle    = $inputFocStyle
                 FocusedBoxStyle = $focusedBoxStyle
             }
-            $taNode = if ($isFocused) { New-ElmTextarea @taParams -Focused } else { New-ElmTextarea @taParams }
+            $taNode = if ($isFocused) { New-TeaTextarea @taParams -Focused } else { New-TeaTextarea @taParams }
 
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content 'New-ElmTextarea  -  Multi-line editor' -Style $labelStyle))
-            $taLabel = New-ElmText -Content '  > ' -Style $hintStyle
-            $children.Add((New-ElmRow -Children @($taLabel, $taNode)))
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content 'New-TeaTextarea  -  Multi-line editor' -Style $labelStyle))
+            $taLabel = New-TeaText -Content '  > ' -Style $hintStyle
+            $children.Add((New-TeaRow -Children @($taLabel, $taNode)))
 
             $focusedStr = if ($isFocused) { 'on' } else { 'off' }
             $taMaxOpts  = $script:TA_MAX_VIS -join '/'
             $cursorOpts = $script:CURSOR_CHARS -join '/'
             $lineCount  = $model.TextareaLines.Count
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content "  Row: $($model.TextareaRow + 1)/$lineCount  Col: $($model.TextareaCol)" -Style $hintStyle))
-            $children.Add((New-ElmText -Content "  -Focused $focusedStr [F]  -MaxVisible $maxVis [M: $taMaxOpts]  -CursorChar '$cursorChar' [C: $cursorOpts]" -Style $configStyle))
-            $children.Add((New-ElmText -Content ''))
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content "  Row: $($model.TextareaRow + 1)/$lineCount  Col: $($model.TextareaCol)" -Style $hintStyle))
+            $children.Add((New-TeaText -Content "  -Focused $focusedStr [F]  -MaxVisible $maxVis [M: $taMaxOpts]  -CursorChar '$cursorChar' [C: $cursorOpts]" -Style $configStyle))
+            $children.Add((New-TeaText -Content ''))
             if ($isFocused) {
-                $children.Add((New-ElmText -Content '[type] input  [Enter] new line  [Backspace] delete  [Arrow keys] navigate  [Esc] unfocus' -Style $hintStyle))
+                $children.Add((New-TeaText -Content '[type] input  [Enter] new line  [Backspace] delete  [Arrow keys] navigate  [Esc] unfocus' -Style $hintStyle))
             } else {
-                $children.Add((New-ElmText -Content '[F] Focus  [M] MaxVisible  [C] CursorChar  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
+                $children.Add((New-TeaText -Content '[F] Focus  [M] MaxVisible  [C] CursorChar  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
             }
         }
 
         5 {
-            $headerStyle   = New-ElmStyle -Foreground 'BrightCyan' -Bold
-            $tableSelStyle = New-ElmStyle -Foreground 'BrightYellow' -Bold
+            $headerStyle   = New-TeaStyle -Foreground 'BrightCyan' -Bold
+            $tableSelStyle = New-TeaStyle -Foreground 'BrightYellow' -Bold
 
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content 'New-ElmTable  -  Widget Reference' -Style $labelStyle))
-            $tableNode = New-ElmTable -Headers $script:TABLE_HEADERS `
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content 'New-TeaTable  -  Widget Reference' -Style $labelStyle))
+            $tableNode = New-TeaTable -Headers $script:TABLE_HEADERS `
                                       -Rows    $script:TABLE_ROWS `
                                       -SelectedRow   $model.TableCursor `
                                       -Style         $listStyle `
@@ -705,48 +705,48 @@ $viewFn = {
             $children.Add($tableNode)
 
             $selected = $script:TABLE_ROWS[$model.TableCursor]
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content "  Row $($model.TableCursor + 1)/$($script:TABLE_ROWS.Count)  -  $($selected[0])" -Style $hintStyle))
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content '[Up/Down] select row  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content "  Row $($model.TableCursor + 1)/$($script:TABLE_ROWS.Count)  -  $($selected[0])" -Style $hintStyle))
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content '[Up/Down] select row  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
         }
 
         6 {
             $pagerMode      = $script:PAGER_MODES[$model.PagerModeIdx]
-            $numericStyle   = New-ElmStyle -Foreground 'BrightMagenta'
-            $tabStyle       = New-ElmStyle -Foreground 'BrightBlack'
-            $activeTabStyle = New-ElmStyle -Foreground 'BrightWhite' -Bold
-            $dotStyle       = New-ElmStyle -Foreground 'BrightMagenta'
-            $activeDotStyle = New-ElmStyle -Foreground 'BrightWhite' -Bold
+            $numericStyle   = New-TeaStyle -Foreground 'BrightMagenta'
+            $tabStyle       = New-TeaStyle -Foreground 'BrightBlack'
+            $activeTabStyle = New-TeaStyle -Foreground 'BrightWhite' -Bold
+            $dotStyle       = New-TeaStyle -Foreground 'BrightMagenta'
+            $activeDotStyle = New-TeaStyle -Foreground 'BrightWhite' -Bold
 
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content 'New-ElmPaginator  -  Navigation widgets' -Style $labelStyle))
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content 'New-TeaPaginator  -  Navigation widgets' -Style $labelStyle))
 
-            $numNode = New-ElmPaginator -CurrentPage $model.PagerPage -PageCount $script:PAGER_PAGES -Style $numericStyle
-            $label   = New-ElmText -Content '  Numeric:  ' -Style $hintStyle
-            $arrow   = if ($pagerMode -eq 'Numeric') { New-ElmText -Content '> ' -Style $accentStyle } else { New-ElmText -Content '  ' }
-            $children.Add((New-ElmRow -Children @($arrow, $label, $numNode)))
+            $numNode = New-TeaPaginator -CurrentPage $model.PagerPage -PageCount $script:PAGER_PAGES -Style $numericStyle
+            $label   = New-TeaText -Content '  Numeric:  ' -Style $hintStyle
+            $arrow   = if ($pagerMode -eq 'Numeric') { New-TeaText -Content '> ' -Style $accentStyle } else { New-TeaText -Content '  ' }
+            $children.Add((New-TeaRow -Children @($arrow, $label, $numNode)))
 
-            $dotsNode = New-ElmPaginator -Dots -CurrentPage $model.PagerDotsPage -PageCount $script:PAGER_PAGES `
+            $dotsNode = New-TeaPaginator -Dots -CurrentPage $model.PagerDotsPage -PageCount $script:PAGER_PAGES `
                                          -Style $dotStyle -ActiveStyle $activeDotStyle
-            $label3   = New-ElmText -Content '  Dots:     ' -Style $hintStyle
-            $arrow3   = if ($pagerMode -eq 'Dots') { New-ElmText -Content '> ' -Style $accentStyle } else { New-ElmText -Content '  ' }
-            $children.Add((New-ElmRow -Children @($arrow3, $label3, $dotsNode)))
+            $label3   = New-TeaText -Content '  Dots:     ' -Style $hintStyle
+            $arrow3   = if ($pagerMode -eq 'Dots') { New-TeaText -Content '> ' -Style $accentStyle } else { New-TeaText -Content '  ' }
+            $children.Add((New-TeaRow -Children @($arrow3, $label3, $dotsNode)))
 
-            $tabNode = New-ElmPaginator -Tabs $script:PAGER_TAB_LABELS -ActiveTab $model.PagerTabIdx `
+            $tabNode = New-TeaPaginator -Tabs $script:PAGER_TAB_LABELS -ActiveTab $model.PagerTabIdx `
                                         -Style $tabStyle -ActiveStyle $activeTabStyle
-            $label2  = New-ElmText -Content '  Tabs:     ' -Style $hintStyle
-            $arrow2  = if ($pagerMode -eq 'Tabs') { New-ElmText -Content '> ' -Style $accentStyle } else { New-ElmText -Content '  ' }
-            $children.Add((New-ElmRow -Children @($arrow2, $label2, $tabNode)))
+            $label2  = New-TeaText -Content '  Tabs:     ' -Style $hintStyle
+            $arrow2  = if ($pagerMode -eq 'Tabs') { New-TeaText -Content '> ' -Style $accentStyle } else { New-TeaText -Content '  ' }
+            $children.Add((New-TeaRow -Children @($arrow2, $label2, $tabNode)))
 
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content "  Active mode: $pagerMode" -Style $configStyle))
-            $children.Add((New-ElmText -Content ''))
-            $children.Add((New-ElmText -Content '[Left/Right] navigate  [Up/Down] Mode  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content "  Active mode: $pagerMode" -Style $configStyle))
+            $children.Add((New-TeaText -Content ''))
+            $children.Add((New-TeaText -Content '[Left/Right] navigate  [Up/Down] Mode  [P] prev  [N] next  [Q] quit' -Style $hintStyle))
         }
     }
 
-    New-ElmBox -Children $children.ToArray()
+    New-TeaBox -Children $children.ToArray()
 }
 
 $subFn = {
@@ -755,79 +755,79 @@ $subFn = {
 
     $textFocused = ($model.Tab -eq 3 -and $model.InputFocused) -or ($model.Tab -eq 4 -and $model.TextareaFocused)
     if (-not $textFocused) {
-        $subs.Add((New-ElmKeySub -Key 'Q' -Handler { 'Quit'    }))
-        $subs.Add((New-ElmKeySub -Key 'N' -Handler { 'TabNext' }))
-        $subs.Add((New-ElmKeySub -Key 'P' -Handler { 'TabPrev' }))
-        $subs.Add((New-ElmKeySub -Key 'D1' -Handler { 'TabJump:0' }))
-        $subs.Add((New-ElmKeySub -Key 'D2' -Handler { 'TabJump:1' }))
-        $subs.Add((New-ElmKeySub -Key 'D3' -Handler { 'TabJump:2' }))
-        $subs.Add((New-ElmKeySub -Key 'D4' -Handler { 'TabJump:3' }))
-        $subs.Add((New-ElmKeySub -Key 'D5' -Handler { 'TabJump:4' }))
-        $subs.Add((New-ElmKeySub -Key 'D6' -Handler { 'TabJump:5' }))
-        $subs.Add((New-ElmKeySub -Key 'D7' -Handler { 'TabJump:6' }))
+        $subs.Add((New-TeaKeySub -Key 'Q' -Handler { 'Quit'    }))
+        $subs.Add((New-TeaKeySub -Key 'N' -Handler { 'TabNext' }))
+        $subs.Add((New-TeaKeySub -Key 'P' -Handler { 'TabPrev' }))
+        $subs.Add((New-TeaKeySub -Key 'D1' -Handler { 'TabJump:0' }))
+        $subs.Add((New-TeaKeySub -Key 'D2' -Handler { 'TabJump:1' }))
+        $subs.Add((New-TeaKeySub -Key 'D3' -Handler { 'TabJump:2' }))
+        $subs.Add((New-TeaKeySub -Key 'D4' -Handler { 'TabJump:3' }))
+        $subs.Add((New-TeaKeySub -Key 'D5' -Handler { 'TabJump:4' }))
+        $subs.Add((New-TeaKeySub -Key 'D6' -Handler { 'TabJump:5' }))
+        $subs.Add((New-TeaKeySub -Key 'D7' -Handler { 'TabJump:6' }))
     }
 
-    $subs.Add((New-ElmTimerSub -IntervalMs 120 -Handler { 'Tick' }))
+    $subs.Add((New-TeaTimerSub -IntervalMs 120 -Handler { 'Tick' }))
 
     switch ($model.Tab) {
         0 {
-            $subs.Add((New-ElmKeySub -Key 'W' -Handler { 'BarWidthCycle'   }))
-            $subs.Add((New-ElmKeySub -Key 'F' -Handler { 'FilledCharCycle' }))
-            $subs.Add((New-ElmKeySub -Key 'E' -Handler { 'EmptyCharCycle'  }))
+            $subs.Add((New-TeaKeySub -Key 'W' -Handler { 'BarWidthCycle'   }))
+            $subs.Add((New-TeaKeySub -Key 'F' -Handler { 'FilledCharCycle' }))
+            $subs.Add((New-TeaKeySub -Key 'E' -Handler { 'EmptyCharCycle'  }))
         }
         1 {
-            $subs.Add((New-ElmKeySub -Key 'UpArrow'   -Handler { 'ListUp'          }))
-            $subs.Add((New-ElmKeySub -Key 'DownArrow' -Handler { 'ListDown'        }))
-            $subs.Add((New-ElmKeySub -Key 'M'         -Handler { 'ListMaxVisCycle' }))
-            $subs.Add((New-ElmKeySub -Key 'V'         -Handler { 'ListPrefixCycle' }))
+            $subs.Add((New-TeaKeySub -Key 'UpArrow'   -Handler { 'ListUp'          }))
+            $subs.Add((New-TeaKeySub -Key 'DownArrow' -Handler { 'ListDown'        }))
+            $subs.Add((New-TeaKeySub -Key 'M'         -Handler { 'ListMaxVisCycle' }))
+            $subs.Add((New-TeaKeySub -Key 'V'         -Handler { 'ListPrefixCycle' }))
         }
         2 {
-            $subs.Add((New-ElmKeySub -Key 'UpArrow'   -Handler { 'ViewUp'        }))
-            $subs.Add((New-ElmKeySub -Key 'DownArrow' -Handler { 'ViewDown'      }))
-            $subs.Add((New-ElmKeySub -Key 'M'         -Handler { 'VpMaxVisCycle' }))
+            $subs.Add((New-TeaKeySub -Key 'UpArrow'   -Handler { 'ViewUp'        }))
+            $subs.Add((New-TeaKeySub -Key 'DownArrow' -Handler { 'ViewDown'      }))
+            $subs.Add((New-TeaKeySub -Key 'M'         -Handler { 'VpMaxVisCycle' }))
         }
         3 {
-            $subs.Add((New-ElmKeySub -Key 'LeftArrow'  -Handler { 'InputLeft'  }))
-            $subs.Add((New-ElmKeySub -Key 'RightArrow' -Handler { 'InputRight' }))
-            $subs.Add((New-ElmKeySub -Key 'Backspace'  -Handler { 'Backspace'  }))
+            $subs.Add((New-TeaKeySub -Key 'LeftArrow'  -Handler { 'InputLeft'  }))
+            $subs.Add((New-TeaKeySub -Key 'RightArrow' -Handler { 'InputRight' }))
+            $subs.Add((New-TeaKeySub -Key 'Backspace'  -Handler { 'Backspace'  }))
             if ($model.InputFocused) {
-                $subs.Add((New-ElmKeySub -Key 'Escape' -Handler { 'InputToggleFocus' }))
-                $subs.Add((New-ElmCharSub -Handler { param($e) "Input:$([string]$e.Char)" }))
+                $subs.Add((New-TeaKeySub -Key 'Escape' -Handler { 'InputToggleFocus' }))
+                $subs.Add((New-TeaCharSub -Handler { param($e) "Input:$([string]$e.Char)" }))
             } else {
-                $subs.Add((New-ElmKeySub -Key 'F' -Handler { 'InputToggleFocus' }))
-                $subs.Add((New-ElmKeySub -Key 'C' -Handler { 'CursorCharCycle'  }))
+                $subs.Add((New-TeaKeySub -Key 'F' -Handler { 'InputToggleFocus' }))
+                $subs.Add((New-TeaKeySub -Key 'C' -Handler { 'CursorCharCycle'  }))
             }
         }
         4 {
-            $subs.Add((New-ElmKeySub -Key 'UpArrow'    -Handler { 'TextareaUp'    }))
-            $subs.Add((New-ElmKeySub -Key 'DownArrow'  -Handler { 'TextareaDown'  }))
-            $subs.Add((New-ElmKeySub -Key 'LeftArrow'  -Handler { 'TextareaLeft'  }))
-            $subs.Add((New-ElmKeySub -Key 'RightArrow' -Handler { 'TextareaRight' }))
-            $subs.Add((New-ElmKeySub -Key 'Backspace'  -Handler { 'TextareaBackspace' }))
+            $subs.Add((New-TeaKeySub -Key 'UpArrow'    -Handler { 'TextareaUp'    }))
+            $subs.Add((New-TeaKeySub -Key 'DownArrow'  -Handler { 'TextareaDown'  }))
+            $subs.Add((New-TeaKeySub -Key 'LeftArrow'  -Handler { 'TextareaLeft'  }))
+            $subs.Add((New-TeaKeySub -Key 'RightArrow' -Handler { 'TextareaRight' }))
+            $subs.Add((New-TeaKeySub -Key 'Backspace'  -Handler { 'TextareaBackspace' }))
             if ($model.TextareaFocused) {
-                $subs.Add((New-ElmKeySub -Key 'Enter'  -Handler { 'TextareaEnter'       }))
-                $subs.Add((New-ElmKeySub -Key 'Escape' -Handler { 'TextareaFocusToggle' }))
-                $subs.Add((New-ElmCharSub -Handler { param($e) "TextareaInput:$([string]$e.Char)" }))
+                $subs.Add((New-TeaKeySub -Key 'Enter'  -Handler { 'TextareaEnter'       }))
+                $subs.Add((New-TeaKeySub -Key 'Escape' -Handler { 'TextareaFocusToggle' }))
+                $subs.Add((New-TeaCharSub -Handler { param($e) "TextareaInput:$([string]$e.Char)" }))
             } else {
-                $subs.Add((New-ElmKeySub -Key 'F' -Handler { 'TextareaFocusToggle' }))
-                $subs.Add((New-ElmKeySub -Key 'M' -Handler { 'TextareaMaxVisCycle' }))
-                $subs.Add((New-ElmKeySub -Key 'C' -Handler { 'TextareaCursorCycle' }))
+                $subs.Add((New-TeaKeySub -Key 'F' -Handler { 'TextareaFocusToggle' }))
+                $subs.Add((New-TeaKeySub -Key 'M' -Handler { 'TextareaMaxVisCycle' }))
+                $subs.Add((New-TeaKeySub -Key 'C' -Handler { 'TextareaCursorCycle' }))
             }
         }
         5 {
-            $subs.Add((New-ElmKeySub -Key 'UpArrow'   -Handler { 'TableUp'   }))
-            $subs.Add((New-ElmKeySub -Key 'DownArrow' -Handler { 'TableDown' }))
+            $subs.Add((New-TeaKeySub -Key 'UpArrow'   -Handler { 'TableUp'   }))
+            $subs.Add((New-TeaKeySub -Key 'DownArrow' -Handler { 'TableDown' }))
         }
         6 {
-            $subs.Add((New-ElmKeySub -Key 'LeftArrow'  -Handler { 'PagerLeft'     }))
-            $subs.Add((New-ElmKeySub -Key 'RightArrow' -Handler { 'PagerRight'    }))
-            $subs.Add((New-ElmKeySub -Key 'UpArrow'    -Handler { 'PagerModeNext' }))
-            $subs.Add((New-ElmKeySub -Key 'DownArrow'  -Handler { 'PagerModePrev' }))
+            $subs.Add((New-TeaKeySub -Key 'LeftArrow'  -Handler { 'PagerLeft'     }))
+            $subs.Add((New-TeaKeySub -Key 'RightArrow' -Handler { 'PagerRight'    }))
+            $subs.Add((New-TeaKeySub -Key 'UpArrow'    -Handler { 'PagerModeNext' }))
+            $subs.Add((New-TeaKeySub -Key 'DownArrow'  -Handler { 'PagerModePrev' }))
         }
     }
 
     return $subs.ToArray()
 }
 
-Start-ElmWebServer -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -SubscriptionFn $subFn `
-                   -Port 8080 -Width 220 -Height 50 -Title 'Elm Widget Showcase'
+Start-TeaWebServer -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -SubscriptionFn $subFn `
+                   -Port 8080 -Width 220 -Height 50 -Title 'PSTea Widget Showcase'

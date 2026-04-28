@@ -1,7 +1,7 @@
 BeforeAll {
-    . $PSScriptRoot/../Private/Style/Resolve-ElmColor.ps1
+    . $PSScriptRoot/../Private/Style/Resolve-TeaColor.ps1
     . $PSScriptRoot/../Private/Style/ConvertTo-BorderChars.ps1
-    . $PSScriptRoot/../Private/Style/Apply-ElmStyle.ps1
+    . $PSScriptRoot/../Private/Style/Apply-TeaStyle.ps1
     . $PSScriptRoot/../Private/Rendering/ConvertTo-AnsiPatch.ps1
 }
 
@@ -45,8 +45,8 @@ Describe 'ConvertTo-AnsiPatch' {
         }
 
         It 'Should apply style SGR when style has Bold' {
-            . $PSScriptRoot/../Public/Style/New-ElmStyle.ps1
-            $style = New-ElmStyle -Bold
+            . $PSScriptRoot/../Public/Style/New-TeaStyle.ps1
+            $style = New-TeaStyle -Bold
             $patch = [PSCustomObject]@{ Type = 'Replace'; X = 0; Y = 0; Content = 'hi'; Style = $style }
             $result = ConvertTo-AnsiPatch -Patches @($patch)
             $result | Should -Match ([regex]::Escape("$esc[1m"))

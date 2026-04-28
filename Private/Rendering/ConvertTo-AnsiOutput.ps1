@@ -4,9 +4,9 @@ function ConvertTo-AnsiOutput {
         Renders a fully-measured view tree as a complete ANSI escape sequence string.
 
     .DESCRIPTION
-        Walks the measured view tree produced by Measure-ElmViewTree. For each leaf
+        Walks the measured view tree produced by Measure-TeaViewTree. For each leaf
         Text node, emits a cursor-position sequence (ESC[{Y+1};{X+1}H) followed by
-        the styled content from Apply-ElmStyle. The output is prefixed with a
+        the styled content from Apply-TeaStyle. The output is prefixed with a
         clear-screen (ESC[2J) sequence.
 
         Does not emit hide/show cursor sequences - cursor visibility is managed by
@@ -14,14 +14,14 @@ function ConvertTo-AnsiOutput {
         a FullRedraw patch. For incremental updates, use ConvertTo-AnsiPatch instead.
 
     .PARAMETER Root
-        The root of a measured view tree (output of Measure-ElmViewTree).
+        The root of a measured view tree (output of Measure-TeaViewTree).
 
     .OUTPUTS
         [string] - A single ANSI escape sequence string ready for Console output.
 
     .EXAMPLE
-        $tree     = New-ElmBox -Children @(New-ElmText -Content 'Hello') -Width 'Fill'
-        $measured = Measure-ElmViewTree -Root $tree -TermWidth 80 -TermHeight 24
+        $tree     = New-TeaBox -Children @(New-TeaText -Content 'Hello') -Width 'Fill'
+        $measured = Measure-TeaViewTree -Root $tree -TermWidth 80 -TermHeight 24
         $ansi     = ConvertTo-AnsiOutput -Root $measured
         [Console]::Out.Write($ansi)
 
@@ -49,7 +49,7 @@ function ConvertTo-AnsiOutput {
         if ($node.Type -eq 'Text') {
             $row     = $node.Y + 1
             $col     = $node.X + 1
-            $content = Apply-ElmStyle -Content $node.Content -Style $node.Style -Width $node.Width
+            $content = Apply-TeaStyle -Content $node.Content -Style $node.Style -Width $node.Width
             [void]$sb.Append("$esc[$row;${col}H$content")
         } elseif ($node.Type -eq 'Box') {
             for ($i = $node.Children.Count - 1; $i -ge 0; $i--) {
@@ -60,3 +60,5 @@ function ConvertTo-AnsiOutput {
 
     return $sb.ToString()
 }
+
+

@@ -1,4 +1,4 @@
-Import-Module "$PSScriptRoot/../Elm.psd1" -Force
+Import-Module "$PSScriptRoot/../PSTea.psd1" -Force
 
 # ---------------------------------------------------------------------------
 # Stopwatch demo
@@ -118,45 +118,45 @@ $update = {
 $view = {
     param($model)
 
-    $titleStyle = New-ElmStyle -Foreground 'BrightCyan' -Bold
-    $timeStyle  = New-ElmStyle -Foreground 'BrightWhite' -Bold
-    $runStyle   = New-ElmStyle -Foreground 'BrightGreen'
-    $pauseStyle = New-ElmStyle -Foreground 'BrightYellow'
-    $lapStyle   = New-ElmStyle -Foreground 'BrightBlack'
-    $hintStyle  = New-ElmStyle -Foreground 'BrightBlack'
-    $boxStyle   = New-ElmStyle -Border 'Rounded' -Padding @(0, 2)
+    $titleStyle = New-TeaStyle -Foreground 'BrightCyan' -Bold
+    $timeStyle  = New-TeaStyle -Foreground 'BrightWhite' -Bold
+    $runStyle   = New-TeaStyle -Foreground 'BrightGreen'
+    $pauseStyle = New-TeaStyle -Foreground 'BrightYellow'
+    $lapStyle   = New-TeaStyle -Foreground 'BrightBlack'
+    $hintStyle  = New-TeaStyle -Foreground 'BrightBlack'
+    $boxStyle   = New-TeaStyle -Border 'Rounded' -Padding @(0, 2)
 
     $displayTime = Format-ElapsedTime -Ms $model.AccumulatedMs
 
     $statusNode = if ($model.Running) {
-        New-ElmText -Content '[+] Running' -Style $runStyle
+        New-TeaText -Content '[+] Running' -Style $runStyle
     } else {
-        New-ElmText -Content '[i] Paused ' -Style $pauseStyle
+        New-TeaText -Content '[i] Paused ' -Style $pauseStyle
     }
 
     $children = @(
-        New-ElmText -Content 'Stopwatch' -Style $titleStyle
-        New-ElmText -Content ''
-        New-ElmText -Content $displayTime -Style $timeStyle
+        New-TeaText -Content 'Stopwatch' -Style $titleStyle
+        New-TeaText -Content ''
+        New-TeaText -Content $displayTime -Style $timeStyle
         $statusNode
-        New-ElmText -Content ''
+        New-TeaText -Content ''
     )
 
     $laps = @($model.Laps)
     if ($laps.Count -gt 0) {
-        $children += New-ElmText -Content 'Laps:' -Style $lapStyle
+        $children += New-TeaText -Content 'Laps:' -Style $lapStyle
         $lapStart = [Math]::Max(0, $laps.Count - 8)
         for ($i = $lapStart; $i -lt $laps.Count; $i++) {
             $total   = $laps[$i]
             $lapTime = if ($i -gt 0) { $total - $laps[$i - 1] } else { $total }
-            $children += New-ElmText -Content "  $($i + 1). $(Format-ElapsedTime -Ms $total)  (lap: $(Format-ElapsedTime -Ms $lapTime))" -Style $lapStyle
+            $children += New-TeaText -Content "  $($i + 1). $(Format-ElapsedTime -Ms $total)  (lap: $(Format-ElapsedTime -Ms $lapTime))" -Style $lapStyle
         }
-        $children += New-ElmText -Content ''
+        $children += New-TeaText -Content ''
     }
 
-    $children += New-ElmText -Content '[Space] start/stop  [L] lap  [R] reset  [Q] quit' -Style $hintStyle
+    $children += New-TeaText -Content '[Space] start/stop  [L] lap  [R] reset  [Q] quit' -Style $hintStyle
 
-    New-ElmBox -Style $boxStyle -Children $children
+    New-TeaBox -Style $boxStyle -Children $children
 }
 
-Start-ElmProgram -InitFn $init -UpdateFn $update -ViewFn $view -TickMs 100
+Start-TeaProgram -InitFn $init -UpdateFn $update -ViewFn $view -TickMs 100

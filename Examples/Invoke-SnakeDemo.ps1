@@ -1,4 +1,4 @@
-Import-Module "$PSScriptRoot/../Elm.psd1" -Force
+Import-Module "$PSScriptRoot/../PSTea.psd1" -Force
 
 # ---------------------------------------------------------------------------
 # Snake demo
@@ -192,22 +192,22 @@ $viewFn = {
     foreach ($seg in $snake) { $snakeSet["$($seg.X),$($seg.Y)"] = $true }
 
     # Build the grid as rows of text
-    $headStyle  = New-ElmStyle -Foreground 'BrightGreen'  -Bold
-    $bodyStyle  = New-ElmStyle -Foreground 'Green'
-    $foodStyle  = New-ElmStyle -Foreground 'BrightRed'    -Bold
-    $wallStyle  = New-ElmStyle -Foreground 'BrightBlack'
-    $titleStyle = New-ElmStyle -Foreground 'BrightCyan'   -Bold
-    $scoreStyle = New-ElmStyle -Foreground 'BrightWhite'
-    $hintStyle  = New-ElmStyle -Foreground 'BrightBlack'
-    $deadStyle  = New-ElmStyle -Foreground 'BrightRed'    -Bold
+    $headStyle  = New-TeaStyle -Foreground 'BrightGreen'  -Bold
+    $bodyStyle  = New-TeaStyle -Foreground 'Green'
+    $foodStyle  = New-TeaStyle -Foreground 'BrightRed'    -Bold
+    $wallStyle  = New-TeaStyle -Foreground 'BrightBlack'
+    $titleStyle = New-TeaStyle -Foreground 'BrightCyan'   -Bold
+    $scoreStyle = New-TeaStyle -Foreground 'BrightWhite'
+    $hintStyle  = New-TeaStyle -Foreground 'BrightBlack'
+    $deadStyle  = New-TeaStyle -Foreground 'BrightRed'    -Bold
 
     $head = $snake[0]
     $border = '+' + ('-' * $script:COLS) + '+'
 
     $children = [System.Collections.Generic.List[object]]::new()
-    $children.Add((New-ElmText -Content 'Snake' -Style $titleStyle))
-    $children.Add((New-ElmText -Content "Score: $($model.Score)" -Style $scoreStyle))
-    $children.Add((New-ElmText -Content $border -Style $wallStyle))
+    $children.Add((New-TeaText -Content 'Snake' -Style $titleStyle))
+    $children.Add((New-TeaText -Content "Score: $($model.Score)" -Style $scoreStyle))
+    $children.Add((New-TeaText -Content $border -Style $wallStyle))
 
     for ($y = 0; $y -lt $script:ROWS; $y++) {
         $rowChars = [System.Text.StringBuilder]::new()
@@ -225,22 +225,22 @@ $viewFn = {
             }
         }
         $null = $rowChars.Append('|')
-        $children.Add((New-ElmText -Content $rowChars.ToString() -Style $wallStyle))
+        $children.Add((New-TeaText -Content $rowChars.ToString() -Style $wallStyle))
     }
 
-    $children.Add((New-ElmText -Content $border -Style $wallStyle))
+    $children.Add((New-TeaText -Content $border -Style $wallStyle))
 
     if ($model.GameOver) {
-        $children.Add((New-ElmText -Content '' ))
-        $children.Add((New-ElmText -Content "GAME OVER  Score: $($model.Score)" -Style $deadStyle))
-        $children.Add((New-ElmText -Content '[R] Restart   [Q] Quit' -Style $hintStyle))
+        $children.Add((New-TeaText -Content '' ))
+        $children.Add((New-TeaText -Content "GAME OVER  Score: $($model.Score)" -Style $deadStyle))
+        $children.Add((New-TeaText -Content '[R] Restart   [Q] Quit' -Style $hintStyle))
     } elseif ($model.Running) {
-        $children.Add((New-ElmText -Content '[Arrow/WASD] steer   [Space] pause   [Q] quit' -Style $hintStyle))
+        $children.Add((New-TeaText -Content '[Arrow/WASD] steer   [Space] pause   [Q] quit' -Style $hintStyle))
     } else {
-        $children.Add((New-ElmText -Content '[Space] Start   [Q] Quit' -Style $hintStyle))
+        $children.Add((New-TeaText -Content '[Space] Start   [Q] Quit' -Style $hintStyle))
     }
 
-    New-ElmBox -Children $children.ToArray()
+    New-TeaBox -Children $children.ToArray()
 }
 
 $subFn = {
@@ -248,24 +248,24 @@ $subFn = {
     $subs = [System.Collections.Generic.List[object]]::new()
 
     # Quit always works
-    $subs.Add((New-ElmKeySub -Key 'Q' -Handler { 'Quit' }))
+    $subs.Add((New-TeaKeySub -Key 'Q' -Handler { 'Quit' }))
 
     if ($model.GameOver) {
-        $subs.Add((New-ElmKeySub -Key 'R' -Handler { 'Restart' }))
+        $subs.Add((New-TeaKeySub -Key 'R' -Handler { 'Restart' }))
     } else {
-        $subs.Add((New-ElmKeySub -Key 'Space'    -Handler { 'Toggle'  }))
-        $subs.Add((New-ElmKeySub -Key 'R'        -Handler { 'Restart' }))
-        $subs.Add((New-ElmKeySub -Key 'UpArrow'  -Handler { 'Up'      }))
-        $subs.Add((New-ElmKeySub -Key 'DownArrow' -Handler { 'Down'   }))
-        $subs.Add((New-ElmKeySub -Key 'LeftArrow' -Handler { 'Left'   }))
-        $subs.Add((New-ElmKeySub -Key 'RightArrow' -Handler { 'Right' }))
-        $subs.Add((New-ElmKeySub -Key 'W' -Handler { 'Up'    }))
-        $subs.Add((New-ElmKeySub -Key 'S' -Handler { 'Down'  }))
-        $subs.Add((New-ElmKeySub -Key 'A' -Handler { 'Left'  }))
-        $subs.Add((New-ElmKeySub -Key 'D' -Handler { 'Right' }))
+        $subs.Add((New-TeaKeySub -Key 'Space'    -Handler { 'Toggle'  }))
+        $subs.Add((New-TeaKeySub -Key 'R'        -Handler { 'Restart' }))
+        $subs.Add((New-TeaKeySub -Key 'UpArrow'  -Handler { 'Up'      }))
+        $subs.Add((New-TeaKeySub -Key 'DownArrow' -Handler { 'Down'   }))
+        $subs.Add((New-TeaKeySub -Key 'LeftArrow' -Handler { 'Left'   }))
+        $subs.Add((New-TeaKeySub -Key 'RightArrow' -Handler { 'Right' }))
+        $subs.Add((New-TeaKeySub -Key 'W' -Handler { 'Up'    }))
+        $subs.Add((New-TeaKeySub -Key 'S' -Handler { 'Down'  }))
+        $subs.Add((New-TeaKeySub -Key 'A' -Handler { 'Left'  }))
+        $subs.Add((New-TeaKeySub -Key 'D' -Handler { 'Right' }))
 
         if ($model.Running) {
-            $subs.Add((New-ElmTimerSub -IntervalMs $script:SPEED -Handler { 'Tick' }))
+            $subs.Add((New-TeaTimerSub -IntervalMs $script:SPEED -Handler { 'Tick' }))
         }
     }
 
@@ -279,16 +279,16 @@ function Invoke-SnakeDemo {
 
     .DESCRIPTION
         Arrow keys / WASD to steer. Space to start/pause. R to restart. Q to quit.
-        Demonstrates combined timer + key subscriptions in the Elm architecture.
+        Demonstrates combined timer + key subscriptions in the TEA (The Elm Architecture).
 
     .NOTES
-        Requires the Elm module and a terminal at least 32 columns wide.
+        Requires the PSTea module and a terminal at least 32 columns wide.
         Run from Examples: . .\Invoke-SnakeDemo.ps1; Invoke-SnakeDemo
     #>
     [CmdletBinding()]
     param()
 
-    Start-ElmProgram -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -SubscriptionFn $subFn
+    Start-TeaProgram -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -SubscriptionFn $subFn
 }
 
 Invoke-SnakeDemo

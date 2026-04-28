@@ -1,4 +1,4 @@
-Import-Module "$PSScriptRoot/../Elm.psd1" -Force
+Import-Module "$PSScriptRoot/../PSTea.psd1" -Force
 
 # ---------------------------------------------------------------------------
 # System Monitor demo
@@ -119,13 +119,13 @@ $updateFn = {
 $viewFn = {
     param($model)
 
-    $titleStyle  = New-ElmStyle -Foreground 'BrightCyan'   -Bold
-    $headerStyle = New-ElmStyle -Foreground 'BrightWhite'  -Bold
-    $rowStyle    = New-ElmStyle -Foreground 'White'
-    $dimStyle    = New-ElmStyle -Foreground 'BrightBlack'
-    $sortStyle   = New-ElmStyle -Foreground 'BrightYellow'
-    $hintStyle   = New-ElmStyle -Foreground 'BrightBlack'
-    $sepStyle    = New-ElmStyle -Foreground 'BrightBlack'
+    $titleStyle  = New-TeaStyle -Foreground 'BrightCyan'   -Bold
+    $headerStyle = New-TeaStyle -Foreground 'BrightWhite'  -Bold
+    $rowStyle    = New-TeaStyle -Foreground 'White'
+    $dimStyle    = New-TeaStyle -Foreground 'BrightBlack'
+    $sortStyle   = New-TeaStyle -Foreground 'BrightYellow'
+    $hintStyle   = New-TeaStyle -Foreground 'BrightBlack'
+    $sepStyle    = New-TeaStyle -Foreground 'BrightBlack'
 
     # Column widths: PID(6) Name(24) CPU(9) Mem(9) Threads(8)
     $fmt = '{0,-6} {1,-24} {2,9} {3,9} {4,8}'
@@ -137,11 +137,11 @@ $viewFn = {
     $memLabel = if ($model.SortBy -eq 'Memory') { '[M] Mem *' } else { '[M] Mem  ' }
 
     $children = [System.Collections.Generic.List[object]]::new()
-    $children.Add((New-ElmText -Content "System Monitor  $($model.RefreshedAt)" -Style $titleStyle))
-    $children.Add((New-ElmText -Content "Sort: $cpuLabel  $memLabel   $($model.Processes.Count) processes" -Style $sortStyle))
-    $children.Add((New-ElmText -Content $sep    -Style $sepStyle))
-    $children.Add((New-ElmText -Content $header -Style $headerStyle))
-    $children.Add((New-ElmText -Content $sep    -Style $sepStyle))
+    $children.Add((New-TeaText -Content "System Monitor  $($model.RefreshedAt)" -Style $titleStyle))
+    $children.Add((New-TeaText -Content "Sort: $cpuLabel  $memLabel   $($model.Processes.Count) processes" -Style $sortStyle))
+    $children.Add((New-TeaText -Content $sep    -Style $sepStyle))
+    $children.Add((New-TeaText -Content $header -Style $headerStyle))
+    $children.Add((New-TeaText -Content $sep    -Style $sepStyle))
 
     $procs = @($model.Processes)
     $end   = [math]::Min($model.ScrollOffset + $script:PAGE_SIZE, $procs.Count) - 1
@@ -151,35 +151,35 @@ $viewFn = {
         $nameStr = [string]$p.Name
         $name    = if ($nameStr.Length -gt 24) { $nameStr.Substring(0, 23) + '~' } else { $nameStr }
         $line    = $fmt -f $p.Id, $name, $p.CpuSec, $p.MemMB, $p.Threads
-        $children.Add((New-ElmText -Content $line -Style $rowStyle))
+        $children.Add((New-TeaText -Content $line -Style $rowStyle))
     }
 
     $shown = $end - $model.ScrollOffset + 1
     $blank = $script:PAGE_SIZE - [math]::Max(0, $shown)
     for ($i = 0; $i -lt $blank; $i++) {
-        $children.Add((New-ElmText -Content ''))
+        $children.Add((New-TeaText -Content ''))
     }
 
-    $children.Add((New-ElmText -Content $sep -Style $sepStyle))
+    $children.Add((New-TeaText -Content $sep -Style $sepStyle))
 
     $scrollInfo = "$($model.ScrollOffset + 1)-$($end + 1) of $($procs.Count)"
-    $children.Add((New-ElmText -Content "[Up/K] [Dn/J] scroll  [R] refresh  [Q] quit   $scrollInfo" -Style $hintStyle))
+    $children.Add((New-TeaText -Content "[Up/K] [Dn/J] scroll  [R] refresh  [Q] quit   $scrollInfo" -Style $hintStyle))
 
-    New-ElmBox -Children $children.ToArray()
+    New-TeaBox -Children $children.ToArray()
 }
 
 $subFn = {
     param($model)
     @(
-        New-ElmTimerSub -IntervalMs 2000 -Handler { 'Refresh'    }
-        New-ElmKeySub   -Key 'Q'         -Handler { 'Quit'       }
-        New-ElmKeySub   -Key 'R'         -Handler { 'Refresh'    }
-        New-ElmKeySub   -Key 'C'         -Handler { 'SortByCpu'  }
-        New-ElmKeySub   -Key 'M'         -Handler { 'SortByMem'  }
-        New-ElmKeySub   -Key 'UpArrow'   -Handler { 'ScrollUp'   }
-        New-ElmKeySub   -Key 'DownArrow' -Handler { 'ScrollDown' }
-        New-ElmKeySub   -Key 'K'         -Handler { 'ScrollUp'   }
-        New-ElmKeySub   -Key 'J'         -Handler { 'ScrollDown' }
+        New-TeaTimerSub -IntervalMs 2000 -Handler { 'Refresh'    }
+        New-TeaKeySub   -Key 'Q'         -Handler { 'Quit'       }
+        New-TeaKeySub   -Key 'R'         -Handler { 'Refresh'    }
+        New-TeaKeySub   -Key 'C'         -Handler { 'SortByCpu'  }
+        New-TeaKeySub   -Key 'M'         -Handler { 'SortByMem'  }
+        New-TeaKeySub   -Key 'UpArrow'   -Handler { 'ScrollUp'   }
+        New-TeaKeySub   -Key 'DownArrow' -Handler { 'ScrollDown' }
+        New-TeaKeySub   -Key 'K'         -Handler { 'ScrollUp'   }
+        New-TeaKeySub   -Key 'J'         -Handler { 'ScrollDown' }
     )
 }
 
@@ -196,13 +196,13 @@ function Invoke-SystemMonitorDemo {
         memory, R force refresh, Q quit.
 
     .NOTES
-        Requires the Elm module. Run from Examples:
+        Requires the PSTea module. Run from Examples:
         . .\Invoke-SystemMonitorDemo.ps1; Invoke-SystemMonitorDemo
     #>
     [CmdletBinding()]
     param()
 
-    Start-ElmProgram -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -SubscriptionFn $subFn
+    Start-TeaProgram -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -SubscriptionFn $subFn
 }
 
 Invoke-SystemMonitorDemo

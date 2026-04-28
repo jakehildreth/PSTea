@@ -8,11 +8,11 @@ function Enable-VirtualTerminal {
     }
 
     try {
-        if (-not ([System.Management.Automation.PSTypeName]'ElmConsoleHelper').Type) {
+        if (-not ([System.Management.Automation.PSTypeName]'TeaConsoleHelper').Type) {
             Add-Type -TypeDefinition @'
 using System;
 using System.Runtime.InteropServices;
-public class ElmConsoleHelper {
+public class TeaConsoleHelper {
     public const int  STD_OUTPUT_HANDLE                  = -11;
     public const uint ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004;
 
@@ -28,17 +28,17 @@ public class ElmConsoleHelper {
 '@
         }
 
-        $handle = [ElmConsoleHelper]::GetStdHandle([ElmConsoleHelper]::STD_OUTPUT_HANDLE)
+        $handle = [TeaConsoleHelper]::GetStdHandle([TeaConsoleHelper]::STD_OUTPUT_HANDLE)
         $mode = [uint32]0
 
-        if (-not [ElmConsoleHelper]::GetConsoleMode($handle, [ref]$mode)) {
+        if (-not [TeaConsoleHelper]::GetConsoleMode($handle, [ref]$mode)) {
             Write-Warning 'Enable-VirtualTerminal: GetConsoleMode failed.'
             return $false
         }
 
-        $newMode = $mode -bor [ElmConsoleHelper]::ENABLE_VIRTUAL_TERMINAL_PROCESSING
+        $newMode = $mode -bor [TeaConsoleHelper]::ENABLE_VIRTUAL_TERMINAL_PROCESSING
 
-        if (-not [ElmConsoleHelper]::SetConsoleMode($handle, $newMode)) {
+        if (-not [TeaConsoleHelper]::SetConsoleMode($handle, $newMode)) {
             Write-Warning 'Enable-VirtualTerminal: SetConsoleMode failed.'
             return $false
         }
@@ -49,3 +49,5 @@ public class ElmConsoleHelper {
         return $false
     }
 }
+
+

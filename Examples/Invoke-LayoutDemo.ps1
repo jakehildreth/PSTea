@@ -1,10 +1,10 @@
-Import-Module "$PSScriptRoot/../Elm.psd1" -Force
+Import-Module "$PSScriptRoot/../PSTea.psd1" -Force
 
 # ---------------------------------------------------------------------------
 # Multi-pane layout demo
 # Left panel: navigation menu (arrow keys + enter to switch)
 # Right panel: content for the selected page
-# Demonstrates: New-ElmRow, percentage widths, conditional view rendering
+# Demonstrates: New-TeaRow, percentage widths, conditional view rendering
 # ---------------------------------------------------------------------------
 
 $pages = @(
@@ -24,10 +24,10 @@ $pages = @(
     [PSCustomObject]@{
         Title   = 'Layout'
         Content = @(
-            'New-ElmRow arranges children'
+            'New-TeaRow arranges children'
             'horizontally.'
             ''
-            'New-ElmBox arranges children'
+            'New-TeaBox arranges children'
             'vertically (the default).'
             ''
             'Width can be: Auto, Fill,'
@@ -37,7 +37,7 @@ $pages = @(
     [PSCustomObject]@{
         Title   = 'Style'
         Content = @(
-            'New-ElmStyle properties:'
+            'New-TeaStyle properties:'
             ''
             '  -Foreground / -Background'
             '  -Bold / -Italic'
@@ -111,42 +111,42 @@ $update = {
 $view = {
     param($model)
 
-    $navActiveStyle  = New-ElmStyle -Foreground 'BrightWhite' -Background 'Blue' -Bold
-    $navNormalStyle  = New-ElmStyle -Foreground 'White'
-    $headingStyle    = New-ElmStyle -Bold -Foreground 'BrightCyan'
-    $contentStyle    = New-ElmStyle -Foreground 'White'
-    $hintStyle       = New-ElmStyle -Foreground 'BrightBlack'
-    $navPanelStyle   = New-ElmStyle -Border 'Normal' -Padding @(1, 1) -Width 18 -MarginRight 2
-    $contentPanStyle = New-ElmStyle -Border 'Normal' -Padding @(1, 2) -Width 36
+    $navActiveStyle  = New-TeaStyle -Foreground 'BrightWhite' -Background 'Blue' -Bold
+    $navNormalStyle  = New-TeaStyle -Foreground 'White'
+    $headingStyle    = New-TeaStyle -Bold -Foreground 'BrightCyan'
+    $contentStyle    = New-TeaStyle -Foreground 'White'
+    $hintStyle       = New-TeaStyle -Foreground 'BrightBlack'
+    $navPanelStyle   = New-TeaStyle -Border 'Normal' -Padding @(1, 1) -Width 18 -MarginRight 2
+    $contentPanStyle = New-TeaStyle -Border 'Normal' -Padding @(1, 2) -Width 36
 
     # Left: nav menu
     $navItems = for ($i = 0; $i -lt $model.Pages.Count; $i++) {
         $page  = $model.Pages[$i]
         $label = if ($i -eq $model.Selected) { "> $($page.Title)" } else { "  $($page.Title)" }
         $style = if ($i -eq $model.Selected) { $navActiveStyle } else { $navNormalStyle }
-        New-ElmText -Content $label -Style $style
+        New-TeaText -Content $label -Style $style
     }
-    $navItems += New-ElmText -Content ''
-    $navItems += New-ElmText -Content '[up/down] move' -Style $hintStyle
-    $navItems += New-ElmText -Content '[q] quit'       -Style $hintStyle
+    $navItems += New-TeaText -Content ''
+    $navItems += New-TeaText -Content '[up/down] move' -Style $hintStyle
+    $navItems += New-TeaText -Content '[q] quit'       -Style $hintStyle
 
-    $navPanel = New-ElmBox -Style $navPanelStyle -Children $navItems
+    $navPanel = New-TeaBox -Style $navPanelStyle -Children $navItems
 
     # Right: content for selected page
     $page    = $model.Pages[$model.Selected]
-    $content = @(New-ElmText -Content $page.Title -Style $headingStyle)
-    $content += New-ElmText -Content ''
+    $content = @(New-TeaText -Content $page.Title -Style $headingStyle)
+    $content += New-TeaText -Content ''
     foreach ($line in $page.Content) {
-        $content += New-ElmText -Content $line -Style $contentStyle
+        $content += New-TeaText -Content $line -Style $contentStyle
     }
 
-    $contentPanel = New-ElmBox -Style $contentPanStyle -Children $content
+    $contentPanel = New-TeaBox -Style $contentPanStyle -Children $content
 
-    New-ElmRow -Children @($navPanel, $contentPanel)
+    New-TeaRow -Children @($navPanel, $contentPanel)
 }
 
 # ---------------------------------------------------------------------------
 # Run
 # ---------------------------------------------------------------------------
 
-Start-ElmProgram -InitFn $init -UpdateFn $update -ViewFn $view
+Start-TeaProgram -InitFn $init -UpdateFn $update -ViewFn $view

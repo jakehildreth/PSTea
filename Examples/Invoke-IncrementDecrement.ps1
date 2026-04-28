@@ -1,4 +1,4 @@
-Import-Module "$PSScriptRoot/../Elm.psd1" -Force
+Import-Module "$PSScriptRoot/../PSTea.psd1" -Force
 
 $init = {
     [PSCustomObject]@{ Model = [PSCustomObject]@{ Count = 0 }; Cmd = $null }
@@ -16,11 +16,11 @@ $update = {
 
 $view = {
     param($model)
-    $hintStyle = New-ElmStyle -Foreground 'BrightBlack'
-    New-ElmBox -Style (New-ElmStyle -Width 30 -Padding @(0, 1)) -Children @(
-        New-ElmText -Content "Count: $($model.Count)"
-        New-ElmText -Content '[Up] inc  [Down] dec  [Q] quit' -Style $hintStyle
+    $hintStyle = New-TeaStyle -Foreground 'BrightBlack'
+    New-TeaBox -Style (New-TeaStyle -Width 30 -Padding @(0, 1)) -Children @(
+        New-TeaText -Content "Count: $($model.Count)"
+        New-TeaText -Content '[Up] inc  [Down] dec  [Q] quit' -Style $hintStyle
     )
 }
 
-Start-ElmProgram -InitFn $init -UpdateFn $update -ViewFn $view
+Start-TeaProgram -InitFn $init -UpdateFn $update -ViewFn $view
