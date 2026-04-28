@@ -45,6 +45,7 @@ function New-TeaSpinner {
         The frame counter wraps automatically, so it is safe to increment it
         indefinitely without overflow concern in normal use.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

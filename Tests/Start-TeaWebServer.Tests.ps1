@@ -87,8 +87,15 @@ Describe 'Start-TeaWebServer' {
             $updateFn = { param($msg, $model) [PSCustomObject]@{ Model = $model; Cmd = $null } }
             $viewFn   = { param($model) [PSCustomObject]@{ Type = 'Text'; Content = '' } }
 
-            Start-TeaWebServer -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn `
-                -Port 8091 -Width 160 -Height 40
+            $serverParams = @{
+                InitFn   = $initFn
+                UpdateFn = $updateFn
+                ViewFn   = $viewFn
+                Port     = 8091
+                Width    = 160
+                Height   = 40
+            }
+            Start-TeaWebServer @serverParams
 
             $script:eventLoopArgs.TerminalWidth  | Should -Be 160
             $script:eventLoopArgs.TerminalHeight | Should -Be 40
@@ -113,6 +120,60 @@ Describe 'Start-TeaWebServer' {
 
             { Start-TeaWebServer -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -Port 8092 } |
                 Should -Not -Throw
+        }
+    }
+
+    Context 'Port in use' {
+        BeforeAll {
+            $script:occupiedListener = [System.Net.HttpListener]::new()
+            $script:occupiedListener.Prefixes.Add('http://localhost:19876/')
+            $script:occupiedListener.Start()
+        }
+
+        AfterAll {
+            $script:occupiedListener.Stop()
+            $script:occupiedListener.Close()
+        }
+
+        It 'Should throw a terminating error with ResourceUnavailable when port is in use' {
+            $initFn   = { [PSCustomObject]@{ Model = [PSCustomObject]@{}; Cmd = $null } }
+            $updateFn = { param($msg, $model) [PSCustomObject]@{ Model = $model; Cmd = $null } }
+            $viewFn   = { param($model) [PSCustomObject]@{ Type = 'Text'; Content = '' } }
+
+            { Start-TeaWebServer -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -Port 19876 } |
+                Should -Throw '*19876*'
+        }
+
+        It 'Should include ResourceUnavailable category in the error record' {
+            $initFn   = { [PSCustomObject]@{ Model = [PSCustomObject]@{}; Cmd = $null } }
+            $updateFn = { param($msg, $model) [PSCustomObject]@{ Model = $model; Cmd = $null } }
+            $viewFn   = { param($model) [PSCustomObject]@{ Type = 'Text'; Content = '' } }
+
+            try {
+                $serverParams = @{
+                    InitFn      = $initFn
+                    UpdateFn    = $updateFn
+                    ViewFn      = $viewFn
+                    Port        = 19876
+                    ErrorAction = 'Stop'
+                }
+                Start-TeaWebServer @serverParams
+            } catch {
+                $_.CategoryInfo.Category | Should -Be 'ResourceUnavailable'
+            }
+        }
+    }
+
+    Context 'Startup message' {
+        It 'Should emit an information record containing the port number' {
+            $initFn   = { [PSCustomObject]@{ Model = [PSCustomObject]@{}; Cmd = $null } }
+            $updateFn = { param($msg, $model) [PSCustomObject]@{ Model = $model; Cmd = $null } }
+            $viewFn   = { param($model) [PSCustomObject]@{ Type = 'Text'; Content = '' } }
+
+            Start-TeaWebServer -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -Port 8094 `
+                -InformationVariable infoVar -InformationAction SilentlyContinue
+
+            $infoVar[0].MessageData | Should -Match '8094'
         }
     }
 

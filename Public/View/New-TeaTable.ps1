@@ -47,22 +47,31 @@ function New-TeaTable {
         PSCustomObject - Box (Vertical) view node.
 
     .EXAMPLE
-        New-TeaTable -Headers @('Name','Age','City') `
-                     -Rows @(@('Alice','30','New York'),@('Bob','25','London')) `
-                     -SelectedRow $model.TableCursor
+        $params = @{
+            Headers     = @('Name', 'Age', 'City')
+            Rows        = @(@('Alice', '30', 'New York'), @('Bob', '25', 'London'))
+            SelectedRow = $model.TableCursor
+        }
+        New-TeaTable @params
 
     .EXAMPLE
         $hs = New-TeaStyle -Foreground 'BrightCyan' -Bold
         $ss = New-TeaStyle -Foreground 'BrightYellow'
-        New-TeaTable -Headers @('Key','Value') -Rows $model.Pairs `
-                     -SelectedRow $model.Cursor `
-                     -HeaderStyle $hs -SelectedStyle $ss
+        $params = @{
+            Headers       = @('Key', 'Value')
+            Rows          = $model.Pairs
+            SelectedRow   = $model.Cursor
+            HeaderStyle   = $hs
+            SelectedStyle = $ss
+        }
+        New-TeaTable @params
 
     .NOTES
         The caller is responsible for tracking SelectedRow and updating it via
         key subscriptions. Rows with fewer cells than the column count are padded
         with empty strings. Extra cells beyond the column count are ignored.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter()]

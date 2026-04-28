@@ -30,6 +30,7 @@ function New-TeaComponentMsg {
         The parent Update scriptblock should switch on Msg.Type -eq 'ComponentMsg'
         and then route to the appropriate component by Msg.ComponentId.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -48,4 +49,4 @@ function New-TeaComponentMsg {
     }
 }
 
-Set-Alias -Name TeaComponentMsg      -Value New-TeaComponentMsg
+Set-Alias -Name TeaComponentMsg -Value New-TeaComponentMsg

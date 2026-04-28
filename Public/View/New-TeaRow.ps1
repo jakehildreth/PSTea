@@ -36,6 +36,7 @@ function New-TeaRow {
     .NOTES
         Direction is always 'Horizontal'. Use New-TeaBox for 'Vertical'.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

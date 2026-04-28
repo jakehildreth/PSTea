@@ -39,6 +39,7 @@ function New-TeaTimerSub {
         For conditional timers (e.g., pause/resume), check model state inside the
         SubscriptionFn and only add the timer sub when needed.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

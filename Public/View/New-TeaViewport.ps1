@@ -38,6 +38,7 @@ function New-TeaViewport {
         To implement scroll-to-bottom, set ScrollOffset to
         [math]::Max(0, $lines.Count - $MaxVisible) before passing to this function.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

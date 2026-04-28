@@ -21,8 +21,13 @@ function Resolve-TeaDimension {
     #>
     [CmdletBinding()]
     param(
+        [Parameter()]
         [object]$Value,
+
+        [Parameter()]
         [int]$Available,
+
+        [Parameter()]
         [int]$Natural
     )
 

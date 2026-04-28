@@ -31,14 +31,18 @@ function New-TeaComponent {
 
     .EXAMPLE
         $counterView = { param($m) New-TeaText -Content "Count: $($m.Count)" }
-        $counter = New-TeaComponent -ComponentId 'counter' `
-                                    -SubModel ([PSCustomObject]@{ Count = 0 }) `
-                                    -ViewFn $counterView
+        $params = @{
+            ComponentId = 'counter'
+            SubModel    = [PSCustomObject]@{ Count = 0 }
+            ViewFn      = $counterView
+        }
+        $counter = New-TeaComponent @params
 
     .NOTES
         Component nodes are transparent after layout - all measured nodes in the
         output tree will be Text or Box types only.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

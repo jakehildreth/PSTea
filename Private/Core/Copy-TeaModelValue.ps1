@@ -16,7 +16,10 @@ function Copy-TeaModelValue {
         The deep-copied value.
     #>
     [CmdletBinding()]
-    param($Value)
+    param(
+        [Parameter()]
+        [object]$Value
+    )
 
     if ($null -eq $Value) { return $null }
 
@@ -24,7 +27,7 @@ function Copy-TeaModelValue {
         $len    = $Value.Length
         $result = [object[]]::new($len)
         for ($i = 0; $i -lt $len; $i++) {
-            $result[$i] = Copy-TeaModelValue $Value[$i]
+            $result[$i] = Copy-TeaModelValue -Value $Value[$i]
         }
         Write-Output -NoEnumerate $result
         return
@@ -34,7 +37,7 @@ function Copy-TeaModelValue {
         $props = $Value.PSObject.Properties
         $ht    = [ordered]@{}
         foreach ($prop in $props) {
-            $ht[$prop.Name] = Copy-TeaModelValue $prop.Value
+            $ht[$prop.Name] = Copy-TeaModelValue -Value $prop.Value
         }
         return [PSCustomObject]$ht
     }

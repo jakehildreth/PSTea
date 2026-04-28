@@ -66,7 +66,7 @@ function ConvertFrom-AnsiVtSequence {
                 $i += 2   # skip ESC [
                 $paramBuf = [System.Text.StringBuilder]::new()
                 while ($i -lt $len -and (([int]$chars[$i] -ge 0x30 -and [int]$chars[$i] -le 0x3F))) {
-                    $null = $paramBuf.Append($chars[$i])
+                    [void]$paramBuf.Append($chars[$i])
                     $i++
                 }
                 # final byte (command byte: A-Z a-z @)

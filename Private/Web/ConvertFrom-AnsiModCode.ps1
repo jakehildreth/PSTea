@@ -14,7 +14,10 @@ function ConvertFrom-AnsiModCode {
         [System.ConsoleModifiers]
     #>
     [CmdletBinding()]
-    param([int]$ModCode)
+    param(
+        [Parameter()]
+        [int]$ModCode
+    )
     # xterm modifier encoding: value = modifier_bitmask + 1
     # bit 0 = Shift, bit 1 = Alt, bit 2 = Ctrl
     $bits = $ModCode - 1

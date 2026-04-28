@@ -46,20 +46,35 @@ public class TeaConsoleHelper {
         $mode = [uint32]0
 
         if (-not [TeaConsoleHelper]::GetConsoleMode($handle, [ref]$mode)) {
-            Write-Warning 'Enable-VirtualTerminal: GetConsoleMode failed.'
+            $PSCmdlet.WriteError([System.Management.Automation.ErrorRecord]::new(
+                [System.InvalidOperationException]::new('Enable-VirtualTerminal: GetConsoleMode failed.'),
+                'GetConsoleModeFailed',
+                [System.Management.Automation.ErrorCategory]::InvalidOperation,
+                $null
+            ))
             return $false
         }
 
         $newMode = $mode -bor [TeaConsoleHelper]::ENABLE_VIRTUAL_TERMINAL_PROCESSING
 
         if (-not [TeaConsoleHelper]::SetConsoleMode($handle, $newMode)) {
-            Write-Warning 'Enable-VirtualTerminal: SetConsoleMode failed.'
+            $PSCmdlet.WriteError([System.Management.Automation.ErrorRecord]::new(
+                [System.InvalidOperationException]::new('Enable-VirtualTerminal: SetConsoleMode failed.'),
+                'SetConsoleModeFailed',
+                [System.Management.Automation.ErrorCategory]::InvalidOperation,
+                $null
+            ))
             return $false
         }
 
         return $true
     } catch {
-        Write-Warning "Enable-VirtualTerminal: $_"
+        $PSCmdlet.WriteError([System.Management.Automation.ErrorRecord]::new(
+            [System.InvalidOperationException]::new("Enable-VirtualTerminal: $($_.Exception.Message)", $_.Exception),
+            'EnableVirtualTerminalException',
+            [System.Management.Automation.ErrorCategory]::InvalidOperation,
+            $null
+        ))
         return $false
     }
 }

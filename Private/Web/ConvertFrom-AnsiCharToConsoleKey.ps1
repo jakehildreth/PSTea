@@ -15,7 +15,10 @@ function ConvertFrom-AnsiCharToConsoleKey {
         PSCustomObject with a Key property of type [System.ConsoleKey].
     #>
     [CmdletBinding()]
-    param([int]$CharCode)
+    param(
+        [Parameter()]
+        [int]$CharCode
+    )
     # Map ASCII code points to ConsoleKey enum values.
     # ConsoleKey enum: letter keys A-Z map to 65-90; digit keys D0-D9 map to 48+offset (96-105? No.)
     # Actually [ConsoleKey]::A = 65, [ConsoleKey]::D0 = 48, [ConsoleKey]::D1 = 49 ... D9 = 57

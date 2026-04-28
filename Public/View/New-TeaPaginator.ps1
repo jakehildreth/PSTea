@@ -84,9 +84,12 @@ function New-TeaPaginator {
     .EXAMPLE
         # Named tabs
         $activeStyle = New-TeaStyle -Foreground 'BrightWhite' -Bold
-        New-TeaPaginator -Tabs @('Overview','Details','Logs') `
-                         -ActiveTab $model.Tab `
-                         -ActiveStyle $activeStyle
+        $params = @{
+            Tabs        = @('Overview', 'Details', 'Logs')
+            ActiveTab   = $model.Tab
+            ActiveStyle = $activeStyle
+        }
+        New-TeaPaginator @params
 
     .NOTES
         In Dots mode, UTF-8 console encoding is required for the default Unicode
@@ -95,6 +98,7 @@ function New-TeaPaginator {
         In named-tab mode, a ' | ' Text node is inserted between each tab as a
         separator. The caller manages ActiveTab index via key subscriptions.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding(DefaultParameterSetName = 'Numeric')]
     param(
         [Parameter(Mandatory, ParameterSetName = 'Numeric')]

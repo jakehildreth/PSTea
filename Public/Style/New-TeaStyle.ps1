@@ -89,6 +89,7 @@ function New-TeaStyle {
     .NOTES
         All fields are always present on the returned object - no $null ambiguity for consumers.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter()]

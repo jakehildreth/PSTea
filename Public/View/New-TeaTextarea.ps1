@@ -75,17 +75,24 @@ function New-TeaTextarea {
 
     .EXAMPLE
         $focStyle = New-TeaStyle -Foreground 'BrightWhite'
-        New-TeaTextarea -Lines $model.Body -CursorRow $model.Row -CursorCol $model.Col `
-                        -Focused:$model.Editing `
-                        -MaxVisible 20 -ScrollOffset $model.Scroll `
-                        -Placeholder 'Start typing...' `
-                        -FocusedStyle $focStyle
+        $params = @{
+            Lines        = $model.Body
+            CursorRow    = $model.Row
+            CursorCol    = $model.Col
+            Focused      = $model.Editing
+            MaxVisible   = 20
+            ScrollOffset = $model.Scroll
+            Placeholder  = 'Start typing...'
+            FocusedStyle = $focStyle
+        }
+        New-TeaTextarea @params
 
     .NOTES
         This widget is purely a view helper. Implement line splitting on Enter,
         line joining on Backspace-at-start, and cursor clamping in the Update
         function using key and char subscriptions.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

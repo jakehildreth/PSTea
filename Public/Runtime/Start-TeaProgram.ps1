@@ -80,6 +80,7 @@ function Start-TeaProgram {
         Requires a terminal that supports ANSI escape sequences. On Windows, ensure
         Enable-VirtualTerminalProcessing has been called before invoking this function.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -106,7 +107,7 @@ function Start-TeaProgram {
     )
 
     # Ensure ANSI/VT processing is active (required on Windows PS5.1/conhost; no-op elsewhere)
-    $null = Enable-VirtualTerminal
+    [void](Enable-VirtualTerminal)
 
     # Resolve actual terminal dimensions, falling back if running without a TTY
     $termWidth  = if ([Console]::WindowWidth  -gt 0) { [Console]::WindowWidth  } else { 80 }
@@ -162,14 +163,16 @@ function Start-TeaProgram {
     $initialModel  = $initResult.Model
 
     try {
-        $finalModel = Invoke-TeaEventLoop `
-            -InitialModel   $initialModel `
-            -UpdateFn       $UpdateFn `
-            -ViewFn         $ViewFn `
-            -InputQueue     $driver.InputQueue `
-            -SubscriptionFn $SubscriptionFn `
-            -TerminalWidth  $resolvedWidth `
-            -TerminalHeight $resolvedHeight
+        $eventLoopParams = @{
+            InitialModel   = $initialModel
+            UpdateFn       = $UpdateFn
+            ViewFn         = $ViewFn
+            InputQueue     = $driver.InputQueue
+            SubscriptionFn = $SubscriptionFn
+            TerminalWidth  = $resolvedWidth
+            TerminalHeight = $resolvedHeight
+        }
+        $finalModel = Invoke-TeaEventLoop @eventLoopParams
     } finally {
         if ($null -ne $tickLoop) {
             try { $tickLoop.PowerShell.Stop() } catch {}

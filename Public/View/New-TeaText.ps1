@@ -29,6 +29,7 @@ function New-TeaText {
         Width and Height default to 'Auto'. They are resolved by Measure-TeaViewTree
         based on content length and style padding/border settings.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

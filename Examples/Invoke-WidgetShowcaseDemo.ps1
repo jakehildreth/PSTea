@@ -601,9 +601,14 @@ $viewFn = {
             $children.Add((New-TeaText -Content '' ))
             $children.Add((New-TeaText -Content 'New-TeaProgressBar' -Style $labelStyle))
             $pct     = [int]([math]::Round($model.Progress * 100))
-            $barNode = New-TeaProgressBar -Value $model.Progress -Width $barWidth `
-                                          -FilledChar $filledChar -EmptyChar $emptyChar `
-                                          -Style $accentStyle
+            $barParams = @{
+                Value      = $model.Progress
+                Width      = $barWidth
+                FilledChar = $filledChar
+                EmptyChar  = $emptyChar
+                Style      = $accentStyle
+            }
+            $barNode = New-TeaProgressBar @barParams
             $children.Add($barNode)
             $children.Add((New-TeaText -Content "  $pct%" -Style $hintStyle))
 
@@ -624,13 +629,16 @@ $viewFn = {
 
             $children.Add((New-TeaText -Content '' ))
             $children.Add((New-TeaText -Content 'New-TeaList  -  ANSI Color Names' -Style $labelStyle))
-            $listNode = New-TeaList -Items $script:COLOR_NAMES `
-                                    -SelectedIndex $model.ListCursor `
-                                    -MaxVisible $maxVis `
-                                    -Prefix $prefix.Sel `
-                                    -UnselectedPrefix $prefix.Unsel `
-                                    -Style $listStyle `
-                                    -SelectedStyle $selStyle
+            $listParams = @{
+                Items            = $script:COLOR_NAMES
+                SelectedIndex    = $model.ListCursor
+                MaxVisible       = $maxVis
+                Prefix           = $prefix.Sel
+                UnselectedPrefix = $prefix.Unsel
+                Style            = $listStyle
+                SelectedStyle    = $selStyle
+            }
+            $listNode = New-TeaList @listParams
             $children.Add($listNode)
 
             $itemName   = $script:COLOR_NAMES[$model.ListCursor]
@@ -649,10 +657,13 @@ $viewFn = {
 
             $children.Add((New-TeaText -Content '' ))
             $children.Add((New-TeaText -Content 'New-TeaViewport  -  Widget Documentation' -Style $labelStyle))
-            $vpNode = New-TeaViewport -Lines $script:VIEWPORT_LINES `
-                                      -ScrollOffset $model.ViewOffset `
-                                      -MaxVisible $maxVis `
-                                      -Style $vpStyle
+            $vpParams = @{
+                Lines        = $script:VIEWPORT_LINES
+                ScrollOffset = $model.ViewOffset
+                MaxVisible   = $maxVis
+                Style        = $vpStyle
+            }
+            $vpNode = New-TeaViewport @vpParams
             $children.Add($vpNode)
 
             $maxOff     = [math]::Max(0, $script:VIEWPORT_LINES.Count - $maxVis)
@@ -750,12 +761,15 @@ $viewFn = {
 
             $children.Add((New-TeaText -Content '' ))
             $children.Add((New-TeaText -Content 'New-TeaTable  -  Widget Reference' -Style $labelStyle))
-            $tableNode = New-TeaTable -Headers $script:TABLE_HEADERS `
-                                      -Rows    $script:TABLE_ROWS `
-                                      -SelectedRow  $model.TableCursor `
-                                      -Style        $listStyle `
-                                      -HeaderStyle  $headerStyle `
-                                      -SelectedStyle $tableSelStyle
+            $tableParams = @{
+                Headers       = $script:TABLE_HEADERS
+                Rows          = $script:TABLE_ROWS
+                SelectedRow   = $model.TableCursor
+                Style         = $listStyle
+                HeaderStyle   = $headerStyle
+                SelectedStyle = $tableSelStyle
+            }
+            $tableNode = New-TeaTable @tableParams
             $children.Add($tableNode)
 
             $selected = $script:TABLE_ROWS[$model.TableCursor]
@@ -785,15 +799,26 @@ $viewFn = {
             $children.Add((New-TeaRow -Children @($arrow, $label, $numNode)))
 
             # Dots mode row
-            $dotsNode = New-TeaPaginator -Dots -CurrentPage $model.PagerDotsPage -PageCount $script:PAGER_PAGES `
-                                         -Style $dotStyle -ActiveStyle $activeDotStyle
+            $dotsParams = @{
+                Dots        = $true
+                CurrentPage = $model.PagerDotsPage
+                PageCount   = $script:PAGER_PAGES
+                Style       = $dotStyle
+                ActiveStyle = $activeDotStyle
+            }
+            $dotsNode = New-TeaPaginator @dotsParams
             $label3   = New-TeaText -Content '  Dots:     ' -Style $hintStyle
             $arrow3   = if ($pagerMode -eq 'Dots') { New-TeaText -Content '> ' -Style $accentStyle } else { New-TeaText -Content '  ' }
             $children.Add((New-TeaRow -Children @($arrow3, $label3, $dotsNode)))
 
             # Tabs mode row
-            $tabNode = New-TeaPaginator -Tabs $script:PAGER_TAB_LABELS -ActiveTab $model.PagerTabIdx `
-                                        -Style $tabStyle -ActiveStyle $activeTabStyle
+            $tabParams = @{
+                Tabs        = $script:PAGER_TAB_LABELS
+                ActiveTab   = $model.PagerTabIdx
+                Style       = $tabStyle
+                ActiveStyle = $activeTabStyle
+            }
+            $tabNode = New-TeaPaginator @tabParams
             $label2  = New-TeaText -Content '  Tabs:     ' -Style $hintStyle
             $arrow2  = if ($pagerMode -eq 'Tabs') { New-TeaText -Content '> ' -Style $accentStyle } else { New-TeaText -Content '  ' }
             $children.Add((New-TeaRow -Children @($arrow2, $label2, $tabNode)))

@@ -99,8 +99,14 @@ Describe 'Invoke-TeaEventLoop' {
             $queue  = [System.Collections.Concurrent.ConcurrentQueue[object]]::new()
             $queue.Enqueue('any')
 
-            Invoke-TeaEventLoop -InitialModel ([PSCustomObject]@{}) -UpdateFn $updateFn `
-                -ViewFn $viewFn -InputQueue $queue -OutputSink $sink
+            $loopParams = @{
+                InitialModel = [PSCustomObject]@{}
+                UpdateFn     = $updateFn
+                ViewFn       = $viewFn
+                InputQueue   = $queue
+                OutputSink   = $sink
+            }
+            Invoke-TeaEventLoop @loopParams
 
             # OutputSink must be called at least once (hide cursor + initial render)
             $captured.Count | Should -BeGreaterThan 0
@@ -115,8 +121,14 @@ Describe 'Invoke-TeaEventLoop' {
             $queue  = [System.Collections.Concurrent.ConcurrentQueue[object]]::new()
             $queue.Enqueue('any')
 
-            { Invoke-TeaEventLoop -InitialModel ([PSCustomObject]@{}) -UpdateFn $updateFn `
-                -ViewFn $viewFn -InputQueue $queue -OutputSink $null } | Should -Not -Throw
+            $loopParams = @{
+                InitialModel = [PSCustomObject]@{}
+                UpdateFn     = $updateFn
+                ViewFn       = $viewFn
+                InputQueue   = $queue
+                OutputSink   = $null
+            }
+            { Invoke-TeaEventLoop @loopParams } | Should -Not -Throw
         }
     }
 

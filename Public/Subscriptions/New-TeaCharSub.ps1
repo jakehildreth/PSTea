@@ -31,6 +31,7 @@ function New-TeaCharSub {
         Use New-TeaKeySub for control keys (arrows, Enter, Backspace) and
         New-TeaCharSub for free-text input.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

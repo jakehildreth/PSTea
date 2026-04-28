@@ -18,7 +18,13 @@ function ConvertFrom-AnsiCsi {
         PSCustomObject with Type='KeyDown' or Type='Resize', or $null.
     #>
     [CmdletBinding()]
-    param([string]$Param, [char]$Final)
+    param(
+        [Parameter()]
+        [string]$Param,
+
+        [Parameter()]
+        [char]$Final
+    )
 
     $finalInt = [int]$Final
 

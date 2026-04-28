@@ -40,7 +40,7 @@ function Invoke-TeaDriverLoop {
 
     $asyncResult = $ps.BeginInvoke()
 
-    return @{
+    return [PSCustomObject]@{
         Runspace    = $runspace
         PowerShell  = $ps
         AsyncResult = $asyncResult

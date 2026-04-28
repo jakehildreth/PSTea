@@ -45,6 +45,7 @@ function New-TeaProgressBar {
         The bar always includes surrounding brackets [ ], so the inner fill area
         is Width - 2 characters wide.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding(DefaultParameterSetName = 'Ratio')]
     param(
         [Parameter(Mandatory, ParameterSetName = 'Ratio')]

@@ -309,7 +309,7 @@ function Invoke-TeaWebSocketListener {
                     'Server stopping',
                     [System.Threading.CancellationToken]::None
                 )
-                $t.Wait(2000) | Out-Null
+                [void]$t.Wait(2000)
             } catch {}
         }
 

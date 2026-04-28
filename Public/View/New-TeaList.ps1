@@ -49,13 +49,19 @@ function New-TeaList {
 
     .EXAMPLE
         $selStyle = New-TeaStyle -Foreground 'BrightYellow' -Bold
-        New-TeaList -Items $model.Items -SelectedIndex $model.Cursor `
-                    -MaxVisible 8 -SelectedStyle $selStyle
+        $params = @{
+            Items         = $model.Items
+            SelectedIndex = $model.Cursor
+            MaxVisible    = 8
+            SelectedStyle = $selStyle
+        }
+        New-TeaList @params
 
     .NOTES
         The visible window is calculated automatically: if SelectedIndex is
         outside the current window, the window shifts to keep it visible.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

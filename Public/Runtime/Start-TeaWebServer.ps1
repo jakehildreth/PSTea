@@ -50,17 +50,26 @@ function Start-TeaWebServer {
         Browser tab title. Defaults to "PSTea TUI".
 
     .EXAMPLE
-        Start-TeaWebServer -InitFn { [PSCustomObject]@{ Model = @{ Count = 0 }; Cmd = $null } } `
-            -UpdateFn { param($msg, $model)
-                if ($msg.Key -eq 'Q') { return [PSCustomObject]@{ Model = $model; Cmd = [PSCustomObject]@{ Type = 'Quit' } } }
-                [PSCustomObject]@{ Model = $model; Cmd = $null } } `
-            -ViewFn { param($model) New-TeaText -Content "Count: $($model.Count)" } `
-            -Port 8080
+        $initFn   = { [PSCustomObject]@{ Model = @{ Count = 0 }; Cmd = $null } }
+        $updateFn = {
+            param($msg, $model)
+            if ($msg.Key -eq 'Q') { return [PSCustomObject]@{ Model = $model; Cmd = [PSCustomObject]@{ Type = 'Quit' } } }
+            [PSCustomObject]@{ Model = $model; Cmd = $null }
+        }
+        $viewFn   = { param($model) New-TeaText -Content "Count: $($model.Count)" }
+        $params   = @{
+            InitFn   = $initFn
+            UpdateFn = $updateFn
+            ViewFn   = $viewFn
+            Port     = 8080
+        }
+        Start-TeaWebServer @params
 
     .NOTES
         Requires PowerShell 7+ on macOS/Linux.
         On Windows, HttpListener on http://localhost/ does not require netsh URL reservation.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -93,7 +102,7 @@ function Start-TeaWebServer {
     )
 
     # Enable ANSI/VT processing (no-op on Linux/macOS; needed on Windows conhost)
-    $null = Enable-VirtualTerminal
+    [void](Enable-VirtualTerminal)
 
     # Fail fast if port is already in use
     try {
@@ -103,7 +112,16 @@ function Start-TeaWebServer {
         $testListener.Stop()
         $testListener.Close()
     } catch {
-        throw "Port $Port is already in use. Kill the existing process or choose a different port."
+        $exception = [System.InvalidOperationException]::new(
+            "Port $Port is already in use. Kill the existing process or choose a different port."
+        )
+        $errorRecord = [System.Management.Automation.ErrorRecord]::new(
+            $exception,
+            'PortInUse',
+            [System.Management.Automation.ErrorCategory]::ResourceUnavailable,
+            $Port
+        )
+        $PSCmdlet.ThrowTerminatingError($errorRecord)
     }
 
     # Create the WebSocket driver (starts HttpListener + accept/send runspaces)
@@ -127,18 +145,20 @@ function Start-TeaWebServer {
     $initResult   = & $InitFn
     $initialModel = $initResult.Model
 
-    Write-Host "Listening on http://localhost:$Port/ (Press Ctrl+C to stop)"
+    Write-Information "Listening on http://localhost:$Port/ (Press Ctrl+C to stop)" -InformationAction Continue
 
     try {
-        $null = Invoke-TeaEventLoop `
-            -InitialModel   $initialModel `
-            -UpdateFn       $UpdateFn `
-            -ViewFn         $ViewFn `
-            -InputQueue     $driver.InputQueue `
-            -SubscriptionFn $SubscriptionFn `
-            -TerminalWidth  $Width `
-            -TerminalHeight $Height `
-            -OutputSink     $driver.OutputSink
+        $eventLoopParams = @{
+            InitialModel   = $initialModel
+            UpdateFn       = $UpdateFn
+            ViewFn         = $ViewFn
+            InputQueue     = $driver.InputQueue
+            SubscriptionFn = $SubscriptionFn
+            TerminalWidth  = $Width
+            TerminalHeight = $Height
+            OutputSink     = $driver.OutputSink
+        }
+        [void](Invoke-TeaEventLoop @eventLoopParams)
     } catch {
         $ts = [datetime]::Now.ToString('HH:mm:ss.fff')
         Add-Content -Path '/tmp/pstea-web-debug.log' -Value "[$ts][EVENTLOOP] FATAL: $_" -ErrorAction SilentlyContinue

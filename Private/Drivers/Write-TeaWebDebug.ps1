@@ -16,7 +16,10 @@ function Write-TeaWebDebug {
         The message text to append.
     #>
     [CmdletBinding()]
-    param([string]$Message)
+    param(
+        [Parameter()]
+        [string]$Message
+    )
     $ts = [datetime]::Now.ToString('HH:mm:ss.fff')
     Add-Content -Path $script:TeaWebDebugLog -Value "[$ts] $Message" -ErrorAction SilentlyContinue
 }

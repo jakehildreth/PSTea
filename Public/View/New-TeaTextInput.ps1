@@ -61,16 +61,21 @@ function New-TeaTextInput {
 
     .EXAMPLE
         $focStyle = New-TeaStyle -Foreground 'BrightWhite' -Underline
-        New-TeaTextInput -Value $model.Search -CursorPos $model.Cursor `
-                         -Focused:$model.InputFocused `
-                         -Placeholder 'Type to search...' `
-                         -FocusedStyle $focStyle
+        $params = @{
+            Value        = $model.Search
+            CursorPos    = $model.Cursor
+            Focused      = $model.InputFocused
+            Placeholder  = 'Type to search...'
+            FocusedStyle = $focStyle
+        }
+        New-TeaTextInput @params
 
     .NOTES
         This widget is purely a view helper. Use key subscriptions or TickMs to
         handle Backspace, Delete, character insertion, cursor movement, etc. in
         the Update function.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter()]

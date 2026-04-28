@@ -44,6 +44,7 @@ function New-TeaKeySub {
         Subscriptions are re-evaluated on every model change, enabling conditional
         subscriptions based on model state.
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

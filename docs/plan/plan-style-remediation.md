@@ -1,6 +1,6 @@
 # Plan: PowerShell Style and Community Standards Remediation
 
-## Status: In Progress
+## Status: COMPLETE
 
 ## Rationale
 
@@ -37,11 +37,11 @@ Skipped: S1 (CalVer — defer to release), S8 (Write-Verbose — separate loggin
 Split all multi-function files. `PSTea.psm1` auto-discovers new files via recursive
 `Get-ChildItem` — no psm1 changes needed.
 
-- [ ] `Private/Rendering/Measure-TeaViewTree.ps1` -> extract `Resolve-TeaDimension.ps1`, `Invoke-TeaPass1.ps1`, `Invoke-TeaPass2.ps1`; update `Tests/Measure-TeaViewTree.Tests.ps1` BeforeAll
-- [ ] `Private/Rendering/Compare-TeaViewTree.ps1` -> extract `Get-TextLeaves.ps1`; update `Tests/Compare-TeaViewTree.Tests.ps1` BeforeAll
-- [ ] `Private/Core/Copy-TeaModel.ps1` -> extract `Copy-TeaModelValue.ps1`; update `Tests/Copy-TeaModel.Tests.ps1` BeforeAll
-- [ ] `Private/Web/ConvertFrom-AnsiVtSequence.ps1` -> extract `ConvertFrom-AnsiCsi.ps1`, `ConvertFrom-AnsiModCode.ps1`, `ConvertFrom-AnsiCharToConsoleKey.ps1` (drop `_` prefix); update call sites; update `Tests/ConvertFrom-AnsiVtSequence.Tests.ps1` BeforeAll; preserve line 309 literal `` ` `` in switch comment
-- [ ] `Private/Drivers/Invoke-TeaWebSocketListener.ps1` -> extract `Write-TeaWebDebug.ps1`
+- [x] `Private/Rendering/Measure-TeaViewTree.ps1` -> extract `Resolve-TeaDimension.ps1`, `Invoke-TeaPass1.ps1`, `Invoke-TeaPass2.ps1`; update `Tests/Measure-TeaViewTree.Tests.ps1` BeforeAll
+- [x] `Private/Rendering/Compare-TeaViewTree.ps1` -> extract `Get-TextLeaves.ps1`; update `Tests/Compare-TeaViewTree.Tests.ps1` BeforeAll
+- [x] `Private/Core/Copy-TeaModel.ps1` -> extract `Copy-TeaModelValue.ps1`; update `Tests/Copy-TeaModel.Tests.ps1` BeforeAll
+- [x] `Private/Web/ConvertFrom-AnsiVtSequence.ps1` -> extract `ConvertFrom-AnsiCsi.ps1`, `ConvertFrom-AnsiModCode.ps1`, `ConvertFrom-AnsiCharToConsoleKey.ps1` (drop `_` prefix); update call sites; update `Tests/ConvertFrom-AnsiVtSequence.Tests.ps1` BeforeAll; preserve line 309 literal `` ` `` in switch comment
+- [x] `Private/Drivers/Invoke-TeaWebSocketListener.ps1` -> extract `Write-TeaWebDebug.ps1`
 
 ---
 
@@ -50,25 +50,25 @@ Split all multi-function files. `PSTea.psm1` auto-discovers new files via recurs
 All parallel.
 
 New helper files (all need both `[CmdletBinding()]` and CBH):
-- [ ] `Resolve-TeaDimension.ps1`
-- [ ] `Invoke-TeaPass1.ps1`
-- [ ] `Invoke-TeaPass2.ps1`
-- [ ] `Get-TextLeaves.ps1`
-- [ ] `Copy-TeaModelValue.ps1`
-- [ ] `ConvertFrom-AnsiCsi.ps1`
-- [ ] `ConvertFrom-AnsiModCode.ps1`
-- [ ] `ConvertFrom-AnsiCharToConsoleKey.ps1`
-- [ ] `Write-TeaWebDebug.ps1`
+- [x] `Resolve-TeaDimension.ps1`
+- [x] `Invoke-TeaPass1.ps1`
+- [x] `Invoke-TeaPass2.ps1`
+- [x] `Get-TextLeaves.ps1`
+- [x] `Copy-TeaModelValue.ps1`
+- [x] `ConvertFrom-AnsiCsi.ps1`
+- [x] `ConvertFrom-AnsiModCode.ps1`
+- [x] `ConvertFrom-AnsiCharToConsoleKey.ps1`
+- [x] `Write-TeaWebDebug.ps1`
 
 Existing files needing updates:
-- [ ] `Private/Rendering/Enable-VirtualTerminal.ps1` — add `[CmdletBinding()]` + CBH
-- [ ] `Private/Runtime/Invoke-TeaEventLoop.ps1` — add CBH
-- [ ] `Private/Runtime/Invoke-TeaView.ps1` — add CBH
-- [ ] `Private/Runtime/Invoke-TeaDriverLoop.ps1` — add CBH
-- [ ] `Private/Style/Apply-TeaStyle.ps1` — add CBH
-- [ ] `Private/Style/Resolve-TeaColor.ps1` — add CBH
-- [ ] `Private/Style/ConvertTo-BorderChars.ps1` — add CBH
-- [ ] `Private/Drivers/New-TeaTerminalDriver.ps1` — add CBH
+- [x] `Private/Rendering/Enable-VirtualTerminal.ps1` — add `[CmdletBinding()]` + CBH
+- [x] `Private/Runtime/Invoke-TeaEventLoop.ps1` — add CBH
+- [x] `Private/Runtime/Invoke-TeaView.ps1` — add CBH
+- [x] `Private/Runtime/Invoke-TeaDriverLoop.ps1` — add CBH
+- [x] `Private/Style/Apply-TeaStyle.ps1` — add CBH
+- [x] `Private/Style/Resolve-TeaColor.ps1` — add CBH
+- [x] `Private/Style/ConvertTo-BorderChars.ps1` — add CBH
+- [x] `Private/Drivers/New-TeaTerminalDriver.ps1` — add CBH
 
 ---
 
@@ -76,60 +76,60 @@ Existing files needing updates:
 
 All parallel. Add `[OutputType([PSCustomObject])]` above `[CmdletBinding()]` on every function in `Public/`.
 
-- [ ] All files in `Public/Components/`
-- [ ] All files in `Public/Drivers/`
-- [ ] All files in `Public/Runtime/`
-- [ ] All files in `Public/Style/`
-- [ ] All files in `Public/Subscriptions/`
-- [ ] All files in `Public/View/`
+- [x] All files in `Public/Components/`
+- [x] All files in `Public/Drivers/`
+- [x] All files in `Public/Runtime/`
+- [x] All files in `Public/Style/`
+- [x] All files in `Public/Subscriptions/`
+- [x] All files in `Public/View/`
 
 ---
 
 ## Phase 4 - ThrowTerminatingError (S3)
 
-- [ ] `Public/Runtime/Start-TeaWebServer.ps1`: replace `throw "Port $Port..."` with `$PSCmdlet.ThrowTerminatingError()` using `ErrorRecord` category `ResourceUnavailable`
-- [ ] Verify `Tests/Start-TeaWebServer.Tests.ps1` error-path test still passes
+- [x] `Public/Runtime/Start-TeaWebServer.ps1`: replace `throw "Port $Port..."` with `$PSCmdlet.ThrowTerminatingError()` using `ErrorRecord` category `ResourceUnavailable`
+- [x] Verify `Tests/Start-TeaWebServer.Tests.ps1` error-path test still passes
 
 ---
 
 ## Phase 5 - PSCustomObject Return (S6) — TDD
 
-- [ ] `Tests/Invoke-TeaDriverLoop.Tests.ps1`: add `It 'Should return a PSCustomObject'` asserting `$result -is [PSCustomObject]` (test will fail until next step)
-- [ ] `Private/Runtime/Invoke-TeaDriverLoop.ps1`: change `@{...}` return to `[PSCustomObject]@{...}`
-- [ ] Run tests; confirm new assertion passes and no regressions
+- [x] `Tests/Invoke-TeaDriverLoop.Tests.ps1`: add `It 'Should return a PSCustomObject'` asserting `$result -is [PSCustomObject]` (test will fail until next step)
+- [x] `Private/Runtime/Invoke-TeaDriverLoop.ps1`: change `@{...}` return to `[PSCustomObject]@{...}`
+- [x] Run tests; confirm new assertion passes and no regressions
 
 ---
 
 ## Phase 6 - Backtick Removal (S11)
 
 Functional code:
-- [ ] `Public/Runtime/Start-TeaWebServer.ps1` — splat `Invoke-TeaWebSocketListener` call
-- [ ] `Public/Runtime/Start-TeaProgram.ps1` — splat `Invoke-TeaEventLoop` call
-- [ ] `Public/Drivers/New-TeaWebSocketDriver.ps1` — splat call
+- [x] `Public/Runtime/Start-TeaWebServer.ps1` — splat `Invoke-TeaWebSocketListener` call
+- [x] `Public/Runtime/Start-TeaProgram.ps1` — splat `Invoke-TeaEventLoop` call
+- [x] `Public/Drivers/New-TeaWebSocketDriver.ps1` — splat call
 
 CBH `.EXAMPLE` blocks:
-- [ ] `Public/View/New-TeaTextarea.ps1`
-- [ ] `Public/View/New-TeaTextInput.ps1`
-- [ ] `Public/View/New-TeaList.ps1`
-- [ ] `Public/View/New-TeaPaginator.ps1`
-- [ ] `Public/Components/New-TeaComponent.ps1`
-- [ ] `Public/View/New-TeaTable.ps1`
-- [ ] `Public/Drivers/New-TeaWebSocketDriver.ps1`
-- [ ] `Public/Runtime/Start-TeaWebServer.ps1`
+- [x] `Public/View/New-TeaTextarea.ps1`
+- [x] `Public/View/New-TeaTextInput.ps1`
+- [x] `Public/View/New-TeaList.ps1`
+- [x] `Public/View/New-TeaPaginator.ps1`
+- [x] `Public/Components/New-TeaComponent.ps1`
+- [x] `Public/View/New-TeaTable.ps1`
+- [x] `Public/Drivers/New-TeaWebSocketDriver.ps1`
+- [x] `Public/Runtime/Start-TeaWebServer.ps1`
 
 Test files:
-- [ ] `Tests/Invoke-TeaEventLoop.Tests.ps1` lines 101, 117
-- [ ] `Tests/Start-TeaWebServer.Tests.ps1` line 90
+- [x] `Tests/Invoke-TeaEventLoop.Tests.ps1` lines 101, 117
+- [x] `Tests/Start-TeaWebServer.Tests.ps1` line 90
 
 Examples:
-- [ ] `Examples/Invoke-WidgetShowcaseDemo.ps1`
-- [ ] `Examples/Invoke-WidgetShowcaseWeb.ps1`
+- [x] `Examples/Invoke-WidgetShowcaseDemo.ps1`
+- [x] `Examples/Invoke-WidgetShowcaseWeb.ps1`
 
 ---
 
 ## Phase 7 - Long Lines (S9)
 
-- [ ] `Private/Style/ConvertTo-BorderChars.ps1` lines 9-13: expand each border map entry to multiline format
+- [x] `Private/Style/ConvertTo-BorderChars.ps1` lines 9-13: expand each border map entry to multiline format
 
 ---
 

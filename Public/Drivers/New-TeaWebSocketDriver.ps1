@@ -36,11 +36,19 @@ function New-TeaWebSocketDriver {
 
     .EXAMPLE
         $driver = New-TeaWebSocketDriver -Port 8080 -Width 220 -Height 50
-        Invoke-TeaEventLoop -InitFn $init -UpdateFn $update -ViewFn $view `
-            -InputQueue $driver.InputQueue -OutputSink $driver.OutputSink `
-            -TerminalWidth 220 -TerminalHeight 50
+        $params = @{
+            InitFn         = $init
+            UpdateFn       = $update
+            ViewFn         = $view
+            InputQueue     = $driver.InputQueue
+            OutputSink     = $driver.OutputSink
+            TerminalWidth  = 220
+            TerminalHeight = 50
+        }
+        Invoke-TeaEventLoop @params
         & $driver.Stop
     #>
+    [OutputType([PSCustomObject])]
     [CmdletBinding()]
     param(
         [Parameter()]
@@ -69,8 +77,13 @@ function New-TeaWebSocketDriver {
     $htmlContent = Get-TeaXtermPage -Port $Port -Cols $Width -Rows $Height -Title $Title
 
     # Start the HTTP/WebSocket listener (returns { Listener, SharedState, Stop }).
-    $wsServer = Invoke-TeaWebSocketListener -Port $Port -InputQueue $inputQueue `
-        -OutputQueue $outputQueue -HtmlContent $htmlContent
+    $listenerParams = @{
+        Port        = $Port
+        InputQueue  = $inputQueue
+        OutputQueue = $outputQueue
+        HtmlContent = $htmlContent
+    }
+    $wsServer = Invoke-TeaWebSocketListener @listenerParams
 
     $stopFn = { & $wsServer.Stop }.GetNewClosure()
 

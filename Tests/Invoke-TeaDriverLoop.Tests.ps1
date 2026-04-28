@@ -3,6 +3,20 @@ BeforeAll {
 }
 
 Describe 'Invoke-TeaDriverLoop' {
+    Context 'Return type' {
+        AfterEach {
+            if ($result) {
+                try { $result.PowerShell.Dispose() } catch {}
+                try { $result.Runspace.Close(); $result.Runspace.Dispose() } catch {}
+            }
+        }
+
+        It 'Should return a PSCustomObject' {
+            $result = Invoke-TeaDriverLoop -ScriptBlock { }
+            $result.GetType().FullName | Should -Be 'System.Management.Automation.PSCustomObject'
+        }
+    }
+
     Context 'Return shape' {
         AfterEach {
             if ($result) {
