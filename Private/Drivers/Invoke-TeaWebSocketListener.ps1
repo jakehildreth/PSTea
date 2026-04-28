@@ -1,12 +1,3 @@
-# Debug log path — tee everything significant so failures in background runspaces are visible.
-$script:TeaWebDebugLog = '/tmp/pstea-web-debug.log'
-
-function Write-TeaWebDebug {
-    param([string]$Message)
-    $ts = [datetime]::Now.ToString('HH:mm:ss.fff')
-    Add-Content -Path $script:TeaWebDebugLog -Value "[$ts] $Message" -ErrorAction SilentlyContinue
-}
-
 function Invoke-TeaWebSocketListener {
     <#
     .SYNOPSIS
@@ -96,10 +87,10 @@ function Invoke-TeaWebSocketListener {
         SessionActive = $false
     })
 
-    # Path to the VT parser — dot-sourced inside the accept runspace.
-    # $PSScriptRoot here is Private/Drivers/; parser lives in Private/Web/
-    $vtParserPath = Join-Path $PSScriptRoot '../Web/ConvertFrom-AnsiVtSequence.ps1'
-    Write-TeaWebDebug "VT parser path: $vtParserPath (exists=$(Test-Path $vtParserPath))"
+    # Directory containing the VT parser and its helpers — dot-sourced inside the accept runspace.
+    # $PSScriptRoot here is Private/Drivers/; parsers live in Private/Web/
+    $webDir = (Join-Path $PSScriptRoot '../Web' | Resolve-Path).Path
+    Write-TeaWebDebug "Web dir: $webDir"
 
     # -----------------------------------------------------------------------
     # SEND RUNSPACE
@@ -170,19 +161,28 @@ function Invoke-TeaWebSocketListener {
     $acceptPs = [System.Management.Automation.PowerShell]::Create()
     $acceptPs.Runspace = $acceptRs
     [void]$acceptPs.AddScript({
-        param($listener, $inputQueue, $htmlBytes, $sharedState, $vtParserPath, $logFile)
+        param($listener, $inputQueue, $htmlBytes, $sharedState, $webDir, $logFile)
 
         function dbg { param($m)
             $ts = [datetime]::Now.ToString('HH:mm:ss.fff')
             Add-Content -Path $logFile -Value "[$ts][ACCEPT] $m" -EA SilentlyContinue
         }
 
-        # Load VT sequence parser into this runspace via dot-source
+        # Load VT sequence parser and helpers into this runspace via dot-source.
+        # Order matters: helpers must be loaded before the main parser that calls them.
+        $vtParserFiles = @(
+            'ConvertFrom-AnsiModCode.ps1'
+            'ConvertFrom-AnsiCsi.ps1'
+            'ConvertFrom-AnsiCharToConsoleKey.ps1'
+            'ConvertFrom-AnsiVtSequence.ps1'
+        )
         try {
-            . $vtParserPath
-            dbg "VT parser loaded from $vtParserPath"
+            foreach ($f in $vtParserFiles) {
+                . (Join-Path $webDir $f)
+            }
+            dbg "VT parser loaded from $webDir"
         } catch {
-            dbg "Failed to load VT parser from '$vtParserPath': $_"
+            dbg "Failed to load VT parser from '$webDir': $_"
             # Fallback: pass bytes through as-is (no key parsing, but loop stays alive)
             function ConvertFrom-AnsiVtSequence { param([string]$InputString); return @() }
         }
@@ -291,7 +291,7 @@ function Invoke-TeaWebSocketListener {
     [void]$acceptPs.AddArgument($InputQueue)
     [void]$acceptPs.AddArgument([System.Text.Encoding]::UTF8.GetBytes($HtmlContent))
     [void]$acceptPs.AddArgument($sharedState)
-    [void]$acceptPs.AddArgument($vtParserPath)
+    [void]$acceptPs.AddArgument($webDir)
     [void]$acceptPs.AddArgument($script:TeaWebDebugLog)
     $acceptAr = $acceptPs.BeginInvoke()
     Write-TeaWebDebug "Accept runspace started"

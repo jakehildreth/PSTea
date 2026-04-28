@@ -1,4 +1,23 @@
 function Resolve-TeaColor {
+    <#
+    .SYNOPSIS
+        Resolves a color value to an ANSI SGR escape sequence.
+
+    .DESCRIPTION
+        Accepts a named color string (e.g. 'Red', 'BrightCyan'), a 256-palette integer, or
+        an RGB string in '#RRGGBB' format, and returns the appropriate ANSI SGR escape
+        sequence. The -IsForeground switch controls whether foreground (38) or background
+        (48) codes are emitted.
+
+    .PARAMETER Color
+        The color value: a named color string, an [int] 256-palette index, or '#RRGGBB'.
+
+    .PARAMETER IsForeground
+        When set, emits a foreground color code. Otherwise emits a background color code.
+
+    .OUTPUTS
+        [string] - ANSI SGR escape sequence (e.g. ESC[31m for red foreground).
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

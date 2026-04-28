@@ -1,4 +1,21 @@
 function New-TeaTerminalDriver {
+    <#
+    .SYNOPSIS
+        Creates a terminal driver that reads keyboard input from the system console.
+
+    .DESCRIPTION
+        Sets console encoding to UTF-8, starts a background runspace that polls
+        [Console]::ReadKey and enqueues PSCustomObject key events into a ConcurrentQueue.
+        Returns a PSCustomObject with an InputQueue and a Stop scriptblock that cancels the
+        reader and restores the previous console encoding.
+
+    .PARAMETER AltScreen
+        When set, switches to the alternate screen buffer on start and restores the primary
+        screen buffer on stop.
+
+    .OUTPUTS
+        PSCustomObject with InputQueue and Stop properties.
+    #>
     [CmdletBinding()]
     param(
         [switch]$AltScreen

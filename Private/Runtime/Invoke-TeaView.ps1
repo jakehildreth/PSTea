@@ -1,4 +1,22 @@
 function Invoke-TeaView {
+    <#
+    .SYNOPSIS
+        Invokes the user's View scriptblock and validates the returned node.
+
+    .DESCRIPTION
+        Calls the View scriptblock with the current model and verifies the result is a
+        non-null node with a Type of 'Text' or 'Box'. Throws a terminating error if the
+        View function returns null or an invalid node type.
+
+    .PARAMETER ViewFn
+        The View scriptblock: param($model) -> view tree node.
+
+    .PARAMETER Model
+        The current model to pass to the View scriptblock.
+
+    .OUTPUTS
+        PSCustomObject - the validated view tree root node.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

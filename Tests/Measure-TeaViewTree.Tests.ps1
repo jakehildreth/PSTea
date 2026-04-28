@@ -4,6 +4,9 @@ BeforeAll {
     . $PSScriptRoot/../Public/View/New-TeaRow.ps1
     . $PSScriptRoot/../Public/View/New-TeaComponent.ps1
     . $PSScriptRoot/../Public/Style/New-TeaStyle.ps1
+    . $PSScriptRoot/../Private/Rendering/Resolve-TeaDimension.ps1
+    . $PSScriptRoot/../Private/Rendering/Invoke-TeaPass1.ps1
+    . $PSScriptRoot/../Private/Rendering/Invoke-TeaPass2.ps1
     . $PSScriptRoot/../Private/Rendering/Measure-TeaViewTree.ps1
 }
 

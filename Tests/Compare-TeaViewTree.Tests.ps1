@@ -1,5 +1,6 @@
 BeforeAll {
     . $PSScriptRoot/../Public/Style/New-TeaStyle.ps1
+    . $PSScriptRoot/../Private/Rendering/Get-TextLeaves.ps1
     . $PSScriptRoot/../Private/Rendering/Compare-TeaViewTree.ps1
 
     function New-MeasuredText {

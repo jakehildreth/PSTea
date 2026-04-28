@@ -1,4 +1,23 @@
 function Invoke-TeaDriverLoop {
+    <#
+    .SYNOPSIS
+        Launches a driver scriptblock in a dedicated runspace.
+
+    .DESCRIPTION
+        Creates a new runspace, opens it, and begins invoking the provided scriptblock
+        asynchronously. Returns a hashtable with Runspace, PowerShell, and AsyncResult so
+        the caller can poll or stop the driver. Used by Start-TeaProgram and
+        Start-TeaWebServer to run the input-reader and event-loop in parallel.
+
+    .PARAMETER ScriptBlock
+        The scriptblock to run in the new runspace.
+
+    .PARAMETER Arguments
+        Optional array of arguments to pass to the scriptblock.
+
+    .OUTPUTS
+        Hashtable with keys: Runspace, PowerShell, AsyncResult.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

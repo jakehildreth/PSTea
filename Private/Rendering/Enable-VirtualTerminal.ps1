@@ -1,4 +1,18 @@
 function Enable-VirtualTerminal {
+    <#
+    .SYNOPSIS
+        Enables VT100/ANSI virtual terminal processing on Windows.
+
+    .DESCRIPTION
+        On macOS/Linux (PS7+), ANSI escape sequences are supported natively and this
+        function returns $true immediately. On Windows, it uses the Win32 SetConsoleMode
+        API via Add-Type P/Invoke to enable ENABLE_VIRTUAL_TERMINAL_PROCESSING on stdout.
+        Returns $true on success, $false if the mode could not be set.
+
+    .OUTPUTS
+        [bool] - $true if VT processing is enabled, $false if it could not be enabled.
+    #>
+    [CmdletBinding()]
     # Determine if running on Windows; $IsWindows does not exist in PS 5.1
     $onWindows = if ($null -ne $IsWindows) { $IsWindows } else { $true }
 

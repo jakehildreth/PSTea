@@ -1,4 +1,41 @@
 function Invoke-TeaEventLoop {
+    <#
+    .SYNOPSIS
+        Runs the main TEA (The Elm Architecture) event loop.
+
+    .DESCRIPTION
+        Accepts an initial model, Update and View scriptblocks, and an InputQueue. On each
+        iteration, dequeues a message, calls Update to produce a new model, calls View to
+        produce a new view tree, diffs it against the previous tree, and writes ANSI output.
+        Continues until Update returns a Cmd with Type='Quit'. Supports an optional
+        SubscriptionFn for timer and key-subscription-based routing, and an OutputSink for
+        the web driver.
+
+    .PARAMETER InitialModel
+        The model object returned by the Init scriptblock.
+
+    .PARAMETER UpdateFn
+        The Update scriptblock: param($msg, $model) -> PSCustomObject with Model and Cmd.
+
+    .PARAMETER ViewFn
+        The View scriptblock: param($model) -> view tree node.
+
+    .PARAMETER InputQueue
+        ConcurrentQueue[PSCustomObject] shared with the driver's input reader.
+
+    .PARAMETER SubscriptionFn
+        Optional. Scriptblock returning an array of subscription objects for the current model.
+
+    .PARAMETER TerminalWidth
+        Terminal width in columns. Defaults to 80.
+
+    .PARAMETER TerminalHeight
+        Terminal height in rows. Defaults to 24.
+
+    .PARAMETER OutputSink
+        Optional. Scriptblock that receives each ANSI string for output. Defaults to
+        [Console]::Write.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

@@ -1,4 +1,27 @@
 function Apply-TeaStyle {
+    <#
+    .SYNOPSIS
+        Applies a TeaStyle to a string, producing an ANSI-escaped string.
+
+    .DESCRIPTION
+        Given a content string and a TeaStyle PSCustomObject, emits the appropriate ANSI SGR
+        sequences for foreground color, background color, bold, italic, underline, and
+        strikethrough. Also handles padding, border rendering, and width-padding. If Style is
+        $null, returns the content unchanged.
+
+    .PARAMETER Content
+        The text content to style.
+
+    .PARAMETER Width
+        The target display width. If >= 0, content is padded or truncated to this width.
+        Defaults to -1 (use content length).
+
+    .PARAMETER Style
+        The TeaStyle PSCustomObject created by New-TeaStyle. May be $null.
+
+    .OUTPUTS
+        [string] - ANSI-escaped string ready for terminal output.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]

@@ -1,4 +1,5 @@
 BeforeAll {
+    . $PSScriptRoot/../Private/Core/Copy-TeaModelValue.ps1
     . $PSScriptRoot/../Private/Core/Copy-TeaModel.ps1
     . $PSScriptRoot/../Private/Runtime/Invoke-TeaUpdate.ps1
     . $PSScriptRoot/../Private/Runtime/Invoke-TeaView.ps1

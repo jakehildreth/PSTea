@@ -88,29 +88,3 @@ function Compare-TeaViewTree {
 
     return $patches.ToArray()
 }
-
-function Get-TextLeaves {
-    param(
-        [Parameter(Mandatory)]
-        [object]$Node
-    )
-
-    $leaves = [System.Collections.Generic.List[object]]::new()
-    $stack  = [System.Collections.Generic.Stack[object]]::new()
-    $stack.Push($Node)
-
-    while ($stack.Count -gt 0) {
-        $current = $stack.Pop()
-        if ($current.Type -eq 'Text') {
-            $leaves.Add($current)
-        } elseif ($current.PSObject.Properties['Children'] -and $null -ne $current.Children) {
-            for ($i = $current.Children.Count - 1; $i -ge 0; $i--) {
-                $stack.Push($current.Children[$i])
-            }
-        }
-    }
-
-    return $leaves.ToArray()
-}
-
-

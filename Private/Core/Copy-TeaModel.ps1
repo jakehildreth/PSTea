@@ -1,38 +1,3 @@
-function Copy-TeaModelValue {
-    <#
-        Private recursive helper for Copy-TeaModel.
-        Walks the value graph and returns a deep clone without JSON serialization.
-        Handles: $null, primitives (string/int/long/double/bool), arrays, PSCustomObject.
-        Anything else (hashtable, typed .NET objects) is returned by reference - callers
-        should keep typed objects out of the model (use primitives per TEA convention).
-    #>
-    param($Value)
-
-    if ($null -eq $Value) { return $null }
-
-    if ($Value -is [System.Array]) {
-        $len    = $Value.Length
-        $result = [object[]]::new($len)
-        for ($i = 0; $i -lt $len; $i++) {
-            $result[$i] = Copy-TeaModelValue $Value[$i]
-        }
-        Write-Output -NoEnumerate $result
-        return
-    }
-
-    if ($Value -is [PSCustomObject]) {
-        $props = $Value.PSObject.Properties
-        $ht    = [ordered]@{}
-        foreach ($prop in $props) {
-            $ht[$prop.Name] = Copy-TeaModelValue $prop.Value
-        }
-        return [PSCustomObject]$ht
-    }
-
-    # Primitive value types and strings - returned as-is (immutable or value-copy)
-    return $Value
-}
-
 function Copy-TeaModel {
     [CmdletBinding()]
     param(

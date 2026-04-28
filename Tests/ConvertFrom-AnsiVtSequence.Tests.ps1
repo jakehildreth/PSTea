@@ -1,4 +1,7 @@
 BeforeAll {
+    . $PSScriptRoot/../Private/Web/ConvertFrom-AnsiCsi.ps1
+    . $PSScriptRoot/../Private/Web/ConvertFrom-AnsiModCode.ps1
+    . $PSScriptRoot/../Private/Web/ConvertFrom-AnsiCharToConsoleKey.ps1
     . $PSScriptRoot/../Private/Web/ConvertFrom-AnsiVtSequence.ps1
 }
 

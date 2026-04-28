@@ -1,4 +1,20 @@
 function ConvertTo-BorderChars {
+    <#
+    .SYNOPSIS
+        Maps a border style name to a set of Unicode box-drawing characters.
+
+    .DESCRIPTION
+        Returns a PSCustomObject with TL, T, TR, L, R, BL, B, BR properties containing
+        the appropriate Unicode box-drawing characters for the requested border style.
+        Supported styles: None, Normal, Rounded, Thick, Double. Writes a non-terminating
+        error and returns the None border set for unknown style names.
+
+    .PARAMETER Style
+        The border style name: 'None', 'Normal', 'Rounded', 'Thick', or 'Double'.
+
+    .OUTPUTS
+        PSCustomObject with TL, T, TR, L, R, BL, B, BR properties.
+    #>
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
