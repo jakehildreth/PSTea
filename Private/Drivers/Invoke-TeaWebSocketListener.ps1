@@ -310,9 +310,14 @@ function Invoke-TeaWebSocketListener {
     [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveRunspaces',  @($acceptRs, $sendRs))
     Write-TeaWebDebug "AppDomain slots registered"
 
+    # Capture module-scoped log path as a local variable so GetNewClosure() closes
+    # over it correctly. $script: in a closure resolves at execution time via scope
+    # qualifier and may hit the wrong dynamic module scope, returning $null.
+    $logFile = $script:TeaWebDebugLog
+
     # Stop scriptblock — shuts everything down cleanly (ADR-027)
     $stopFn = {
-        $ts = [datetime]::Now.ToString('HH:mm:ss.fff'); Add-Content -Path $script:TeaWebDebugLog -Value "[$ts][STOP] Stop called" -ErrorAction SilentlyContinue
+        $ts = [datetime]::Now.ToString('HH:mm:ss.fff'); Add-Content -Path $logFile -Value "[$ts][STOP] Stop called" -ErrorAction SilentlyContinue
 
         # 1. Signal all loops to exit.
         try { $sharedState.Cts.Cancel() } catch {}
@@ -336,7 +341,7 @@ function Invoke-TeaWebSocketListener {
         try { [void]$acceptPs.BeginStop($null, $null) } catch {}
         try { [void]$sendPs.BeginStop($null, $null)   } catch {}
 
-        $ts = [datetime]::Now.ToString('HH:mm:ss.fff'); Add-Content -Path $script:TeaWebDebugLog -Value "[$ts][STOP] Stop complete" -ErrorAction SilentlyContinue
+        $ts = [datetime]::Now.ToString('HH:mm:ss.fff'); Add-Content -Path $logFile -Value "[$ts][STOP] Stop complete" -ErrorAction SilentlyContinue
     }.GetNewClosure()
 
     return [PSCustomObject]@{

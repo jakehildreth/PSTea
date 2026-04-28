@@ -189,13 +189,14 @@ function Start-TeaWebServer {
         $ts = [datetime]::Now.ToString('HH:mm:ss.fff')
         Add-Content -Path '/tmp/pstea-web-debug.log' -Value "[$ts][EVENTLOOP] FATAL: $_" -ErrorAction SilentlyContinue
         Add-Content -Path '/tmp/pstea-web-debug.log' -Value "[$ts][EVENTLOOP] StackTrace: $($_.ScriptStackTrace)" -ErrorAction SilentlyContinue
+        Add-Content -Path '/tmp/pstea-web-debug.log' -Value "[$ts][EVENTLOOP] ErrorId: $($_.FullyQualifiedErrorId)" -ErrorAction SilentlyContinue
         throw
     } finally {
         if ($null -ne $tickLoop) {
             try { $tickLoop.PowerShell.Stop() } catch {}
             try { $tickLoop.Runspace.Close()  } catch {}
         }
-        if ($null -ne $driver) { & $driver.Stop }
+        if ($null -ne $driver) { try { & $driver.Stop } catch {} }
         [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveListener',    $null)
         [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveCts',         $null)
         [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveSharedState', $null)
