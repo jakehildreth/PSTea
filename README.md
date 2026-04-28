@@ -30,16 +30,18 @@ $Update = {
 
 $View = {
     param($Model)
-    New-TeaBox -Children @(
-        New-TeaText -Content " Count: $($Model.Count) "
-        New-TeaText -Content ' [Up] inc  [Q] quit' -Style (New-TeaStyle -Foreground 'BrightBlack')
+    TeaBox -Children @(
+        TeaText -Content " Count: $($Model.Count) "
+        TeaText -Content ' [Up] inc  [Q] quit' -Style (TeaStyle -Foreground 'BrightBlack')
     )
 }
 
-Start-TeaProgram -InitFn $Init -UpdateFn $Update -ViewFn $View
+TeaProgram -InitFn $Init -UpdateFn $Update -ViewFn $View
 ```
 
-Swap `Start-TeaProgram` for `Start-TeaWebServer -Port 8080` and the exact same app runs in a browser - no code changes required.
+Swap `TeaProgram` for `TeaWebServer -Port 8080` and the exact same app runs in a browser - no code changes required.
+
+> All `New-Tea*` and `Start-Tea*` cmdlets have short aliases: `TeaBox`, `TeaText`, `TeaStyle`, `TeaProgram`, `TeaWebServer`, etc.
 
 ---
 
@@ -69,13 +71,13 @@ Each cycle:
 
 ```powershell
 # Text node
-New-TeaText -Content 'hello' -Style $MyStyle
+TeaText -Content 'hello' -Style $MyStyle
 
 # Vertical box (default)
-New-TeaBox -Children @($Node1, $Node2)
+TeaBox -Children @($Node1, $Node2)
 
 # Horizontal row
-New-TeaRow -Children @($Node1, $Node2)
+TeaRow -Children @($Node1, $Node2)
 ```
 
 Width/Height values: `'Fill'`, `'Auto'`, integer (columns/rows), or `'50%'`.
@@ -108,7 +110,7 @@ Colors: hex `'#RRGGBB'`, 256-index int, or named (`Black`, `White`, `Red`, `Gree
 
 ```powershell
 # Special keys (arrows, Enter, Backspace, F-keys, ctrl/shift combos)
-New-TeaKeySub -OnKey {
+TeaKeySub -OnKey {
     param($Key)
     switch ($Key) {
         'UpArrow' { [PSCustomObject]@{ Type = 'MoveUp' } }
@@ -117,13 +119,13 @@ New-TeaKeySub -OnKey {
 }
 
 # Printable characters (letters, digits, symbols) - for text input
-New-TeaCharSub -Handler {
+TeaCharSub -Handler {
     param($Key)
     [PSCustomObject]@{ Type = 'CharInput'; Char = $Key.KeyChar }
 }
 
 # Timer
-New-TeaTimerSub -IntervalMs 500 -OnTick {
+TeaTimerSub -IntervalMs 500 -OnTick {
     [PSCustomObject]@{ Type = 'Tick'; Timestamp = (Get-Date) }
 }
 ```
