@@ -85,12 +85,14 @@ Width/Height values: `'Fill'`, `'Auto'`, integer (columns/rows), or `'50%'`.
 ## Styles
 
 ```powershell
-$Style = New-TeaStyle `
-    -Foreground '#88C0D0' `
-    -Background '#2E3440' `
-    -Bold `
-    -Border 'Rounded' `
-    -Padding 1, 2   # top/bottom=1, left/right=2
+$StyleParams = @{
+    Foreground = '#88C0D0'
+    Background = '#2E3440'
+    Bold       = $true
+    Border     = 'Rounded'
+    Padding    = 1, 2   # top/bottom=1, left/right=2
+}
+$Style = New-TeaStyle @StyleParams
 
 # Inherit and override
 $ActiveStyle = New-TeaStyle -Base $Style -Background '#5C4AE4'
@@ -191,12 +193,14 @@ Both are optional; the caller passes whatever `New-TeaStyle` produces.
 ## Web Mode
 
 ```powershell
-Start-TeaWebServer `
-    -Init          $Init `
-    -Update        $Update `
-    -View          $View `
-    -Subscriptions $Subs `
-    -Port          8080
+$ServerParams = @{
+    Init          = $Init
+    Update        = $Update
+    View          = $View
+    Subscriptions = $Subs
+    Port          = 8080
+}
+Start-TeaWebServer @ServerParams
 ```
 
 Serves a self-contained HTML page (no CDN, bundled xterm.js) at `http://localhost:8080`. Keyboard input and ANSI output flow over a WebSocket - the application loop is identical to terminal mode.
