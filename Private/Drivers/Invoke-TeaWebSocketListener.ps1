@@ -81,10 +81,15 @@ function Invoke-TeaWebSocketListener {
     Write-TeaWebDebug "HttpListener started"
 
     # Shared mutable state visible to both runspaces (same-process = same object reference).
+    # Cts is a CancellationTokenSource so ReceiveAsync/SendAsync can be cancelled
+    # immediately when Stop is called — without it, Task.Wait() blocks the stop
+    # function and $listener.Close() is never reached (port stays bound).
+    $cts = [System.Threading.CancellationTokenSource]::new()
     $sharedState = [hashtable]::Synchronized(@{
         Stop          = $false
         ActiveSocket  = $null
         SessionActive = $false
+        Cts           = $cts
     })
 
     # Directory containing the VT parser and its helpers — dot-sourced inside the accept runspace.
@@ -129,7 +134,7 @@ function Invoke-TeaWebSocketListener {
                             $segment,
                             [System.Net.WebSockets.WebSocketMessageType]::Text,
                             $true,
-                            [System.Threading.CancellationToken]::None
+                            $sharedState.Cts.Token
                         )
                         $task.Wait()
                     } catch {
@@ -241,7 +246,7 @@ function Invoke-TeaWebSocketListener {
                            $ws.State -eq [System.Net.WebSockets.WebSocketState]::Open) {
                         $recvTask = $null
                         try {
-                            $recvTask = $ws.ReceiveAsync($seg, [System.Threading.CancellationToken]::None)
+                            $recvTask = $ws.ReceiveAsync($seg, $sharedState.Cts.Token)
                             $recvTask.Wait()
                         } catch {
                             dbg "ReceiveAsync error: $_"
@@ -296,29 +301,41 @@ function Invoke-TeaWebSocketListener {
     $acceptAr = $acceptPs.BeginInvoke()
     Write-TeaWebDebug "Accept runspace started"
 
-    # Stop scriptblock — shuts everything down cleanly
+    # Register the raw .NET objects in the AppDomain so Start-TeaWebServer can
+    # perform cleanup via pure .NET calls even after this runspace is disposed
+    # (PS closures become invalid when their originating runspace is killed).
+    [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveListener',   $listener)
+    [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveCts',        $cts)
+    [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveSharedState', $sharedState)
+    [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveRunspaces',  @($acceptRs, $sendRs))
+    Write-TeaWebDebug "AppDomain slots registered"
+
+    # Stop scriptblock — shuts everything down cleanly (ADR-027)
     $stopFn = {
         $ts = [datetime]::Now.ToString('HH:mm:ss.fff'); Add-Content -Path $script:TeaWebDebugLog -Value "[$ts][STOP] Stop called" -ErrorAction SilentlyContinue
+
+        # 1. Signal all loops to exit.
+        try { $sharedState.Cts.Cancel() } catch {}
         $sharedState.Stop = $true
 
+        # 2. Abort the WebSocket immediately — no close-handshake wait.
+        #    CloseAsync().Wait() can block; Abort() is instant (sends TCP RST).
         $ws = $sharedState.ActiveSocket
-        if ($null -ne $ws -and $ws.State -eq [System.Net.WebSockets.WebSocketState]::Open) {
-            try {
-                $t = $ws.CloseAsync(
-                    [System.Net.WebSockets.WebSocketCloseStatus]::NormalClosure,
-                    'Server stopping',
-                    [System.Threading.CancellationToken]::None
-                )
-                [void]$t.Wait(2000)
-            } catch {}
-        }
+        if ($null -ne $ws) { try { $ws.Abort() } catch {} }
 
-        try { $acceptPs.Stop() } catch {}
-        try { $acceptRs.Close() } catch {}
-        try { $sendPs.Stop()   } catch {}
-        try { $sendRs.Close()  } catch {}
-        try { $listener.Stop() } catch {}
+        # 3. Stop then Close the listener — this releases the port (ADR-027).
+        #    Must happen BEFORE any runspace teardown; PowerShell.Stop() is
+        #    synchronous and blocks until the pipeline exits, which can take
+        #    arbitrarily long if the thread is in a ReceiveAsync/SendAsync Wait().
+        try { $listener.Stop()  } catch {}
         try { $listener.Close() } catch {}
+
+        # 4. Request pipeline stop asynchronously (fire-and-forget).
+        #    BeginStop returns immediately; the runspaces exit naturally via the
+        #    Stop flag, closed listener, and Cts cancellation.
+        try { [void]$acceptPs.BeginStop($null, $null) } catch {}
+        try { [void]$sendPs.BeginStop($null, $null)   } catch {}
+
         $ts = [datetime]::Now.ToString('HH:mm:ss.fff'); Add-Content -Path $script:TeaWebDebugLog -Value "[$ts][STOP] Stop complete" -ErrorAction SilentlyContinue
     }.GetNewClosure()
 

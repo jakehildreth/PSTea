@@ -1,4 +1,4 @@
-Import-Module "$PSScriptRoot/../PSTea.psd1" -Force
+if (-not (Get-Module PSTea)) { Import-Module "$PSScriptRoot/../PSTea.psd1" }
 
 # ---------------------------------------------------------------------------
 # Widget Showcase - Web version

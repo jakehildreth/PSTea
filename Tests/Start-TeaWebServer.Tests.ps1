@@ -199,4 +199,198 @@ Describe 'Start-TeaWebServer' {
             $script:driverLoopCalled | Should -Be $false
         }
     }
+
+    Context 'Driver shutdown - normal exit (Elm-pia)' {
+        BeforeAll {
+            $script:stopCalledNormal = $false
+
+            function New-TeaWebSocketDriver {
+                param($Port, $Width, $Height, $Title)
+                $q = [System.Collections.Concurrent.ConcurrentQueue[PSCustomObject]]::new()
+                return [PSCustomObject]@{
+                    InputQueue  = $q
+                    OutputSink  = { param($s) }
+                    Stop        = { $script:stopCalledNormal = $true }
+                }
+            }
+
+            $initFn   = { [PSCustomObject]@{ Model = [PSCustomObject]@{}; Cmd = $null } }
+            $updateFn = { param($msg, $model) [PSCustomObject]@{ Model = $model; Cmd = $null } }
+            $viewFn   = { param($model) [PSCustomObject]@{ Type = 'Text'; Content = '' } }
+
+            Start-TeaWebServer -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -Port 8095 `
+                -InformationAction SilentlyContinue
+        }
+
+        It 'Should call driver.Stop after the event loop exits normally' {
+            $script:stopCalledNormal | Should -Be $true
+        }
+    }
+
+    Context 'Driver shutdown - exception path (Elm-pia)' {
+        BeforeAll {
+            $script:stopCalledOnException = $false
+
+            function New-TeaWebSocketDriver {
+                param($Port, $Width, $Height, $Title)
+                $q = [System.Collections.Concurrent.ConcurrentQueue[PSCustomObject]]::new()
+                return [PSCustomObject]@{
+                    InputQueue  = $q
+                    OutputSink  = { param($s) }
+                    Stop        = { $script:stopCalledOnException = $true }
+                }
+            }
+
+            function Invoke-TeaEventLoop {
+                param($InitialModel, $UpdateFn, $ViewFn, $InputQueue,
+                      $SubscriptionFn, $TerminalWidth, $TerminalHeight, $OutputSink)
+                throw 'Simulated event loop failure'
+            }
+
+            $initFn   = { [PSCustomObject]@{ Model = [PSCustomObject]@{}; Cmd = $null } }
+            $updateFn = { param($msg, $model) [PSCustomObject]@{ Model = $model; Cmd = $null } }
+            $viewFn   = { param($model) [PSCustomObject]@{ Type = 'Text'; Content = '' } }
+
+            try {
+                Start-TeaWebServer -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -Port 8096 `
+                    -InformationAction SilentlyContinue
+            } catch {}
+        }
+
+        It 'Should call driver.Stop even when the event loop throws (mimics Ctrl+C)' {
+            $script:stopCalledOnException | Should -Be $true
+        }
+    }
+
+    Context 'Driver shutdown - tick loop cleanup ordering (Elm-pia)' {
+        BeforeAll {
+            # Use a hashtable (reference type) captured via closure so mutations inside
+            # ScriptMethod calls are visible here regardless of scope context.
+            $script:tickTrack = @{ PsStopCalled = $false; RsCloseCalled = $false; DriverStopCalled = $false }
+
+            function New-TeaWebSocketDriver {
+                param($Port, $Width, $Height, $Title)
+                $track = $script:tickTrack
+                $q     = [System.Collections.Concurrent.ConcurrentQueue[PSCustomObject]]::new()
+                return [PSCustomObject]@{
+                    InputQueue  = $q
+                    OutputSink  = { param($s) }
+                    Stop        = { $track.DriverStopCalled = $true }.GetNewClosure()
+                }
+            }
+
+            function Invoke-TeaDriverLoop {
+                param($ScriptBlock, $Arguments)
+                $track  = $script:tickTrack
+                $psMock = [PSCustomObject]@{}
+                $psMock | Add-Member -MemberType ScriptMethod -Name 'Stop' `
+                    -Value { $track.PsStopCalled = $true }.GetNewClosure()
+                $rsMock = [PSCustomObject]@{}
+                $rsMock | Add-Member -MemberType ScriptMethod -Name 'Close' `
+                    -Value { $track.RsCloseCalled = $true }.GetNewClosure()
+                return [PSCustomObject]@{
+                    PowerShell = $psMock
+                    Runspace   = $rsMock
+                }
+            }
+
+            $initFn   = { [PSCustomObject]@{ Model = [PSCustomObject]@{}; Cmd = $null } }
+            $updateFn = { param($msg, $model) [PSCustomObject]@{ Model = $model; Cmd = $null } }
+            $viewFn   = { param($model) [PSCustomObject]@{ Type = 'Text'; Content = '' } }
+
+            Start-TeaWebServer -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -Port 8097 -TickMs 100 `
+                -InformationAction SilentlyContinue
+        }
+
+        It 'Should stop the tick PowerShell instance on exit' {
+            $script:tickTrack.PsStopCalled | Should -Be $true
+        }
+
+        It 'Should close the tick runspace on exit' {
+            $script:tickTrack.RsCloseCalled | Should -Be $true
+        }
+
+        It 'Should call driver.Stop on exit when tick loop is active' {
+            $script:tickTrack.DriverStopCalled | Should -Be $true
+        }
+    }
+
+    Context 'Previous driver cleanup (Elm-pia)' {
+        BeforeAll {
+            # Seed the AppDomain slots that Start-TeaWebServer reads on entry.
+            # This simulates a previous run that was killed without the finally block firing.
+            $script:TeaDriverContainer = [hashtable]::Synchronized(@{ Active = $null })
+            [System.AppDomain]::CurrentDomain.SetData('PSTea.DriverContainer', $script:TeaDriverContainer)
+        }
+
+        AfterEach {
+            $script:TeaDriverContainer.Active = $null
+            [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveListener',    $null)
+            [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveCts',         $null)
+            [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveSharedState', $null)
+            [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveRunspaces',   $null)
+        }
+
+        It 'Should stop the previously active driver before creating a new one' {
+            # Arrange — simulate a stale listener in the AppDomain slot (what happens when
+            # the VS Code Extension kills the runspace without running the finally block).
+            $staleListener = [System.Net.HttpListener]::new()
+            $staleListener.Prefixes.Add('http://localhost:19877/')
+            $staleListener.Start()
+            [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveListener', $staleListener)
+            [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveCts',      [System.Threading.CancellationTokenSource]::new())
+
+            $initFn   = { [PSCustomObject]@{ Model = [PSCustomObject]@{}; Cmd = $null } }
+            $updateFn = { param($msg, $model) [PSCustomObject]@{ Model = $model; Cmd = $null } }
+            $viewFn   = { param($model) [PSCustomObject]@{ Type = 'Text'; Content = '' } }
+
+            # Act — Start-TeaWebServer should stop the stale listener via pure .NET before the port probe
+            Start-TeaWebServer -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -Port 8101 `
+                -InformationAction SilentlyContinue
+
+            # Assert — stale listener should no longer be listening
+            $staleListener.IsListening | Should -Be $false
+        }
+
+        It 'Should clear the AppDomain slots after normal exit' {
+            $initFn   = { [PSCustomObject]@{ Model = [PSCustomObject]@{}; Cmd = $null } }
+            $updateFn = { param($msg, $model) [PSCustomObject]@{ Model = $model; Cmd = $null } }
+            $viewFn   = { param($model) [PSCustomObject]@{ Type = 'Text'; Content = '' } }
+
+            Start-TeaWebServer -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -Port 8102 `
+                -InformationAction SilentlyContinue
+
+            [System.AppDomain]::CurrentDomain.GetData('PSTea.ActiveListener') | Should -BeNullOrEmpty
+        }
+
+        It 'Should clear the driver container after normal exit' {
+            $initFn   = { [PSCustomObject]@{ Model = [PSCustomObject]@{}; Cmd = $null } }
+            $updateFn = { param($msg, $model) [PSCustomObject]@{ Model = $model; Cmd = $null } }
+            $viewFn   = { param($model) [PSCustomObject]@{ Type = 'Text'; Content = '' } }
+
+            Start-TeaWebServer -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -Port 8102 `
+                -InformationAction SilentlyContinue
+
+            $script:TeaDriverContainer.Active | Should -BeNullOrEmpty
+        }
+
+        It 'Should clear the AppDomain slots after an exception' {
+            function Invoke-TeaEventLoop {
+                param($InitialModel, $UpdateFn, $ViewFn, $InputQueue,
+                      $SubscriptionFn, $TerminalWidth, $TerminalHeight, $OutputSink)
+                throw 'Simulated failure'
+            }
+
+            $initFn   = { [PSCustomObject]@{ Model = [PSCustomObject]@{}; Cmd = $null } }
+            $updateFn = { param($msg, $model) [PSCustomObject]@{ Model = $model; Cmd = $null } }
+            $viewFn   = { param($model) [PSCustomObject]@{ Type = 'Text'; Content = '' } }
+
+            try {
+                Start-TeaWebServer -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn -Port 8103 `
+                    -InformationAction SilentlyContinue
+            } catch {}
+
+            [System.AppDomain]::CurrentDomain.GetData('PSTea.ActiveListener') | Should -BeNullOrEmpty
+        }
+    }
 }

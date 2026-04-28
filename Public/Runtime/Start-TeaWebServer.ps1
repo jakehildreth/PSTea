@@ -104,6 +104,28 @@ function Start-TeaWebServer {
     # Enable ANSI/VT processing (no-op on Linux/macOS; needed on Windows conhost)
     [void](Enable-VirtualTerminal)
 
+    # Stop any previously-registered listener via direct .NET calls on AppDomain-stored
+    # objects. This is immune to runspace disposal (PS closures become invalid when their
+    # originating runspace is killed by the VS Code Extension on Ctrl+C, causing catch {}
+    # to silently swallow the error and leaving the port bound).
+    $prevCts      = [System.AppDomain]::CurrentDomain.GetData('PSTea.ActiveCts')
+    $prevListener = [System.AppDomain]::CurrentDomain.GetData('PSTea.ActiveListener')
+    $prevState    = [System.AppDomain]::CurrentDomain.GetData('PSTea.ActiveSharedState')
+    $prevRs       = [System.AppDomain]::CurrentDomain.GetData('PSTea.ActiveRunspaces')
+    if ($null -ne $prevState)    { try { $prevState.Stop = $true } catch {} }
+    if ($null -ne $prevCts)      { try { $prevCts.Cancel() } catch {} }
+    $prevWs = if ($null -ne $prevState) { $prevState.ActiveSocket } else { $null }
+    if ($null -ne $prevWs)       { try { $prevWs.Abort() } catch {} }
+    if ($null -ne $prevListener) { try { $prevListener.Stop(); $prevListener.Close() } catch {} }
+    if ($null -ne $prevRs)       { foreach ($rs in $prevRs) { try { $rs.Dispose() } catch {} } }
+    [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveListener',    $null)
+    [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveCts',         $null)
+    [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveSharedState', $null)
+    [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveRunspaces',   $null)
+    # Also clear the DriverContainer in case a normal exit had already populated it.
+    $teaContainer = [System.AppDomain]::CurrentDomain.GetData('PSTea.DriverContainer')
+    if ($null -ne $teaContainer) { $teaContainer.Active = $null }
+
     # Fail fast if port is already in use
     try {
         $testListener = [System.Net.HttpListener]::new()
@@ -125,29 +147,33 @@ function Start-TeaWebServer {
     }
 
     # Create the WebSocket driver (starts HttpListener + accept/send runspaces)
-    $driver = New-TeaWebSocketDriver -Port $Port -Width $Width -Height $Height -Title $Title
-
-    # Optional tick loop (same pattern as Start-TeaProgram)
+    # $driver is declared before the try so the finally null-guard always fires.
+    $driver   = $null
     $tickLoop = $null
-    if ($TickMs -gt 0) {
-        $tickQueue    = $driver.InputQueue
-        $tickInterval = $TickMs
-        $tickLoop = Invoke-TeaDriverLoop -ScriptBlock {
-            param($queue, $intervalMs)
-            while ($true) {
-                [System.Threading.Thread]::Sleep($intervalMs)
-                $queue.Enqueue([PSCustomObject]@{ Type = 'Tick'; Key = 'Tick' })
-            }
-        } -Arguments @($tickQueue, $tickInterval)
-    }
-
-    # Get initial model from InitFn
-    $initResult   = & $InitFn
-    $initialModel = $initResult.Model
-
-    Write-Information "Listening on http://localhost:$Port/ (Press Ctrl+C to stop)" -InformationAction Continue
-
     try {
+        $driver = New-TeaWebSocketDriver -Port $Port -Width $Width -Height $Height -Title $Title
+        $teaContainer = [System.AppDomain]::CurrentDomain.GetData('PSTea.DriverContainer')
+        if ($null -ne $teaContainer) { $teaContainer.Active = $driver }
+
+        # Optional tick loop (same pattern as Start-TeaProgram)
+        if ($TickMs -gt 0) {
+            $tickQueue    = $driver.InputQueue
+            $tickInterval = $TickMs
+            $tickLoop = Invoke-TeaDriverLoop -ScriptBlock {
+                param($queue, $intervalMs)
+                while ($true) {
+                    [System.Threading.Thread]::Sleep($intervalMs)
+                    $queue.Enqueue([PSCustomObject]@{ Type = 'Tick'; Key = 'Tick' })
+                }
+            } -Arguments @($tickQueue, $tickInterval)
+        }
+
+        # Get initial model from InitFn
+        $initResult   = & $InitFn
+        $initialModel = $initResult.Model
+
+        Write-Information "Listening on http://localhost:$Port/ (Press Ctrl+C to stop)" -InformationAction Continue
+
         $eventLoopParams = @{
             InitialModel   = $initialModel
             UpdateFn       = $UpdateFn
@@ -169,7 +195,13 @@ function Start-TeaWebServer {
             try { $tickLoop.PowerShell.Stop() } catch {}
             try { $tickLoop.Runspace.Close()  } catch {}
         }
-        & $driver.Stop
+        if ($null -ne $driver) { & $driver.Stop }
+        [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveListener',    $null)
+        [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveCts',         $null)
+        [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveSharedState', $null)
+        [System.AppDomain]::CurrentDomain.SetData('PSTea.ActiveRunspaces',   $null)
+        $teaContainer = [System.AppDomain]::CurrentDomain.GetData('PSTea.DriverContainer')
+        if ($null -ne $teaContainer) { $teaContainer.Active = $null }
     }
 }
 

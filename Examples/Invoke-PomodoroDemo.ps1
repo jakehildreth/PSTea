@@ -21,7 +21,7 @@ function Invoke-PomodoroDemo {
     [CmdletBinding()]
     param()
 
-    Import-Module "$PSScriptRoot/../PSTea.psd1" -Force
+    if (-not (Get-Module PSTea)) { Import-Module "$PSScriptRoot/../PSTea.psd1" }
 
     # ------------------------------------------------------------------ Model
     # SecondsLeft : [int]  remaining seconds (0..1500)
