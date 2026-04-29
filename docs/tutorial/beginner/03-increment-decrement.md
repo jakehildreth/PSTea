@@ -33,13 +33,15 @@ In the **legacy key path** (when you do not pass a `SubscriptionFn` to
 
 ```
 $msg.Type      = 'KeyDown'
-$msg.Key       = 'UpArrow'   # string — the ConsoleKey enum name
+$msg.Key       = 'UpArrow'   # [System.ConsoleKey] enum value
 $msg.Char      = [char]0     # the typed character (blank for control keys)
 $msg.Modifiers = 0           # Shift / Ctrl / Alt flags
 ```
 
-The `.Key` property is the string name of the .NET `ConsoleKey` enum value. For
-letter keys this is the uppercase letter. For special keys it is the full name.
+The `.Key` property is a `[System.ConsoleKey]` enum value. PowerShell coerces enum
+values to strings in `switch` and `-eq` comparisons, so you can use plain string
+literals like `'UpArrow'` and `'Q'` and they match exactly as expected. For letter
+keys the enum name is the uppercase letter; for special keys it is the full name.
 
 Common key strings:
 

@@ -103,8 +103,9 @@ Capstone lessons contain three formats so you can pick your learning style:
 
 ## Quick Reference: Key Strings
 
-In the legacy key path (no `SubscriptionFn`), `$msg.Key` is a string matching the
-.NET `ConsoleKey` enum name. Common values:
+In the legacy key path (no `SubscriptionFn`), `$msg.Key` is a `[System.ConsoleKey]`
+enum value. PowerShell coerces it to a string in `switch` and `-eq` comparisons, so
+you can use string literals directly (e.g. `'UpArrow'`, `'Q'`). Common values:
 
 | Key pressed | `$msg.Key` | `$msg.Char` |
 |-------------|------------|-------------|
