@@ -1,4 +1,4 @@
-# Dot source private functions
+﻿# Dot source private functions
 $privateFunctions = @(Get-ChildItem -Path "$PSScriptRoot/Private" -Filter '*.ps1' -Recurse -ErrorAction SilentlyContinue)
 foreach ($function in $privateFunctions) {
     try {
@@ -23,9 +23,9 @@ Export-ModuleMember -Function ($publicFunctions | ForEach-Object { $_.BaseName }
 
 # Load bundled web assets for Start-TeaWebServer (Phase 7).
 # SilentlyContinue: module works normally without these; they are only required for web serving.
-$script:XtermJs       = Get-Content -Path "$PSScriptRoot/Private/Web/xterm.min.js"       -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+$script:XtermJs = Get-Content -Path "$PSScriptRoot/Private/Web/xterm.min.js"       -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
 $script:XtermAddonFit = Get-Content -Path "$PSScriptRoot/Private/Web/xterm-addon-fit.min.js" -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
-$script:XtermCss      = Get-Content -Path "$PSScriptRoot/Private/Web/xterm.css"          -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
+$script:XtermCss = Get-Content -Path "$PSScriptRoot/Private/Web/xterm.css"          -Raw -Encoding UTF8 -ErrorAction SilentlyContinue
 
 # Registry for the active web server driver.
 # Uses AppDomain named data so the reference survives -Force reimport of the module
