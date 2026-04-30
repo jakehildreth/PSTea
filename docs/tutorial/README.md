@@ -1,4 +1,4 @@
-# PSTea Tutorial
+# PSTea Tutorial - A Work in Progress
 
 A multi-track curriculum for building terminal user interfaces with the **PSTea** PowerShell
 framework. PSTea implements the **Model-View-Update (MVU)** architecture — the same pattern
