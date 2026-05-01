@@ -12,3 +12,6 @@
 TestResults/
 *.pester.xml
 Ignore/
+
+# Obsidian Configuration
+.obsidian/

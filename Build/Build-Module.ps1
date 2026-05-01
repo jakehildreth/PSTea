@@ -12,14 +12,14 @@ param (
 # loaded error. Re-invoke in a clean pwsh -NoProfile child process to avoid it.
 if ($Host.Name -eq 'Visual Studio Code Host' -or
     $null -ne [System.AppDomain]::CurrentDomain.GetAssemblies().Where({
-        $_.GetName().Name -eq 'Microsoft.Windows.PowerShell.ScriptAnalyzer'
-    }, 'First')[0]) {
+            $_.GetName().Name -eq 'Microsoft.Windows.PowerShell.ScriptAnalyzer'
+        }, 'First')[0]) {
     Write-Host 'Re-invoking in a clean pwsh process to avoid PSScriptAnalyzer assembly conflict...'
     $passThrough = @('-NoProfile', '-File', $PSCommandPath)
-    if ($CalVer)            { $passThrough += '-CalVer';            $passThrough += $CalVer }
-    if ($PublishToPSGallery){ $passThrough += '-PublishToPSGallery' }
-    if ($PSGalleryAPIPath)  { $passThrough += '-PSGalleryAPIPath';  $passThrough += $PSGalleryAPIPath }
-    if ($PSGalleryAPIKey)   { $passThrough += '-PSGalleryAPIKey';   $passThrough += $PSGalleryAPIKey }
+    if ($CalVer) { $passThrough += '-CalVer'; $passThrough += $CalVer }
+    if ($PublishToPSGallery) { $passThrough += '-PublishToPSGallery' }
+    if ($PSGalleryAPIPath) { $passThrough += '-PSGalleryAPIPath'; $passThrough += $PSGalleryAPIPath }
+    if ($PSGalleryAPIKey) { $passThrough += '-PSGalleryAPIKey'; $passThrough += $PSGalleryAPIKey }
     & pwsh @passThrough
     exit $LASTEXITCODE
 }
@@ -29,9 +29,9 @@ if (Get-Module -Name 'PSPublishModule' -ListAvailable) {
 } else {
     Write-Verbose 'PSPublishModule is not installed. Attempting installation.'
     try {
-        Install-Module -Name Pester          -AllowClobber -Scope CurrentUser -SkipPublisherCheck -Force
+        Install-Module -Name Pester -AllowClobber -Scope CurrentUser -SkipPublisherCheck -Force
         Install-Module -Name PSScriptAnalyzer -AllowClobber -Scope CurrentUser -Force
-        Install-Module -Name PSPublishModule  -AllowClobber -MaximumVersion 2.0.27 -Scope CurrentUser -Force
+        Install-Module -Name PSPublishModule -AllowClobber -MaximumVersion 2.0.27 -Scope CurrentUser -Force
     } catch {
         Write-Error "PSPublishModule installation failed. $_"
     }
@@ -78,35 +78,35 @@ Build-Module -ModuleName 'PSTea' {
         -IncludeRoot             @('*.psm1', '*.psd1', 'LICENSE*', 'README.md')
 
     $ConfigurationFormat = [ordered] @{
-        RemoveComments = $false
+        RemoveComments                              = $false
 
-        PlaceOpenBraceEnable             = $true
-        PlaceOpenBraceOnSameLine         = $true
-        PlaceOpenBraceNewLineAfter       = $true
-        PlaceOpenBraceIgnoreOneLineBlock = $false
+        PlaceOpenBraceEnable                        = $true
+        PlaceOpenBraceOnSameLine                    = $true
+        PlaceOpenBraceNewLineAfter                  = $true
+        PlaceOpenBraceIgnoreOneLineBlock            = $false
 
-        PlaceCloseBraceEnable             = $true
-        PlaceCloseBraceNewLineAfter       = $true
-        PlaceCloseBraceIgnoreOneLineBlock = $false
-        PlaceCloseBraceNoEmptyLineBefore  = $true
+        PlaceCloseBraceEnable                       = $true
+        PlaceCloseBraceNewLineAfter                 = $true
+        PlaceCloseBraceIgnoreOneLineBlock           = $false
+        PlaceCloseBraceNoEmptyLineBefore            = $true
 
         UseConsistentIndentationEnable              = $true
         UseConsistentIndentationKind                = 'space'
         UseConsistentIndentationPipelineIndentation = 'IncreaseIndentationAfterEveryPipeline'
         UseConsistentIndentationIndentationSize     = 4
 
-        UseConsistentWhitespaceEnable          = $true
-        UseConsistentWhitespaceCheckInnerBrace = $true
-        UseConsistentWhitespaceCheckOpenBrace  = $true
-        UseConsistentWhitespaceCheckOpenParen  = $true
-        UseConsistentWhitespaceCheckOperator   = $true
-        UseConsistentWhitespaceCheckPipe       = $true
-        UseConsistentWhitespaceCheckSeparator  = $true
+        UseConsistentWhitespaceEnable               = $true
+        UseConsistentWhitespaceCheckInnerBrace      = $true
+        UseConsistentWhitespaceCheckOpenBrace       = $true
+        UseConsistentWhitespaceCheckOpenParen       = $true
+        UseConsistentWhitespaceCheckOperator        = $true
+        UseConsistentWhitespaceCheckPipe            = $true
+        UseConsistentWhitespaceCheckSeparator       = $true
 
-        AlignAssignmentStatementEnable         = $true
-        AlignAssignmentStatementCheckHashtable = $true
+        AlignAssignmentStatementEnable              = $true
+        AlignAssignmentStatementCheckHashtable      = $true
 
-        UseCorrectCasingEnable = $true
+        UseCorrectCasingEnable                      = $true
     }
 
     New-ConfigurationFormat -ApplyTo 'OnMergePSM1' -Sort None @ConfigurationFormat
