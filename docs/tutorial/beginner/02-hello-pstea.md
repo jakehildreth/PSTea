@@ -23,14 +23,20 @@ By the end of this lesson you will be able to:
 
 ## Concept
 
-### Importing the module
+### Installing the Module
+#### PowerShell Gallery
 
 ```powershell
-if (-not (Get-Module PSTea)) { Import-Module "$PSScriptRoot/../../../PSTea.psd1" }
+Install-Module -Name PSTea -Scope CurrentUser -Force
 ```
 
-The `$PSScriptRoot` approach means the script works from any working directory.
-Adjust the relative path if your script lives at a different depth.
+#### GitHub
+
+```powershell
+git clone https://github.com/jakehildreth/PSTea
+cd PSTea
+Import-Module ./PSTea.psd1 -Force
+```
 
 ### `Start-TeaProgram` — the only entry point
 
