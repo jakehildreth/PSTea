@@ -6,9 +6,9 @@ By the end of this lesson you will be able to:
 
 - Describe what the Model-View-Update pattern is and why it exists
 - Explain the role of Init, Update, and View in a PSTea program
-- Draw the data-flow cycle from key press to screen update
+- Explain why Update and View must be pure (no side effects)
 - Identify what `$msg`, `$model`, and `Cmd` are
-- Explain why Update must be pure (no side effects)
+- Draw the data-flow cycle from key press to screen update
 
 ---
 
@@ -30,13 +30,78 @@ functions. When a keypress fires, several things need to update — and it is ea
 them to get out of sync. Tracking down a bug means understanding which function
 last touched which variable.
 
+Here's what that looks like in practice:
+
+```powershell
+# state scattered across module-level variables
+$script:count  = 0
+$script:status = 'idle'
+$script:log    = @()
+
+function On-UpArrow {
+    $script:count++
+    $script:log += "incremented to $($script:count)"
+    # forgot to update $script:status — now it's stale
+}
+
+function On-Enter {
+    $script:status = 'confirmed'
+    # forgot to log — now $script:log is missing an entry
+}
+
+function Render {
+    Write-Host "Count: $($script:count)  Status: $($script:status)"
+    # which function last wrote these? hard to say without tracing the call graph
+}
+```
+
+Each function can touch any variable at any time. When something renders wrong, you
+have to trace through every code path that might have written to `$script:count`,
+`$script:status`, or `$script:log` — and they all have equal permission to do so.
+
 **MVU solves this with a single rule:** there is exactly one place where state lives
 (the **model**), and it can only change in one place (the **update** function).
+
+```powershell
+# all state in one object — same three fields as above
+$model = [PSCustomObject]@{ Count = 0; Status = 'idle'; Log = @() }
+
+# $msg is whatever just happened: a keypress, a timer firing, any event
+# (we'll cover $msg in detail later — for now just notice the structure)
+$updateFn = {
+    param($msg, $model)
+    switch ($msg.Key) {
+        'UpArrow' {
+            [PSCustomObject]@{
+                Model = [PSCustomObject]@{
+                    Count  = $model.Count + 1
+                    Status = $model.Status  # all fields required — nothing gets skipped
+                    Log    = $model.Log + "incremented to $($model.Count + 1)"
+                }
+                Cmd = $null
+            }
+        }
+        'Enter' {
+            [PSCustomObject]@{
+                Model = [PSCustomObject]@{
+                    Count  = $model.Count  # all fields required — nothing gets skipped
+                    Status = 'confirmed'
+                    Log    = $model.Log + 'confirmed'
+                }
+                Cmd = $null
+            }
+        }
+    }
+}
+```
+
+Every field is required on every branch. If `Status` is wrong, there is exactly one
+function to look at, and every case in that switch has to declare every field.
 
 ### The three layers
 
 PSTea implements **The Elm Architecture (TEA)**, also known as
-**Model-View-Update (MVU)**. Every PSTea program consists of exactly three scriptblocks:
+**Model-View-Update (MVU)**. Every PSTea program consists of exactly three scriptblocks: **Init**, **Update**, and **View**
 
 ---
 
@@ -82,11 +147,7 @@ $updateFn = {
 - No mutations of `$model` in place
 - Always returns a new `PSCustomObject` for `Model`
 
-Update answers: _"Given what just happened, what should the state be now?"_
-
----
-
-### Pure vs. side-effectful code
+##### Pure vs. side-effectful code
 
 This distinction matters a lot in PSTea, so it's worth being explicit.
 
@@ -119,6 +180,8 @@ corrupt the terminal display because PSTea owns the screen.
 are the designated places for anything that touches the outside world. Those run
 outside the pure update cycle. Subscriptions are covered in a later lesson.
 
+Update answers: _"Given what just happened, what should the state be now?"_
+
 ---
 
 #### View
@@ -134,15 +197,12 @@ $viewFn = {
 }
 ```
 
-You can render multiple model fields:
+You can render multiple model fields by interpolating them into a single string:
 
 ```powershell
 $viewFn = {
     param($model)
-    New-TeaBox -Children @(
-        New-TeaText -Content "Count : $($model.Count)"
-        New-TeaText -Content "Status: $($model.Status)"
-    )
+    New-TeaText -Content "Count: $($model.Count)  Status: $($model.Status)"
 }
 ```
 
@@ -174,113 +234,7 @@ View answers: _"Given the current state, what should the screen show?"_
 
 ---
 
-### The data-flow cycle
-
-```mermaid
-flowchart TD
-    A([Init]) -->|initial model| B
-
-    subgraph loop["PSTea Event Loop"]
-        B["Driver<br/>watches terminal"] -->|key press| C[InputQueue]
-        C -->|$msg| D["Update<br/>($msg, $model) → new $model"]
-        D -->|new $model| E["View<br/>($model) → view tree"]
-        E -->|view tree| F["Diff + Render<br/>write changed cells to screen"]
-        F -->|wait for next key| B
-    end
-```
-
-**What each node is:**
-
-- **Init** — your `$initFn`. runs exactly once at startup to produce the first `$model`. the loop never calls it again.
-- **Driver** — built-in. watches the terminal for keypresses using a background runspace. you never write this.
-- **InputQueue** — built-in. the driver packages each keypress as a `$msg` object and drops it here. the loop pulls one message at a time.
-- **Update** — your `$updateFn`. receives `$msg` and the current `$model`, returns a new `$model` and a `Cmd`.
-- **View** — your `$viewFn`. receives the new `$model`, returns a description of the screen (a "view tree" — nested nodes, not actual terminal output yet).
-- **Diff + Render** — built-in. compares the new view tree against the previous one, finds only the cells that changed, and writes the minimal ANSI sequences to update those spots.
-
-**Your code only touches two boxes: Update and View.** Everything else is PSTea's responsibility.
-
-PSTea runs this loop continuously until Update returns a `Quit` command.
-
----
-
-### What is `$msg`?
-
-In the simplest case (the **legacy key path**, no `SubscriptionFn`), `$msg` is a
-`PSCustomObject` produced by the terminal driver when a key is pressed:
-
-```
-$msg.Type      = 'KeyDown'
-$msg.Key       = 'UpArrow'   # string matching .NET ConsoleKey enum name
-$msg.Char      = [char]0     # the typed character (useful for text input)
-$msg.Modifiers = 0           # Shift, Ctrl, Alt flags
-```
-
-Common `.Key` values: `'UpArrow'`, `'DownArrow'`, `'LeftArrow'`, `'RightArrow'`,
-`'Enter'`, `'Backspace'`, `'Escape'`, `'Tab'`, `'Spacebar'`, `'Q'`, `'A'`, `'D3'`.
-
-In Update, you typically switch on `$msg.Key`:
-
-```powershell
-$updateFn = {
-    param($msg, $model)
-    switch ($msg.Key) {
-        'UpArrow'   { # move selection up }
-        'DownArrow' { # move selection down }
-        'Enter'     { # confirm current selection }
-        'Escape'    { # cancel / go back }
-        'Q'         { return [PSCustomObject]@{ Model = $model; Cmd = [PSCustomObject]@{ Type = 'Quit' } } }
-    }
-    [PSCustomObject]@{ Model = $model; Cmd = $null }
-}
-```
-
-For text input, use `$msg.Char` instead of `$msg.Key` — it holds the actual typed
-character:
-
-```powershell
-# accumulate typed characters into model.Input
-$newInput = $model.Input + $msg.Char
-[PSCustomObject]@{
-    Model = [PSCustomObject]@{ Input = $newInput }
-    Cmd   = $null
-}
-```
-
-When subscriptions are used (timers, etc.), the message shape differs — for example,
-a timer fires a `PSCustomObject` with `Type = 'Tick'`. Those are covered in a later
-lesson.
-
----
-
-### What is `Cmd`?
-
-`Cmd` is a signal from your Update function **to the PSTea framework**. It flows in
-the opposite direction from `$msg`:
-
-- `$msg` flows **into** your app — the outside world tells Update what happened
-- `Cmd` flows **out** of your app — Update tells the framework what to do next
-
-**Almost always, `Cmd` should be `$null`.** That means "nothing special, just keep
-running." It is not optional — every return from Update and Init must include both
-`Model` and `Cmd`.
-
-The only other value currently supported is `Quit`:
-
-```powershell
-[PSCustomObject]@{ Type = 'Quit' }
-```
-
-Returning this tells PSTea to stop the event loop, tear down the terminal driver,
-restore the cursor, and return the final model. For everything else, use `$null`.
-
-The Cmd system is designed to be extended — future versions will support commands
-like "fetch this URL" or "run this background job" — but those handlers live outside
-the pure update cycle so your Update function stays testable.
-
----
-
-### How PSTea maps to the three layers
+### Wiring it all together
 
 ```powershell
 Start-TeaProgram -InitFn $initFn -UpdateFn $updateFn -ViewFn $viewFn
@@ -313,9 +267,115 @@ to get your cursor back.
 
 ---
 
-## Common Mistakes
+### What is `$msg`?
 
-### "I forgot to include `Cmd` in the return object"
+`$msg` is a `PSCustomObject` produced by the terminal driver when a key is pressed:
+
+```
+$msg.Type      = 'KeyDown'
+$msg.Key       = 'UpArrow'   # string matching .NET ConsoleKey enum name
+$msg.Char      = [char]0     # the typed character (useful for text input)
+$msg.Modifiers = 0           # Shift, Ctrl, Alt flags
+```
+
+Common `.Key` values: `'UpArrow'`, `'DownArrow'`, `'LeftArrow'`, `'RightArrow'`,
+`'Enter'`, `'Backspace'`, `'Escape'`, `'Tab'`, `'Spacebar'`, `'Q'`, `'A'`, `'D3'`.
+
+In Update, you typically switch on `$msg.Key`:
+
+```powershell
+$updateFn = {
+    param($msg, $model)
+    switch ($msg.Key) {
+        'UpArrow'   { # move selection up }
+        'DownArrow' { # move selection down }
+        'Enter'     { # confirm current selection }
+        'Escape'    { # cancel / go back }
+        'Q'         { return [PSCustomObject]@{ Model = $model; Cmd = [PSCustomObject]@{ Type = 'Quit' } } }
+    }
+    [PSCustomObject]@{ Model = $model; Cmd = $null }
+}
+```
+
+For text input, use `$msg.Char` instead of `$msg.Key` — it holds the actual typed
+character:
+
+```powershell
+$updateFn = {
+    param($msg, $model)
+    [PSCustomObject]@{
+        Model = [PSCustomObject]@{ Input = $model.Input + $msg.Char }
+        Cmd   = $null
+    }
+}
+```
+
+When subscriptions are used (timers, etc.), the message shape differs — for example,
+a timer fires a `PSCustomObject` with `Type = 'Tick'`. Those are covered in a later
+lesson.
+
+---
+
+### What is `Cmd`?
+
+`Cmd` is a signal from your Update function **to the PSTea framework**. It flows in
+the opposite direction from `$msg`:
+
+- `$msg` flows **into** your app — the outside world tells Update what happened
+- `Cmd` flows **out** of your app — Update tells the framework what to do next
+
+**Almost always, `Cmd` should be `$null`.** That means "nothing special, just keep
+running." It is not optional — every return from Update and Init must include both
+`Model` and `Cmd`.
+
+The only non-null value currently supported is `Quit`:
+
+```powershell
+[PSCustomObject]@{ Type = 'Quit' }
+```
+
+Returning `Quit` tells PSTea to stop the event loop, tear down the terminal driver,
+restore the cursor, and return the final model. For everything else, use `$null`.
+
+The Cmd system is designed to be extended. Future versions will support commands
+like "fetch this URL" or "run this background job", but those handlers live outside
+the pure update cycle so your Update function stays testable.
+
+---
+
+### The data-flow cycle
+
+```mermaid
+flowchart TD
+    A([Init]) -->|initial model| B
+
+    subgraph loop["PSTea Event Loop"]
+        B["Driver<br/>watches terminal"] -->|key press| C[InputQueue]
+        C -->|$msg| D["Update<br/>($msg, $model) → new $model"]
+        D -->|new $model| E["View<br/>($model) → view tree"]
+        E -->|view tree| F["Diff + Render<br/>write changed cells to screen"]
+        F -->|wait for next key| B
+    end
+```
+
+**What each node is:**
+
+- **Init:** your `$initFn`. runs exactly once at startup to produce the first `$model`. The loop never calls it again.
+- **Driver:** built-in. watches the terminal for keypresses using a background runspace. You never write this.
+- **InputQueue:**  built-in. The driver packages each keypress as a `$msg` object and drops it here. The loop pulls one message at a time.
+- **Update:** your `$updateFn`. Receives a `$msg` and the current `$model` then returns a new `$model` and a `Cmd`.
+- **View:** your `$viewFn`. Receives the new `$model`, returns a description of the screen (a "view tree"  which is nested nodes, not actual terminal output).
+- **Diff + Render:** built-in. compares the new view tree against the previous one, finds only the cells that changed, and writes the minimal ANSI sequences to update only those spots.
+
+**Your code only exists in three boxes: Init, Update, and View.** Everything else is PSTea's responsibility.
+
+PSTea runs this loop continuously until Update returns a `Quit` command.
+
+---
+
+## Common Mistakes and Misconceptions
+
+### "What happens if I forgot to include `Cmd` in the return object?"
 
 **Wrong:**
 ```powershell
@@ -356,8 +416,79 @@ $updateFn = {
 }
 ```
 
-**Right:** Update must be pure. Debug output will corrupt the terminal display.
-Log to a file, or add a `DebugLog` field to the model and render it in View.
+Because PSTea owns the terminal display, `Write-Host` writes directly to the screen
+buffer at whatever cursor position happens to be current. You'll see something like
+this bleeding through your UI:
+
+```
+debug: UpArrow
+┌──────────────────────┐
+│ Count: debug: UpArrow│   ← garbage injected mid-render
+│ Press Q to quit      │
+└──────────────────────┘
+```
+
+**Right (Option 1): add a `DebugLog` field to the model and render it in View:**
+```powershell
+$updateFn = {
+    param($msg, $model)
+    [PSCustomObject]@{
+        Model = [PSCustomObject]@{
+            Count    = $model.Count
+            DebugLog = "last key: $($msg.Key)"
+        }
+        Cmd = $null
+    }
+}
+
+$viewFn = {
+    param($model)
+    New-TeaBox -Children @(
+        New-TeaText -Content "Count: $($model.Count)"
+        New-TeaText -Content "DEBUG: $($model.DebugLog)"
+    )
+}
+```
+
+The debug output renders cleanly below your UI:
+
+```
+┌──────────────────────┐
+│ Count: 3             │
+│ Press Q to quit      │
+└──────────────────────┘
+DEBUG: last key: UpArrow
+```
+
+**Right (Option 2): log to a file instead:**
+```powershell
+$updateFn = {
+    param($msg, $model)
+    Add-Content -Path '/tmp/pstea-debug.log' -Value "key: $($msg.Key)"
+    [PSCustomObject]@{ Model = $model; Cmd = $null }
+}
+```
+
+Your UI renders normally with no debug bleed:
+
+```
+┌──────────────────────┐
+│ Count: 3             │
+│ Press Q to quit      │
+└──────────────────────┘
+```
+
+While in another terminal you can tail the log:
+
+```
+tail -f /tmp/pstea-debug.log
+# key: UpArrow
+# key: UpArrow
+# key: Q
+```
+
+Note: file writes are still a side effect and will add latency on every keypress.
+Use only during development and remove before shipping.
 
 ---
 
