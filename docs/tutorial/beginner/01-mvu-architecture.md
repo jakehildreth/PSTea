@@ -421,11 +421,10 @@ buffer at whatever cursor position happens to be current. You'll see something l
 this bleeding through your UI:
 
 ```
-debug: UpArrow
-┌──────────────────────┐
-│ Count: debug: UpArrow│   ← garbage injected mid-render
-│ Press Q to quit      │
-└──────────────────────┘
+┌──────────────────┐
+│ Count: last key: UpArrow  ← garbage injected mid-render
+│ Press Q to quit  │
+└──────────────────┘
 ```
 
 **Right (Option 1): add a `DebugLog` field to the model and render it in View:**
@@ -453,10 +452,10 @@ $viewFn = {
 The debug output renders cleanly below your UI:
 
 ```
-┌──────────────────────┐
-│ Count: 3             │
-│ Press Q to quit      │
-└──────────────────────┘
+┌─────────────────┐
+│ Count: 3        │
+│ Press Q to quit │
+└─────────────────┘
 DEBUG: last key: UpArrow
 ```
 
@@ -472,10 +471,10 @@ $updateFn = {
 Your UI renders normally with no debug bleed:
 
 ```
-┌──────────────────────┐
-│ Count: 3             │
-│ Press Q to quit      │
-└──────────────────────┘
+┌─────────────────┐
+│ Count: 3        │
+│ Press Q to quit │
+└─────────────────┘
 ```
 
 While in another terminal you can tail the log:
