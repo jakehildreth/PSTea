@@ -406,12 +406,12 @@ the new one:
 $model = $updateResult.Model
 ```
 
-The old object now has no variable pointing to it — PowerShell's garbage collector
+The old object now has no variable pointing to it; PowerShell's garbage collector
 will reclaim it automatically. There is no history kept, no previous model stored,
 no undo stack. If you need any of that, you build it yourself by including a history
 list as a field in the model.
 
-But constructing a new object is still the idiomatic pattern — it makes your intent
+But constructing a new object is still the idiomatic pattern; it makes your intent
 explicit, forces you to name every field you carry forward, and prevents bugs where
 you accidentally keep stale state from a previous shape of the model.
 
