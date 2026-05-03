@@ -122,7 +122,7 @@ leaving the cursor hidden and the alt screen active. The shell prompt may disapp
 
 ## Code Walkthrough
 
-The companion script builds a static display with three info lines:
+The companion script (`02-hello-pstea.ps1`) builds a static display with three info lines:
 
 ```powershell
 # ---------------------------------------------------------------------------
