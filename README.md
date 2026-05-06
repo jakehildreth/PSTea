@@ -13,7 +13,7 @@ Heavily influenced by:
 ## Quick Start
 
 ```powershell
-Install-Module -Name PSTea
+Install-Module -Name PSTea -Scope CurrentUser -Force
 
 $Init = {
     [PSCustomObject]@{ Model = [PSCustomObject]@{ Count = 0 }; Cmd = $null }
