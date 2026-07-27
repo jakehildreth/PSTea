@@ -4,13 +4,14 @@ function Copy-TeaModelValue {
         Recursively deep-copies a model value.
 
     .DESCRIPTION
-        Handles arrays (element-wise deep copy), PSCustomObjects (property-wise deep copy),
-        and primitives/strings (returned as-is, since they are immutable or value types).
-        Called by Copy-TeaModel to produce a fully independent snapshot of the model before
-        passing it to the user Update function.
+        Handles arrays (element-wise deep copy), IDictionary implementations such as
+        hashtables (entry-wise deep copy, preserving the original equality comparer),
+        PSCustomObjects (property-wise deep copy), and primitives/strings (returned as-is,
+        since they are immutable or value types). Called by Copy-TeaModel to produce a fully
+        independent snapshot of the model before passing it to the user Update function.
 
     .PARAMETER Value
-        The value to copy. May be $null, a primitive, a string, an array, or a PSCustomObject.
+        The value to copy. May be $null, a primitive, a string, an array, a hashtable, or a PSCustomObject.
 
     .OUTPUTS
         The deep-copied value.
@@ -31,6 +32,26 @@ function Copy-TeaModelValue {
         }
         Write-Output -NoEnumerate $result
         return
+    }
+
+    if ($Value -is [System.Collections.IDictionary]) {
+        $copy = $null
+        if ($Value -is [System.Collections.Hashtable]) {
+            $equalityComparer = $Value.GetType().GetProperty(
+                'EqualityComparer',
+                [System.Reflection.BindingFlags]::NonPublic -bor [System.Reflection.BindingFlags]::Instance
+            ).GetValue($Value)
+            $copy = [System.Collections.Hashtable]::new($Value.Count, $equalityComparer)
+        }
+        else {
+            $copy = [ordered]@{}
+        }
+
+        foreach ($key in $Value.Keys) {
+            $copy[$key] = Copy-TeaModelValue -Value $Value[$key]
+        }
+
+        return $copy
     }
 
     if ($Value -is [PSCustomObject]) {

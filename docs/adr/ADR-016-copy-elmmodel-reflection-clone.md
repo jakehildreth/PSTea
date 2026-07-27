@@ -34,6 +34,12 @@ The helper walks the object graph directly:
 - `$null` → `$null`
 - `[System.Array]` → new `[object[]]` with each element recursively cloned; returned via
   `Write-Output -NoEnumerate` to preserve array identity through the PowerShell pipeline
+- `[System.Collections.IDictionary]` → new dictionary with each entry recursively cloned.
+  `[System.Collections.Hashtable]` values preserve their original equality comparer (so
+  PowerShell's case-insensitive `@{}` semantics survive the copy); other `IDictionary`
+  implementations fall back to `[ordered]@{}`. This check must come before `[PSCustomObject]`
+  because hashtables returned from a PowerShell job boundary are adapted as both
+  `[Hashtable]` and `[PSCustomObject]`.
 - `[PSCustomObject]` → new `[PSCustomObject]` built from an ordered hashtable of recursively
   cloned property values
 - All other values (strings, ints, longs, bools, enums) → returned as-is (value types or
