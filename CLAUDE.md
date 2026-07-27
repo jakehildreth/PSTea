@@ -67,3 +67,17 @@ _Add a brief overview of your project architecture_
 ## Conventions & Patterns
 
 _Add your project-specific conventions here_
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in this repo's Beads database, managed with the `bd` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Canonical five-role labels used as-is in Beads. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context layout: read `CONTEXT.md` at the repo root (when it exists) and `docs/adr/`. See `docs/agents/domain.md`.
