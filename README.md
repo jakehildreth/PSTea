@@ -47,7 +47,17 @@ Swap `TeaProgram` for `TeaWebServer -Port 8080` and the exact same app runs in a
 
 ## How It Works
 
-You define three pure functions. The runtime handles the rest.
+At minimum, your program should define three functions. You'll pass these three functions to the runtime which will handle everything else.
+
+### Minimum Functions
+
+| Function | Signature | Purpose |
+|---|---|---|
+| `Init` | `() → Model` | Return initial application state |
+| `Update` | `(Msg, Model) → Model` | Given a message, return a new model |
+| `View` | `(Model) → ViewTree` | Given the current model, return a view tree |
+
+### Advanced Functions
 
 | Function | Signature | Purpose |
 |---|---|---|
@@ -56,7 +66,7 @@ You define three pure functions. The runtime handles the rest.
 | `View` | `(Model) → ViewTree` | Given the current model, return a view tree |
 | `Subscriptions` | `(Model) → Sub[]` | Return active event sources (keys, timers, etc.) |
 
-Each cycle:
+The runtime will perform the following each cycle:
 1. Call `View($Model)` → layout tree
 2. Measure the tree (flexbox-inspired: `Fill`, `Auto`, fixed, percentage)
 3. Diff against previous tree → patch list
@@ -68,6 +78,8 @@ Each cycle:
 ---
 
 ## View DSL
+
+Views correspond to visual elements you'd see in the terminal buffer. These could be labels, tables, text input areas, etc. These will normally be used in a View Function that you provide to the framework.
 
 ```powershell
 # Text node
@@ -86,6 +98,8 @@ Width/Height values: `'Fill'`, `'Auto'`, integer (columns/rows), or `'50%'`.
 
 ## Styles
 
+Styles provide a convenient means of describing multiple decorations in a single `Hashtable`. Styles are given to Views, typically via the `-Style` parameter. They can be extended to form composite styles.
+
 ```powershell
 $StyleParams = @{
     Foreground = '#88C0D0'
@@ -100,23 +114,88 @@ $Style = New-TeaStyle @StyleParams
 $ActiveStyle = New-TeaStyle -Base $Style -Background '#5C4AE4'
 ```
 
-Border options: `None`, `Normal`, `Rounded`, `Thick`, `Double`.
+Supported values for the `Border` property are:
 
-Colors: hex `'#RRGGBB'`, 256-index int, or named (`Black`, `White`, `Red`, `Green`, `Blue`, `Yellow`, `Cyan`, `Magenta`, and `Bright*` variants).
+- `None`
+- `Normal`
+- `Rounded`
+- `Thick`
+- `Double`
+
+Supported values for color-related properties (i.e. `Foreground` and `Background`) are:
+
+- Hex string (24-bit, no alpha) (i.e. `'#RRGGBB')
+- 256-index integer
+- Well-known 8-bit named colors (i.e. `Black`, `White`, and `Bright*` variants)
 
 ---
 
 ## Subscriptions
 
+Subscriptions offer a more granular approach to event handling. In simple programs, the default event router is sufficient. However, as your program grows in complexity, you may notice in your `UpdateFn` you end up mixing event decoding with logic. A better approach is to disconnect these two so that your functions remain as simple as possible. This is where Subscriptions come into play.
+
+Using Subscriptions requires the following workflow:
+
+- Create a `ScriptBlock` variable that takes one parameter (the Model). This `ScriptBlock` should return an array of subscription targets.
+- At point of invocation (`TeaProgram` or `TeaWebServer`), use the `-SubscriptionFn` option and give to it the variable you previously created.
+
 ```powershell
-# Special keys (arrows, Enter, Backspace, F-keys, ctrl/shift combos)
-TeaKeySub -OnKey {
-    param($Key)
-    switch ($Key) {
-        'UpArrow' { [PSCustomObject]@{ Type = 'MoveUp' } }
-        'ctrl+c'  { [PSCustomObject]@{ Type = 'Quit' } }
+# ... Code omitted for brevity ...
+
+$Update = {
+    Param($Msg, $Model)
+
+    Switch($Msg) {
+        'UpArrowPressed' {
+            # Perform changes to the model in response to the up arrow
+        }
+
+        'DownArrowPressed' {
+            # Perform changes to the model in response to the down arrow
+        }
+
+        'LeftArrowPressed' {
+            # Perform changes to the model in response to the left arrow
+        }
+
+        'RightArrowPressed' {
+            # Perform changes to the model in response to the right arrow
+        }
+
+        'Quit' {
+            # Quit the program
+        }
+
+        Default {
+            # Base case handling for no matching event
+        }
     }
 }
+
+$Subs = {
+    Param($Model)
+
+    @(
+        TeaKeySub -Key 'UpArrow'    -Handler { 'UpArrowPressed' }
+        TeaKeySub -Key 'DownArrow'  -Handler { 'DownArrowPressed' }
+        TeaKeySub -Key 'LeftArrow'  -Handler { 'LeftArrowPressed' }
+        TeaKeySub -Key 'RightArrow' -Handler { 'RightArrowPressed' }
+        TeaKeySub -Key 'Q'          -Handler { 'Quit' }
+    )
+}
+
+# ... Code omitted for brevity ...
+
+TeaProgram -InitFn $Init -UpdateFn $Update -ViewFn $View -SubscriptionFn $Subs
+```
+
+In the previous example, we instructed the runtime to use subscription handlers that will interpret input from the user and map them to messages. When the messages are emitted, they're handled in the `UpdateFn` function. If we examine the `$Update` function above, we see the code is a bit simpler. All we're doing now is handling incoming messages and reacting to them accordingly.
+
+PSTea offers three built-in subscription targets: `TeaCharSub`, `TeaKeySub`, and `TeaTimerSub`:
+
+```powershell
+# Special keys (arrows, Enter, Backspace, F-keys, ctrl/shift combos)
+TeaKeySub -Key <KEY-ID> -Handler { <HANDLER-ID> | <MESSAGE-OBJ> }
 
 # Printable characters (letters, digits, symbols) - for text input
 TeaCharSub -Handler {
@@ -125,7 +204,7 @@ TeaCharSub -Handler {
 }
 
 # Timer
-TeaTimerSub -IntervalMs 500 -OnTick {
+TeaTimerSub -IntervalMs 500 -Handler {
     [PSCustomObject]@{ Type = 'Tick'; Timestamp = (Get-Date) }
 }
 ```
