@@ -8,6 +8,7 @@ Heavily influenced by:
 * [Textual](https://github.com/Textualize/textual)
 * The Commodore 64 and DOS.
 
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/jakehildreth/PSTea)
 ---
 
 ## Quick Start
