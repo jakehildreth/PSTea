@@ -1,15 +1,17 @@
-# Triage Labels
+# Triage labels
 
-The skills speak in terms of five canonical triage roles. This file maps those roles to the actual label strings used in this repo's Beads tracker.
+Use these canonical GitHub Issue labels without translating them:
 
-| Label in mattpocock/skills | Label in our tracker | Meaning                                  |
-| -------------------------- | -------------------- | ---------------------------------------- |
-| `needs-triage`             | `needs-triage`       | Maintainer needs to evaluate this issue  |
-| `needs-info`               | `needs-info`         | Waiting on reporter for more information |
-| `ready-for-agent`          | `ready-for-agent`    | Fully specified, ready for an AFK agent  |
-| `ready-for-human`          | `ready-for-human`    | Requires human implementation            |
-| `wontfix`                  | `wontfix`            | Will not be actioned                     |
+| Label | Meaning |
+| --- | --- |
+| `needs-triage` | Maintainer needs to evaluate this issue |
+| `needs-info` | Waiting on the reporter for more information |
+| `ready-for-agent` | Fully specified and ready for an autonomous agent |
+| `ready-for-human` | Requires human implementation or input |
+| `wontfix` | Will not be actioned |
 
-When a skill mentions a role (e.g. "apply the AFK-ready triage label"), use `bd label add <id> <label>` with the corresponding label string from this table.
+Apply labels with:
 
-Edit the right-hand column to match whatever vocabulary you actually use.
+```bash
+gh issue edit <number> --repo jakehildreth/PSTea --add-label <label>
+```

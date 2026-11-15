@@ -1,84 +1,32 @@
 # Agent Instructions
 
-This project uses **bd** (beads) for issue tracking. Run `bd prime` for full workflow context.
+## Issue tracking
 
-## Quick Reference
+Use GitHub Issues in `jakehildreth/PSTea`. Read `docs/agents/issue-tracker.md` before creating, claiming, updating, or closing issues. Check for duplicates before publishing new work.
 
-```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --claim  # Claim work atomically
-bd close <id>         # Complete work
-bd dolt push          # Push beads data to remote
-```
+Use the canonical triage labels in `docs/agents/triage-labels.md`.
 
-## Non-Interactive Shell Commands
+## Domain context
 
-**ALWAYS use non-interactive flags** with file operations to avoid hanging on confirmation prompts.
+Before exploring a domain area, follow `docs/agents/domain.md`: load the relevant `CONTEXT.md` and ADRs when present, and use their vocabulary.
 
-Shell commands like `cp`, `mv`, and `rm` may be aliased to include `-i` (interactive) mode on some systems, causing the agent to hang indefinitely waiting for y/n input.
+## Repository layout
 
-**Use these forms instead:**
-```bash
-# Force overwrite without prompting
-cp -f source dest           # NOT: cp source dest
-mv -f source dest           # NOT: mv source dest
-rm -f file                  # NOT: rm file
+PSTea is a PowerShell implementation of The Elm Architecture. Public commands live in `Public/`, private helpers in `Private/`, Pester tests in `Tests/`, tutorials in `docs/tutorial/`, and architectural decisions in `docs/adr/`.
 
-# For recursive operations
-rm -rf directory            # NOT: rm -r directory
-cp -rf source dest          # NOT: cp -r source dest
-```
+## Validation
 
-**Other commands that may prompt:**
-- `scp` - use `-o BatchMode=yes` for non-interactive
-- `ssh` - use `-o BatchMode=yes` to fail instead of prompting
-- `apt-get` - use `-y` flag
-- `brew` - use `HOMEBREW_NO_AUTO_UPDATE=1` env var
+Use the existing PowerShell/Pester tooling. Run the smallest targeted tests covering a change; use `Build/Build-Module.ps1` when full module validation is required.
 
-<!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:ca08a54f -->
-## Beads Issue Tracker
+## Shell safety
 
-This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
+Use non-interactive flags for commands that may prompt: `cp -f`, `mv -f`, `rm -f`/`rm -rf`, `ssh -o BatchMode=yes`, `scp -o BatchMode=yes`, and `brew` with `HOMEBREW_NO_AUTO_UPDATE=1`.
 
-### Quick Reference
+## Session completion
 
-```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --claim  # Claim work
-bd close <id>         # Complete work
-```
+1. File GitHub Issues for remaining work.
+2. Run relevant quality gates for changed code.
+3. Update related GitHub Issues with outcomes or blockers.
+4. Report `git status` and any uncommitted changes.
 
-### Rules
-
-- Use `bd` for ALL task tracking - do NOT use TodoWrite, TaskCreate, or markdown TODO lists
-- Run `bd prime` for detailed command reference and session close protocol
-- Use `bd remember` for persistent knowledge - do NOT use MEMORY.md files
-
-## Session Completion
-
-**When ending a work session**, you MUST complete ALL steps below. Work is NOT complete until `git push` succeeds.
-
-**MANDATORY WORKFLOW:**
-
-1. **File issues for remaining work** - Create issues for anything that needs follow-up
-2. **Run quality gates** (if code changed) - Tests, linters, builds
-3. **Update issue status** - Close finished work, update in-progress items
-4. **PUSH TO REMOTE** - This is MANDATORY:
-   ```bash
-   git pull --rebase
-   bd dolt push
-   git push
-   git status  # MUST show "up to date with origin"
-   ```
-5. **Clean up** - Clear stashes, prune remote branches
-6. **Verify** - All changes committed AND pushed
-7. **Hand off** - Provide context for next session
-
-**CRITICAL RULES:**
-- Work is NOT complete until `git push` succeeds
-- NEVER stop before pushing - that leaves work stranded locally
-- NEVER say "ready to push when you are" - YOU must push
-- If push fails, resolve and retry until it succeeds
-<!-- END BEADS INTEGRATION -->
+Commit or push only when explicitly requested.
